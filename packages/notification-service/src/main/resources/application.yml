@@ -1,0 +1,15 @@
+spring:
+  application:
+    name: notification-service
+
+server:
+  port: 8080
+
+app:
+  jwt:
+    secret: ${JWT_SECRET:dev-secret-key-that-is-long-enough-for-hs256-algorithm-use}
+    expiration-ms: 900000
+
+logging:
+  level:
+    com.safetrack: DEBUG

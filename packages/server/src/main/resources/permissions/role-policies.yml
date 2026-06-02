@@ -1,0 +1,56 @@
+Version: "2024-06-01"
+Policies:
+  - PolicyName: UserPolicy
+    PolicyDocument:
+      Statement:
+        - Sid: UserBaseAccess
+          Effect: Allow
+          Action:
+            - "safetrack:status:report"
+            - "safetrack:status:readOwn"
+            - "safetrack:employee:readOwn"
+          Resource: "*"
+
+  - PolicyName: ManagerPolicy
+    PolicyDocument:
+      Statement:
+        - Sid: ManagerReadTeam
+          Effect: Allow
+          Action:
+            - "safetrack:team:read"
+            - "safetrack:employee:read"
+            - "safetrack:status:read"
+            - "safetrack:alert:send"
+            - "safetrack:alert:read"
+          Resource: "*"
+        - Sid: ManagerNoDelete
+          Effect: Deny
+          Action:
+            - "safetrack:employee:delete"
+            - "safetrack:organization:delete"
+            - "safetrack:team:delete"
+          Resource: "*"
+
+  - PolicyName: AdminPolicy
+    PolicyDocument:
+      Statement:
+        - Sid: AdminFull
+          Effect: Allow
+          Action:
+            - "safetrack:*"
+          Resource: "*"
+        - Sid: AdminNoSuperAdmin
+          Effect: Deny
+          Action:
+            - "safetrack:role:assignSuperAdmin"
+            - "safetrack:system:config"
+          Resource: "*"
+
+  - PolicyName: SuperAdminPolicy
+    PolicyDocument:
+      Statement:
+        - Sid: SuperAdminUnrestricted
+          Effect: Allow
+          Action:
+            - "*"
+          Resource: "*"
