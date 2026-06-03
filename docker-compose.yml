@@ -33,6 +33,12 @@ services:
       AZURE_CLIENT_ID: ${AZURE_CLIENT_ID:-}
       AZURE_CLIENT_SECRET: ${AZURE_CLIENT_SECRET:-}
       AZURE_TENANT_ID: ${AZURE_TENANT_ID:-common}
+      # Email / Invitation config (optional — leave blank to log invites to console)
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      INVITE_BASE_URL: ${INVITE_BASE_URL:-http://localhost:3010}
     depends_on:
       postgres:
         condition: service_healthy

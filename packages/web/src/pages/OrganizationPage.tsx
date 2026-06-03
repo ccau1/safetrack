@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Building } from 'lucide-react';
+import { Building, Mail } from 'lucide-react';
 import { FilterDropdown } from '@/components/FilterDropdown';
 import { StatusTable } from '@/components/StatusTable';
 import { EmployeeDetailModal } from '@/components/EmployeeDetailModal';
+import { InviteMembersModal } from '@/components/InviteMembersModal';
 import type { Employee } from '@/types';
 
 interface OrganizationPageProps {
@@ -13,6 +14,7 @@ interface OrganizationPageProps {
   onTeamFilter: (team: string) => void;
   isAdmin: boolean;
   addToast: (message: string, type: 'success' | 'error' | 'info') => void;
+  orgId: string | null;
 }
 
 export function OrganizationPage({
@@ -22,9 +24,11 @@ export function OrganizationPage({
   onTeamFilter,
   isAdmin,
   addToast,
+  orgId,
 }: OrganizationPageProps) {
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [inviteModalOpen, setInviteModalOpen] = useState(false);
 
   const filteredEmployees = activeTeam === 'all'
     ? employees
@@ -47,15 +51,26 @@ export function OrganizationPage({
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
-        className="flex items-center gap-3"
+        className="flex items-center justify-between"
       >
-        <Building size={24} className="text-[#4A5548]" />
-        <div>
-          <h2 className="text-2xl font-bold text-[#1A1A1A]">Organization</h2>
-          <p className="text-sm text-[#8A8A8A]">
-            {employees.length} employees across {teams.length} teams
-          </p>
+        <div className="flex items-center gap-3">
+          <Building size={24} className="text-[#4A5548]" />
+          <div>
+            <h2 className="text-2xl font-bold text-[#1A1A1A]">Organization</h2>
+            <p className="text-sm text-[#8A8A8A]">
+              {employees.length} employees across {teams.length} teams
+            </p>
+          </div>
         </div>
+        {isAdmin && (
+          <button
+            onClick={() => setInviteModalOpen(true)}
+            className="flex items-center gap-2 px-4 h-10 text-sm font-semibold text-white bg-[#4A5548] rounded-[10px] hover:bg-[#3D463B] transition-colors duration-150"
+          >
+            <Mail size={16} />
+            Invite Members
+          </button>
+        )}
       </motion.div>
 
       {/* Status Table */}
@@ -87,6 +102,14 @@ export function OrganizationPage({
         onClose={() => setModalOpen(false)}
         isAdmin={isAdmin}
         onRemind={handleRemind}
+      />
+
+      {/* Invite Members Modal */}
+      <InviteMembersModal
+        orgId={orgId}
+        open={inviteModalOpen}
+        onClose={() => setInviteModalOpen(false)}
+        addToast={addToast}
       />
     </div>
   );

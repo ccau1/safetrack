@@ -46,7 +46,7 @@ class AuthServiceImplTest {
 
     @Test
     void register_shouldCreateUserOrganizationAndMember() {
-        RegisterRequest request = new RegisterRequest("john@example.com", "password", "John", "Doe", null);
+        RegisterRequest request = new RegisterRequest("john@example.com", "password", "John", "Doe", null, null);
         Role role = Role.builder().id(UUID.randomUUID()).name(Role.RoleName.USER).build();
         User savedUser = User.builder().id(UUID.randomUUID()).email("john@example.com").firstName("John").lastName("Doe").build();
         Organization savedOrg = Organization.builder().id(UUID.randomUUID()).name("John's Organization").slug("john-s-organization").build();
@@ -69,7 +69,7 @@ class AuthServiceImplTest {
 
     @Test
     void register_shouldThrow_whenEmailAlreadyExists() {
-        RegisterRequest request = new RegisterRequest("john@example.com", "password", "John", "Doe", null);
+        RegisterRequest request = new RegisterRequest("john@example.com", "password", "John", "Doe", null, null);
         when(userRepository.existsByEmail("john@example.com")).thenReturn(true);
 
         assertThrows(IllegalArgumentException.class, () -> authService.register(request));
@@ -78,7 +78,7 @@ class AuthServiceImplTest {
 
     @Test
     void register_shouldThrow_whenDefaultRoleMissing() {
-        RegisterRequest request = new RegisterRequest("john@example.com", "password", "John", "Doe", null);
+        RegisterRequest request = new RegisterRequest("john@example.com", "password", "John", "Doe", null, null);
         when(userRepository.existsByEmail("john@example.com")).thenReturn(false);
         when(roleRepository.findByName(Role.RoleName.USER)).thenReturn(Optional.empty());
 

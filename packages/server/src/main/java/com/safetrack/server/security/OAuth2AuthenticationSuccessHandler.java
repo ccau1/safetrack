@@ -3,6 +3,7 @@ package com.safetrack.server.security;
 import com.safetrack.server.domain.entity.Member;
 import com.safetrack.server.domain.entity.User;
 import com.safetrack.server.domain.repository.MemberRepository;
+import com.safetrack.server.security.permission.PermissionEvaluator;
 import com.safetrack.server.service.RefreshTokenService;
 import com.safetrack.server.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -24,6 +25,7 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
     private final JwtService jwtService;
     private final UserService userService;
     private final MemberRepository memberRepository;
+    private final PermissionEvaluator permissionEvaluator;
     private final RefreshTokenService refreshTokenService;
     private final CookieUtil cookieUtil;
 
@@ -51,12 +53,21 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
                 .orElse(null);
         UUID orgId = member != null ? member.getOrganization().getId() : null;
 
-        String accessToken = jwtService.generateToken(user, orgId);
+        var actions = permissionEvaluator.computeAllowedActions(user, orgId).stream().toList();
+        String accessToken = jwtService.generateToken(user, orgId, actions);
         String refreshToken = refreshTokenService.createRefreshToken(user.getId());
 
         cookieUtil.setAccessTokenCookie(response, accessToken, (int) (jwtExpirationMs / 1000));
         cookieUtil.setRefreshTokenCookie(response, refreshToken, (int) (refreshExpirationMs / 1000));
 
-        getRedirectStrategy().sendRedirect(request, response, redirectUri);
+        // Check if there's a post-auth redirect cookie (e.g., from invite acceptance page)
+        String postAuthRedirect = cookieUtil.extractPostAuthRedirect(request);
+        String targetUrl = redirectUri;
+        if (postAuthRedirect != null && !postAuthRedirect.isBlank()) {
+            targetUrl = postAuthRedirect;
+            cookieUtil.clearPostAuthRedirectCookie(response);
+        }
+
+        getRedirectStrategy().sendRedirect(request, response, targetUrl);
     }
 }

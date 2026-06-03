@@ -17,6 +17,7 @@ public class CookieUtil {
 
     private static final String ACCESS_TOKEN_NAME = "access_token";
     private static final String REFRESH_TOKEN_NAME = "refresh_token";
+    private static final String POST_AUTH_REDIRECT_NAME = "post_auth_redirect";
 
     public void setAccessTokenCookie(HttpServletResponse response, String token, int maxAgeSeconds) {
         setCookie(response, ACCESS_TOKEN_NAME, token, maxAgeSeconds, "/");
@@ -37,6 +38,19 @@ public class CookieUtil {
 
     public String extractRefreshToken(HttpServletRequest request) {
         return extractCookieValue(request, REFRESH_TOKEN_NAME);
+    }
+
+    public void setPostAuthRedirectCookie(HttpServletResponse response, String redirectUrl) {
+        // Short-lived cookie (5 minutes) to remember where to redirect after SSO
+        setCookie(response, POST_AUTH_REDIRECT_NAME, redirectUrl, 300, "/");
+    }
+
+    public String extractPostAuthRedirect(HttpServletRequest request) {
+        return extractCookieValue(request, POST_AUTH_REDIRECT_NAME);
+    }
+
+    public void clearPostAuthRedirectCookie(HttpServletResponse response) {
+        clearCookie(response, POST_AUTH_REDIRECT_NAME, "/");
     }
 
     private void setCookie(HttpServletResponse response, String name, String value, int maxAge, String path) {

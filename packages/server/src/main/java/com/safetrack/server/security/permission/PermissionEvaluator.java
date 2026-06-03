@@ -1,8 +1,10 @@
 package com.safetrack.server.security.permission;
 
+import com.safetrack.server.domain.entity.Member;
 import com.safetrack.server.domain.entity.Role;
 import com.safetrack.server.domain.entity.User;
 import com.safetrack.server.domain.entity.UserPermission;
+import com.safetrack.server.domain.repository.MemberRepository;
 import com.safetrack.server.domain.repository.UserPermissionRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +24,7 @@ public class PermissionEvaluator {
 
     private final RolePolicyLoader policyLoader;
     private final UserPermissionRepository userPermissionRepository;
+    private final MemberRepository memberRepository;
 
     /**
      * Evaluate whether a user has permission for an action globally.
@@ -36,6 +39,7 @@ public class PermissionEvaluator {
      * Evaluate whether a user has permission for an action within a specific organization.
      * If orgId is null, only global permissions (org_id IS NULL) are checked.
      * SUPER_ADMIN always passes.
+     * ORG_ADMIN is treated as ADMIN within their organization.
      */
     public boolean evaluate(User user, String requestedAction, UUID orgId) {
         if (user == null || requestedAction == null) {
@@ -65,7 +69,23 @@ public class PermissionEvaluator {
             }
         }
 
-        // 2. User-specific DB overrides — global first, then org-scoped
+        // 2. Organization role policies from YAML (org-scoped)
+        if (orgId != null) {
+            List<RolePolicyLoader.Statement> orgStmts = getOrgRoleStatements(user, orgId);
+            for (RolePolicyLoader.Statement stmt : orgStmts) {
+                for (String actionPattern : stmt.getActions()) {
+                    if (matches(actionPattern, requestedAction)) {
+                        if (stmt.getEffect() == RolePolicyLoader.Effect.Deny) {
+                            denies.add(requestedAction);
+                        } else {
+                            allows.add(requestedAction);
+                        }
+                    }
+                }
+            }
+        }
+
+        // 3. User-specific DB overrides — global first, then org-scoped
         for (UserPermission up : loadUserPermissions(user, orgId)) {
             if (matches(up.getAction(), requestedAction)) {
                 if (up.getEffect() == UserPermission.Effect.Deny) {
@@ -76,7 +96,7 @@ public class PermissionEvaluator {
             }
         }
 
-        // 3. Deny-override logic (Explicit Deny > Explicit Allow > Implicit Deny)
+        // 4. Deny-override logic (Explicit Deny > Explicit Allow > Implicit Deny)
         if (denies.contains(requestedAction)) {
             return false;
         }
@@ -121,6 +141,17 @@ public class PermissionEvaluator {
             }
         }
 
+        if (orgId != null) {
+            List<RolePolicyLoader.Statement> orgStmts = getOrgRoleStatements(user, orgId);
+            for (RolePolicyLoader.Statement stmt : orgStmts) {
+                if (stmt.getEffect() == RolePolicyLoader.Effect.Deny) {
+                    deniedPatterns.addAll(stmt.getActions());
+                } else {
+                    allowed.addAll(stmt.getActions());
+                }
+            }
+        }
+
         List<UserPermission> userPerms = loadUserPermissions(user, orgId);
         for (UserPermission up : userPerms) {
             if (up.getEffect() == UserPermission.Effect.Deny) {
@@ -131,6 +162,21 @@ public class PermissionEvaluator {
         }
 
         return allowed;
+    }
+
+    /**
+     * Load YAML policy statements for a user's organization role.
+     * ORG_ADMIN is treated as ADMIN, SAFETY_OFFICER as MANAGER, ORG_MEMBER as USER.
+     */
+    private List<RolePolicyLoader.Statement> getOrgRoleStatements(User user, UUID orgId) {
+        return memberRepository.findByUserIdAndOrganizationId(user.getId(), orgId)
+                .map(Member::getOrgRole)
+                .map(orgRole -> switch (orgRole) {
+                    case ORG_ADMIN -> policyLoader.getStatements(Role.RoleName.ADMIN);
+                    case SAFETY_OFFICER -> policyLoader.getStatements(Role.RoleName.MANAGER);
+                    case ORG_MEMBER -> policyLoader.getStatements(Role.RoleName.USER);
+                })
+                .orElse(List.of());
     }
 
     /**

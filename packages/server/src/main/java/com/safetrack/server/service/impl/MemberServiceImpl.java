@@ -52,6 +52,9 @@ public class MemberServiceImpl implements MemberService {
         if (teamId != null) {
             Team team = teamRepository.findById(teamId)
                     .orElseThrow(() -> new IllegalArgumentException("Team not found"));
+            if (team.getDeletedAt() != null) {
+                throw new IllegalArgumentException("Team has been deleted");
+            }
             if (!team.getOrganization().getId().equals(member.getOrganization().getId())) {
                 throw new IllegalArgumentException("Team does not belong to the same organization");
             }

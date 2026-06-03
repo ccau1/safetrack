@@ -1,8 +1,10 @@
 package com.safetrack.server.security.permission;
 
+import com.safetrack.server.domain.entity.Member;
 import com.safetrack.server.domain.entity.Role;
 import com.safetrack.server.domain.entity.User;
 import com.safetrack.server.domain.entity.UserPermission;
+import com.safetrack.server.domain.repository.MemberRepository;
 import com.safetrack.server.domain.repository.UserPermissionRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,6 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -28,11 +31,15 @@ class PermissionEvaluatorTest {
     @Mock
     private UserPermissionRepository userPermissionRepository;
 
+    @Mock
+    private MemberRepository memberRepository;
+
     @InjectMocks
     private PermissionEvaluator permissionEvaluator;
 
     private User user;
     private Role userRole;
+    private UUID orgId;
 
     @BeforeEach
     void setUp() {
@@ -43,6 +50,7 @@ class PermissionEvaluatorTest {
                 .roles(Set.of(userRole))
                 .permissions(Set.of())
                 .build();
+        orgId = UUID.randomUUID();
     }
 
     @Test
@@ -125,6 +133,73 @@ class PermissionEvaluatorTest {
         when(policyLoader.getStatements(Role.RoleName.USER)).thenReturn(List.of(allowStmt, denyStmt));
 
         assertFalse(permissionEvaluator.evaluate(user, "safetrack:delete"));
+    }
+
+    @Test
+    void evaluate_orgAdmin_shouldHaveAdminPermissionsWithinOrg() {
+        RolePolicyLoader.Statement adminStmt = new RolePolicyLoader.Statement();
+        ReflectionTestUtils.setField(adminStmt, "effect", RolePolicyLoader.Effect.Allow);
+        ReflectionTestUtils.setField(adminStmt, "actions", List.of("safetrack:*"));
+
+        when(policyLoader.getStatements(Role.RoleName.USER)).thenReturn(List.of());
+        when(policyLoader.getStatements(Role.RoleName.ADMIN)).thenReturn(List.of(adminStmt));
+
+        Member member = Member.builder()
+                .user(user)
+                .orgRole(Member.OrgRole.ORG_ADMIN)
+                .build();
+        when(memberRepository.findByUserIdAndOrganizationId(user.getId(), orgId))
+                .thenReturn(Optional.of(member));
+
+        assertTrue(permissionEvaluator.evaluate(user, "safetrack:alert:read", orgId));
+        assertTrue(permissionEvaluator.evaluate(user, "safetrack:organization:delete", orgId));
+    }
+
+    @Test
+    void evaluate_safetyOfficer_shouldHaveManagerPermissionsWithinOrg() {
+        RolePolicyLoader.Statement managerStmt = new RolePolicyLoader.Statement();
+        ReflectionTestUtils.setField(managerStmt, "effect", RolePolicyLoader.Effect.Allow);
+        ReflectionTestUtils.setField(managerStmt, "actions", List.of("safetrack:alert:read", "safetrack:alert:send"));
+
+        when(policyLoader.getStatements(Role.RoleName.USER)).thenReturn(List.of());
+        when(policyLoader.getStatements(Role.RoleName.MANAGER)).thenReturn(List.of(managerStmt));
+
+        Member member = Member.builder()
+                .user(user)
+                .orgRole(Member.OrgRole.SAFETY_OFFICER)
+                .build();
+        when(memberRepository.findByUserIdAndOrganizationId(user.getId(), orgId))
+                .thenReturn(Optional.of(member));
+
+        assertTrue(permissionEvaluator.evaluate(user, "safetrack:alert:read", orgId));
+        assertTrue(permissionEvaluator.evaluate(user, "safetrack:alert:send", orgId));
+    }
+
+    @Test
+    void evaluate_orgMember_shouldHaveUserPermissionsWithinOrg() {
+        RolePolicyLoader.Statement userStmt = new RolePolicyLoader.Statement();
+        ReflectionTestUtils.setField(userStmt, "effect", RolePolicyLoader.Effect.Allow);
+        ReflectionTestUtils.setField(userStmt, "actions", List.of("safetrack:status:report"));
+
+        when(policyLoader.getStatements(Role.RoleName.USER)).thenReturn(List.of(userStmt));
+
+        Member member = Member.builder()
+                .user(user)
+                .orgRole(Member.OrgRole.ORG_MEMBER)
+                .build();
+        when(memberRepository.findByUserIdAndOrganizationId(user.getId(), orgId))
+                .thenReturn(Optional.of(member));
+
+        assertTrue(permissionEvaluator.evaluate(user, "safetrack:status:report", orgId));
+    }
+
+    @Test
+    void evaluate_noMemberRecord_shouldNotGrantOrgPermissions() {
+        when(policyLoader.getStatements(Role.RoleName.USER)).thenReturn(List.of());
+        when(memberRepository.findByUserIdAndOrganizationId(user.getId(), orgId))
+                .thenReturn(Optional.empty());
+
+        assertFalse(permissionEvaluator.evaluate(user, "safetrack:alert:read", orgId));
     }
 
     @Test

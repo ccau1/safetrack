@@ -55,7 +55,7 @@ class TeamServiceImplTest {
     void findByOrganizationId_shouldReturnTeams() {
         UUID orgId = UUID.randomUUID();
         Team team = Team.builder().id(UUID.randomUUID()).name("Engineering").build();
-        when(teamRepository.findByOrganizationId(orgId)).thenReturn(List.of(team));
+        when(teamRepository.findByOrganizationIdAndDeletedAtIsNull(orgId)).thenReturn(List.of(team));
 
         List<Team> result = teamService.findByOrganizationId(orgId);
         assertEquals(1, result.size());

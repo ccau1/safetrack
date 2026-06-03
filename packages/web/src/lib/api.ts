@@ -129,10 +129,15 @@ export async function apiRequest<T = unknown>(
     };
   }
 
+  const isFormData = body instanceof FormData;
+
   const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
     Accept: 'application/json',
   };
+
+  if (!isFormData) {
+    headers['Content-Type'] = 'application/json';
+  }
 
   const fetchOptions: RequestInit = {
     method,
@@ -141,7 +146,7 @@ export async function apiRequest<T = unknown>(
   };
 
   if (body !== undefined) {
-    fetchOptions.body = JSON.stringify(body);
+    fetchOptions.body = isFormData ? body : JSON.stringify(body);
   }
 
   let lastError: Error | undefined;

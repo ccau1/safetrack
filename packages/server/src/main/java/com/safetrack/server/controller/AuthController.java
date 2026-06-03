@@ -55,13 +55,14 @@ public class AuthController {
         Member member = findMemberForUser(user);
         UUID orgId = member != null ? member.getOrganization().getId() : null;
 
-        String accessToken = jwtService.generateToken(user, orgId);
+        List<Member> members = memberRepository.findByUserId(user.getId());
+        var actions = permissionEvaluator.computeAllowedActions(user, orgId).stream().toList();
+
+        String accessToken = jwtService.generateToken(user, orgId, actions);
         String refreshToken = refreshTokenService.createRefreshToken(user.getId());
 
         setAuthCookies(response, accessToken, refreshToken);
 
-        List<Member> members = memberRepository.findByUserId(user.getId());
-        var actions = permissionEvaluator.computeAllowedActions(user, orgId).stream().toList();
         return ResponseEntity.ok(userMapper.toAuthResponse(user, members, actions));
     }
 
@@ -73,12 +74,13 @@ public class AuthController {
         Member member = members.stream().findFirst().orElse(null);
         UUID orgId = member != null ? member.getOrganization().getId() : null;
 
-        String accessToken = jwtService.generateToken(user, orgId);
+        var actions = permissionEvaluator.computeAllowedActions(user, orgId).stream().toList();
+
+        String accessToken = jwtService.generateToken(user, orgId, actions);
         String refreshToken = refreshTokenService.createRefreshToken(user.getId());
 
         setAuthCookies(response, accessToken, refreshToken);
 
-        var actions = permissionEvaluator.computeAllowedActions(user, orgId).stream().toList();
         return ResponseEntity.ok(userMapper.toAuthResponse(user, members, actions));
     }
 
@@ -93,7 +95,8 @@ public class AuthController {
         Member member = findMemberForUser(user);
         UUID orgId = member != null ? member.getOrganization().getId() : null;
 
-        String newAccessToken = jwtService.generateToken(user, orgId);
+        var actions = permissionEvaluator.computeAllowedActions(user, orgId).stream().toList();
+        String newAccessToken = jwtService.generateToken(user, orgId, actions);
         cookieUtil.setAccessTokenCookie(response, newAccessToken, (int) (jwtExpirationMs / 1000));
 
         return ResponseEntity.ok().build();
@@ -114,6 +117,17 @@ public class AuthController {
         User user = userService.findByEmail(userDetails.getUsername())
                 .orElseThrow(() -> new RuntimeException("User not found"));
         return ResponseEntity.ok(userMapper.toResponse(user));
+    }
+
+    @GetMapping("/me/full")
+    public ResponseEntity<AuthResponse> getCurrentUserFull(@AuthenticationPrincipal UserDetails userDetails) {
+        User user = userService.findByEmail(userDetails.getUsername())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        List<Member> members = memberRepository.findByUserId(user.getId());
+        Member member = members.stream().findFirst().orElse(null);
+        UUID orgId = member != null ? member.getOrganization().getId() : null;
+        var actions = permissionEvaluator.computeAllowedActions(user, orgId).stream().toList();
+        return ResponseEntity.ok(userMapper.toAuthResponse(user, members, actions));
     }
 
     private Member findMemberForUser(User user) {

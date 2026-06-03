@@ -71,7 +71,7 @@ export function DashboardPage({
           iconColor="#4A7C59"
           label="Marked Safe"
           value={stats.safe}
-          trend={`${((stats.safe / stats.total) * 100).toFixed(1)}% of total`}
+          trend={`${stats.total > 0 ? ((stats.safe / stats.total) * 100).toFixed(1) : 0}% of total`}
           trendColor="text-[#4A7C59]"
           delay={0.08}
         />

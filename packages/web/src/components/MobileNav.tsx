@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import {
   LayoutDashboard,
   Shield,
@@ -7,6 +8,7 @@ import {
   Phone,
   ShieldCheck,
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/context/AuthContext';
 import type { ViewName } from '@/types';
 
@@ -15,18 +17,23 @@ interface MobileNavProps {
   onNavigate: (view: ViewName) => void;
 }
 
-const navItems: { icon: typeof LayoutDashboard; label: string; view: ViewName; adminOnly?: boolean }[] = [
-  { icon: LayoutDashboard, label: 'Dashboard', view: 'dashboard' },
-  { icon: Shield, label: 'Report', view: 'report' },
-  { icon: Users, label: 'Team', view: 'team' },
-  { icon: Building, label: 'Org', view: 'organization' },
-  { icon: Phone, label: 'Contacts', view: 'contacts' },
-  { icon: Megaphone, label: 'Alert', view: 'alert', adminOnly: true },
-  { icon: ShieldCheck, label: 'Perms', view: 'permissions', adminOnly: true },
-];
-
 export function MobileNav({ currentView, onNavigate }: MobileNavProps) {
+  const { t } = useTranslation();
   const { isAdmin } = useAuth();
+
+  const navItems = useMemo(
+    () => [
+      { icon: LayoutDashboard, label: t('mobileNav.dashboard'), view: 'dashboard' as ViewName },
+      { icon: Shield, label: t('mobileNav.report'), view: 'report' as ViewName },
+      { icon: Users, label: t('mobileNav.team'), view: 'team' as ViewName },
+      { icon: Building, label: t('mobileNav.organization'), view: 'organization' as ViewName },
+      { icon: Phone, label: t('mobileNav.contacts'), view: 'contacts' as ViewName },
+      { icon: Megaphone, label: t('mobileNav.alert'), view: 'alert' as ViewName, adminOnly: true },
+      { icon: ShieldCheck, label: t('mobileNav.permissions'), view: 'permissions' as ViewName, adminOnly: true },
+    ],
+    [t]
+  );
+
   const visibleItems = navItems.filter((item) => !item.adminOnly || isAdmin);
 
   return (

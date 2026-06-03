@@ -1,0 +1,68 @@
+{
+  "app": {
+    "name": "SafeTrack",
+    "tagline": "緊急狀態追蹤器"
+  },
+  "navigation": {
+    "dashboard": "儀表板",
+    "report": "報告狀態",
+    "team": "我的團隊",
+    "organization": "組織",
+    "contacts": "聯絡人",
+    "sendAlert": "發送警報",
+    "teamManagement": "團隊管理",
+    "permissions": "權限",
+    "administration": "管理"
+  },
+  "mobileNav": {
+    "dashboard": "儀表板",
+    "report": "報告",
+    "team": "團隊",
+    "organization": "組織",
+    "contacts": "聯絡人",
+    "alert": "警報",
+    "permissions": "權限"
+  },
+  "common": {
+    "search": "搜尋員工...",
+    "organization": "組織",
+    "noOrganization": "無組織",
+    "noOrganizations": "無組織",
+    "signOut": "登出",
+    "guest": "訪客",
+    "cancel": "取消",
+    "save": "儲存",
+    "delete": "刪除",
+    "edit": "編輯",
+    "create": "建立",
+    "loading": "載入中..."
+  },
+  "notifications": {
+    "title": "通知",
+    "markAllAsRead": "全部標記為已讀",
+    "noNotifications": "暫無通知",
+    "timeAgo": {
+      "justNow": "剛剛",
+      "minutes_one": "{{count}}分鐘前",
+      "minutes_other": "{{count}}分鐘前",
+      "hours_one": "{{count}}小時前",
+      "hours_other": "{{count}}小時前",
+      "days_one": "{{count}}天前",
+      "days_other": "{{count}}天前"
+    }
+  },
+  "auth": {
+    "signIn": "登入",
+    "createAccount": "建立帳戶",
+    "signInSubtitle": "登入您的 SafeTrack 帳戶",
+    "registerSubtitle": "註冊您的組織以開始使用",
+    "sessionExpired": "您的工作階段已過期，請重新登入。",
+    "firstName": "名字",
+    "lastName": "姓氏",
+    "organizationName": "組織名稱",
+    "email": "電子郵件",
+    "password": "密碼",
+    "alreadyHaveAccount": "已有帳戶？登入",
+    "dontHaveAccount": "沒有帳戶？建立一個"
+  }
+}

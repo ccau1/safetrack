@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -35,22 +36,26 @@ public class RequireActionAspect {
             throw new AccessDeniedException("Authentication required");
         }
 
-        UUID orgId = null;
+        UUID pathOrgId = extractOrgIdFromArgs(pjp);
+        UUID jwtOrgId = null;
 
         // Fast path: check JWT actions claim if available
         if (authentication.getDetails() instanceof JwtAuthenticationDetails details) {
             Set<String> jwtActions = details.actions();
-            if (jwtActions.contains("*") || jwtActions.contains(requestedAction)) {
+            if (hasMatchingAction(jwtActions, requestedAction)) {
                 return pjp.proceed();
             }
-            orgId = details.organizationId();
+            jwtOrgId = details.organizationId();
         } else if (authentication.getDetails() instanceof Set<?> details) {
             @SuppressWarnings("unchecked")
             Set<String> jwtActions = (Set<String>) details;
-            if (jwtActions.contains("*") || jwtActions.contains(requestedAction)) {
+            if (hasMatchingAction(jwtActions, requestedAction)) {
                 return pjp.proceed();
             }
         }
+
+        // Prefer path orgId for org-scoped endpoints, fall back to JWT orgId
+        UUID orgId = pathOrgId != null ? pathOrgId : jwtOrgId;
 
         Object principal = authentication.getPrincipal();
         String email = null;
@@ -73,5 +78,29 @@ public class RequireActionAspect {
         }
 
         return pjp.proceed();
+    }
+
+    private boolean hasMatchingAction(Set<String> jwtActions, String requestedAction) {
+        for (String action : jwtActions) {
+            if (PermissionEvaluator.matches(action, requestedAction)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private UUID extractOrgIdFromArgs(ProceedingJoinPoint pjp) {
+        if (pjp.getSignature() instanceof MethodSignature signature) {
+            String[] paramNames = signature.getParameterNames();
+            Object[] args = pjp.getArgs();
+            if (paramNames != null && args != null) {
+                for (int i = 0; i < paramNames.length; i++) {
+                    if ("orgId".equals(paramNames[i]) && args[i] instanceof UUID uuid) {
+                        return uuid;
+                    }
+                }
+            }
+        }
+        return null;
     }
 }

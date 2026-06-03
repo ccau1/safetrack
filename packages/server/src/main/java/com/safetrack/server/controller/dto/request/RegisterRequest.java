@@ -9,5 +9,6 @@ public record RegisterRequest(
     @NotBlank @Size(min = 8, max = 100) String password,
     @NotBlank @Size(max = 100) String firstName,
     @NotBlank @Size(max = 100) String lastName,
-    @Size(max = 255) String organizationName
+    @Size(max = 255) String organizationName,
+    @Size(max = 255) String inviteToken
 ) {}

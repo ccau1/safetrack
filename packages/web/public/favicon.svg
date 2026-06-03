@@ -1,6 +1,12 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#4A5548" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-  <circle cx="12" cy="12.5" r="1.5" fill="#4A5548" stroke="none"/>
-  <path d="M9.5 11Q12 7.5 14.5 11" opacity="0.7"/>
-  <path d="M7.5 8.5Q12 2.5 16.5 8.5" opacity="0.4"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none">
+  <!-- Solid shield fill -->
+  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" fill="#4A5548"/>
+  <!-- White outline for definition -->
+  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Bright person dot -->
+  <circle cx="12" cy="12.5" r="1.8" fill="#F59E0B"/>
+  <!-- Bright inner tracking arc -->
+  <path d="M9.5 11Q12 7.5 14.5 11" stroke="#F59E0B" stroke-width="2" stroke-linecap="round" fill="none"/>
+  <!-- Bright outer tracking arc -->
+  <path d="M7.5 8.5Q12 2.5 16.5 8.5" stroke="#FBBF24" stroke-width="2" stroke-linecap="round" fill="none"/>
 </svg>

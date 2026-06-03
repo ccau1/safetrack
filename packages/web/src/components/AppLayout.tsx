@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Header } from './Header';
 import { Sidebar } from './Sidebar';
 import { MobileNav } from './MobileNav';
@@ -22,10 +23,22 @@ export function AppLayout({
   toasts,
   removeToast,
 }: AppLayoutProps) {
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+
+  const handleNavigate = (view: ViewName) => {
+    onNavigate(view);
+    setMobileSidebarOpen(false);
+  };
+
   return (
     <div className="min-h-screen bg-[#F7F6F2]">
-      <Header event={event} />
-      <Sidebar currentView={currentView} onNavigate={onNavigate} />
+      <Header event={event} onMenuToggle={() => setMobileSidebarOpen(true)} />
+      <Sidebar
+        currentView={currentView}
+        onNavigate={handleNavigate}
+        mobileOpen={mobileSidebarOpen}
+        onMobileClose={() => setMobileSidebarOpen(false)}
+      />
       <MobileNav currentView={currentView} onNavigate={onNavigate} />
 
       <main className="lg:ml-[260px] pt-16 min-h-screen">

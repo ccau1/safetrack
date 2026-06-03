@@ -6,9 +6,11 @@ import com.safetrack.server.domain.entity.Member;
 import com.safetrack.server.domain.entity.Organization;
 import com.safetrack.server.domain.entity.Role;
 import com.safetrack.server.domain.entity.User;
+import com.safetrack.server.domain.entity.UserOrgInvitation;
 import com.safetrack.server.domain.repository.MemberRepository;
 import com.safetrack.server.domain.repository.OrganizationRepository;
 import com.safetrack.server.domain.repository.RoleRepository;
+import com.safetrack.server.domain.repository.UserOrgInvitationRepository;
 import com.safetrack.server.domain.repository.UserRepository;
 import com.safetrack.server.service.AuthService;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +31,7 @@ public class AuthServiceImpl implements AuthService {
     private final RoleRepository roleRepository;
     private final OrganizationRepository organizationRepository;
     private final MemberRepository memberRepository;
+    private final UserOrgInvitationRepository invitationRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Override
@@ -40,16 +43,59 @@ public class AuthServiceImpl implements AuthService {
         Role defaultRole = roleRepository.findByName(Role.RoleName.USER)
                 .orElseThrow(() -> new IllegalStateException("Default role not found"));
 
+        String firstName = request.firstName();
+        String lastName = request.lastName();
+
+        UserOrgInvitation invitation = null;
+        if (request.inviteToken() != null && !request.inviteToken().isBlank()) {
+            invitation = invitationRepository.findByToken(request.inviteToken())
+                    .orElseThrow(() -> new IllegalArgumentException("Invalid invitation token"));
+
+            if (invitation.getStatus() != UserOrgInvitation.Status.PENDING) {
+                throw new IllegalStateException("Invitation is no longer valid");
+            }
+
+            if (invitation.isExpired()) {
+                invitation.setStatus(UserOrgInvitation.Status.EXPIRED);
+                invitationRepository.save(invitation);
+                throw new IllegalStateException("Invitation has expired");
+            }
+
+            if (!invitation.getEmail().equalsIgnoreCase(request.email())) {
+                throw new IllegalArgumentException("This invitation is for a different email address");
+            }
+
+            if (firstName == null || firstName.isBlank()) {
+                firstName = invitation.getInvitedFirstName();
+            }
+            if (lastName == null || lastName.isBlank()) {
+                lastName = invitation.getInvitedLastName();
+            }
+        }
+
+        if (firstName == null || firstName.isBlank()) {
+            firstName = "User";
+        }
+        if (lastName == null || lastName.isBlank()) {
+            lastName = "";
+        }
+
         User user = User.builder()
                 .email(request.email())
-                .firstName(request.firstName())
-                .lastName(request.lastName())
+                .firstName(firstName)
+                .lastName(lastName)
                 .passwordHash(passwordEncoder.encode(request.password()))
                 .isActive(true)
                 .roles(Set.of(defaultRole))
                 .build();
 
         User savedUser = userRepository.save(user);
+
+        if (invitation != null) {
+            // When registering via invite, do NOT create a default organization.
+            // The user will explicitly accept the invite after registration.
+            return savedUser;
+        }
 
         // Create default organization for the user
         String orgName = request.organizationName() != null

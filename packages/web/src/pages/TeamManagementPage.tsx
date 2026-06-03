@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, Users, ChevronDown, Loader2, X } from 'lucide-react';
+import { Plus, Users, ChevronDown, Loader2, X, Trash2 } from 'lucide-react';
 import { api } from '@/lib/api';
 import type { TeamApi, Member, ToastItem } from '@/types';
 
@@ -8,7 +8,8 @@ interface TeamManagementPageProps {
   teams: TeamApi[];
   members: Member[];
   orgId: string | null;
-  addToast: (message: string, type: ToastItem['type']) => void;
+  addToast: (message: string, type: ToastItem['type'], action?: { label: string; onClick: () => void }, duration?: number) => string;
+  removeToast: (id: string) => void;
   onMutated: () => void;
 }
 
@@ -17,6 +18,7 @@ export function TeamManagementPage({
   members,
   orgId,
   addToast,
+  removeToast,
   onMutated,
 }: TeamManagementPageProps) {
   const [createOpen, setCreateOpen] = useState(false);
@@ -26,6 +28,8 @@ export function TeamManagementPage({
   const [assigningMemberId, setAssigningMemberId] = useState<string | null>(null);
   const [assignmentTeamId, setAssignmentTeamId] = useState<string | null>(null);
   const [assigning, setAssigning] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState<{ id: string; name: string } | null>(null);
+  const [pendingDeletes, setPendingDeletes] = useState<Map<string, { name: string; toastId: string; timer: number }>>(new Map());
 
   const handleCreateTeam = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -62,7 +66,52 @@ export function TeamManagementPage({
     }
   };
 
-  const unassignedMembers = members.filter((m) => !m.teamId);
+  const handleDeleteTeam = () => {
+    if (!confirmDelete) return;
+    const { id, name } = confirmDelete;
+    setConfirmDelete(null);
+
+    // Optimistically hide the team and schedule the actual delete
+    const timer = window.setTimeout(async () => {
+      try {
+        await api.delete(`/api/teams/${id}`);
+        addToast(`Team "${name}" deleted`, 'success');
+        onMutated();
+      } catch {
+        addToast('Failed to delete team', 'error');
+      } finally {
+        setPendingDeletes((prev) => {
+          const next = new Map(prev);
+          next.delete(id);
+          return next;
+        });
+      }
+    }, 4000);
+
+    const toastId = addToast(
+      `Team "${name}" deleted`,
+      'info',
+      {
+        label: 'Undo',
+        onClick: () => {
+          window.clearTimeout(timer);
+          removeToast(toastId);
+          setPendingDeletes((prev) => {
+            const next = new Map(prev);
+            next.delete(id);
+            return next;
+          });
+        },
+      },
+      4000
+    );
+
+    setPendingDeletes((prev) => new Map(prev).set(id, { name, toastId, timer }));
+  };
+
+  const visibleTeams = teams.filter((team) => !pendingDeletes.has(team.id));
+  const visibleTeamIds = new Set(visibleTeams.map((t) => t.id));
+  const unassignedMembers = members.filter((m) => !m.teamId || !visibleTeamIds.has(m.teamId));
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -131,21 +180,32 @@ export function TeamManagementPage({
         transition={{ duration: 0.4, delay: 0.1 }}
         className="grid grid-cols-1 md:grid-cols-2 gap-4"
       >
-        {teams.map((team) => {
+        {teams
+          .filter((team) => !pendingDeletes.has(team.id))
+          .map((team) => {
           const teamMembers = members.filter((m) => m.teamId === team.id);
           return (
             <div
               key={team.id}
               className="bg-white border border-[#E5E4E0] rounded-[14px] p-5 hover:shadow-[0_1px_3px_rgba(0,0,0,0.04)] transition-shadow"
             >
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 rounded-[10px] bg-[#E8EDE7] flex items-center justify-center">
-                  <Users size={18} className="text-[#4A5548]" />
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-[10px] bg-[#E8EDE7] flex items-center justify-center">
+                    <Users size={18} className="text-[#4A5548]" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-semibold text-[#1A1A1A]">{team.name}</h3>
+                    <p className="text-xs text-[#8A8A8A]">{teamMembers.length} members</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="text-base font-semibold text-[#1A1A1A]">{team.name}</h3>
-                  <p className="text-xs text-[#8A8A8A]">{teamMembers.length} members</p>
-                </div>
+                <button
+                  onClick={() => setConfirmDelete({ id: team.id, name: team.name })}
+                  className="p-2 text-[#8A8A8A] hover:text-[#C44536] transition-colors"
+                  title="Delete team"
+                >
+                  <Trash2 size={16} />
+                </button>
               </div>
               <div className="flex flex-wrap gap-2">
                 {teamMembers.length === 0 ? (
@@ -168,7 +228,7 @@ export function TeamManagementPage({
           );
         })}
 
-        {teams.length === 0 && (
+        {teams.filter((team) => !pendingDeletes.has(team.id)).length === 0 && (
           <div className="col-span-2 text-center py-12 bg-white border border-[#E5E4E0] rounded-[14px]">
             <Users size={32} className="text-[#D8E0D6] mx-auto mb-3" />
             <p className="text-sm text-[#8A8A8A]">No teams yet. Create your first team above.</p>
@@ -221,7 +281,7 @@ export function TeamManagementPage({
                       className="h-9 text-sm bg-[#F7F6F2] border border-[#E5E4E0] rounded-[10px] px-3 focus:outline-none focus:border-[#4A5548]"
                     >
                       <option value="">Unassigned</option>
-                      {teams.map((t) => (
+                      {visibleTeams.map((t) => (
                         <option key={t.id} value={t.id}>
                           {t.name}
                         </option>
@@ -261,6 +321,38 @@ export function TeamManagementPage({
           )}
         </div>
       </motion.div>
+
+      {/* Delete Confirmation Modal */}
+      {confirmDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.15 }}
+            className="bg-white rounded-[14px] p-6 w-full max-w-sm mx-4 shadow-lg"
+          >
+            <h3 className="text-lg font-semibold text-[#1A1A1A]">Delete Team</h3>
+            <p className="text-sm text-[#5C5C5C] mt-2">
+              Are you sure you want to delete <strong>{confirmDelete.name}</strong>? Members assigned to this team will be unassigned.
+            </p>
+            <div className="flex items-center justify-end gap-3 mt-6">
+              <button
+                onClick={() => setConfirmDelete(null)}
+                className="h-10 px-4 text-sm font-medium text-[#5C5C5C] hover:text-[#1A1A1A] transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteTeam}
+                className="h-10 px-4 text-sm font-semibold text-white bg-[#C44536] rounded-[10px] hover:bg-[#A63A2E] transition-colors"
+              >
+                Delete
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 }

@@ -12,7 +12,7 @@ export function useDashboardData() {
   const orgId = organization?.id || null;
 
   const { members, isLoading: membersLoading, refetch: refetchMembers } = useMembers(orgId);
-  const { teams, isLoading: teamsLoading } = useTeams(orgId);
+  const { teams, isLoading: teamsLoading, refetch: refetchTeams } = useTeams(orgId);
   const { activeEvent, isLoading: eventsLoading, refetch: refetchEvents } = useEvents(orgId);
   const { reports, isLoading: reportsLoading, refetch: refetchReports } = useStatusReports(
     activeEvent?.id || null,
@@ -87,6 +87,7 @@ export function useDashboardData() {
 
   const refetch = () => {
     refetchMembers();
+    refetchTeams();
     refetchEvents();
     refetchReports();
   };

@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Routes, Route, Navigate } from 'react-router';
+import { useMemo, useCallback } from 'react';
+import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router';
 import { useAuth } from '@/context/AuthContext';
 import { AppLayout } from '@/components/AppLayout';
 import { DashboardPage } from '@/pages/DashboardPage';
@@ -11,6 +11,8 @@ import { ContactsPage } from '@/pages/ContactsPage';
 import { TeamManagementPage } from '@/pages/TeamManagementPage';
 import { PermissionsPage } from '@/pages/PermissionsPage';
 import { LoginPage } from '@/pages/LoginPage';
+import { AcceptInvitePage } from '@/pages/AcceptInvitePage';
+import { NoOrganizationPage } from '@/pages/NoOrganizationPage';
 import { useToast } from '@/hooks/useToast';
 import { useFilter } from '@/hooks/useFilter';
 import { useDashboardData } from '@/hooks/useDashboardData';
@@ -36,10 +38,26 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 }
 
 function MainApp() {
-  const { isAdmin } = useAuth();
-  const [currentView, setCurrentView] = useState<ViewName>('dashboard');
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { isAdmin, organizations } = useAuth();
   const { toasts, addToast, removeToast } = useToast();
   const { activeTeam, setTeam } = useFilter();
+
+  const getViewFromPath = useCallback((path: string): ViewName => {
+    const segment = path.split('/').filter(Boolean)[0];
+    const validViews: ViewName[] = [
+      'dashboard', 'report', 'team', 'organization',
+      'alert', 'contacts', 'team-management', 'permissions',
+    ];
+    return validViews.includes(segment as ViewName) ? (segment as ViewName) : 'dashboard';
+  }, []);
+
+  const currentView = useMemo(() => getViewFromPath(location.pathname), [location.pathname, getViewFromPath]);
+
+  const handleNavigate = useCallback((view: ViewName) => {
+    navigate(`/${view}`);
+  }, [navigate]);
 
   const {
     employees,
@@ -58,6 +76,20 @@ function MainApp() {
   } = useDashboardData();
 
   const teamNames = teams.map((t) => t.name);
+
+  if (organizations.length === 0) {
+    return (
+      <AppLayout
+        currentView={currentView}
+        onNavigate={handleNavigate}
+        event={null}
+        toasts={toasts}
+        removeToast={removeToast}
+      >
+        <NoOrganizationPage />
+      </AppLayout>
+    );
+  }
 
   const renderView = () => {
     if (isLoading) {
@@ -110,6 +142,7 @@ function MainApp() {
             onTeamFilter={setTeam}
             isAdmin={isAdmin}
             addToast={addToast}
+            orgId={organization?.id || null}
           />
         );
       case 'alert':
@@ -127,6 +160,7 @@ function MainApp() {
             members={rawMembers}
             orgId={organization?.id || null}
             addToast={addToast}
+            removeToast={removeToast}
             onMutated={refetch}
           />
         ) : (
@@ -157,7 +191,7 @@ function MainApp() {
   return (
     <AppLayout
       currentView={currentView}
-      onNavigate={setCurrentView}
+      onNavigate={handleNavigate}
       event={event}
       toasts={toasts}
       removeToast={removeToast}
@@ -171,6 +205,7 @@ function App() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/accept-invite" element={<AcceptInvitePage />} />
       <Route
         path="/*"
         element={

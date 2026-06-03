@@ -69,7 +69,7 @@ class AuthControllerTest {
 
     @Test
     void register_shouldReturnAuthResponse() {
-        RegisterRequest req = new RegisterRequest("john@example.com", "password", "John", "Doe", null);
+        RegisterRequest req = new RegisterRequest("john@example.com", "password", "John", "Doe", null, null);
         User user = User.builder()
                 .id(UUID.randomUUID())
                 .email("john@example.com")
@@ -84,7 +84,7 @@ class AuthControllerTest {
 
         when(authService.register(req)).thenReturn(user);
         when(memberRepository.findByUserId(user.getId())).thenReturn(List.of(member));
-        when(jwtService.generateToken(any(User.class), any())).thenReturn("access-token");
+        when(jwtService.generateToken(any(User.class), any(), any())).thenReturn("access-token");
         when(refreshTokenService.createRefreshToken(any())).thenReturn("refresh-token");
         when(permissionEvaluator.computeAllowedActions(any())).thenReturn(Set.of("read"));
         when(userMapper.toAuthResponse(any(), any(), any())).thenReturn(authResponse);
@@ -112,7 +112,7 @@ class AuthControllerTest {
 
         when(authService.login(req)).thenReturn(user);
         when(memberRepository.findByUserId(user.getId())).thenReturn(List.of());
-        when(jwtService.generateToken(any(User.class), any())).thenReturn("access-token");
+        when(jwtService.generateToken(any(User.class), any(), any())).thenReturn("access-token");
         when(refreshTokenService.createRefreshToken(any())).thenReturn("refresh-token");
         when(permissionEvaluator.computeAllowedActions(any())).thenReturn(Set.of());
         when(userMapper.toAuthResponse(any(), any(), any())).thenReturn(authResponse);
@@ -130,7 +130,7 @@ class AuthControllerTest {
         when(cookieUtil.extractRefreshToken(request)).thenReturn("valid-refresh");
         when(refreshTokenService.validateRefreshToken("valid-refresh")).thenReturn(user);
         when(memberRepository.findByUserId(user.getId())).thenReturn(List.of());
-        when(jwtService.generateToken(any(User.class), any())).thenReturn("new-access");
+        when(jwtService.generateToken(any(User.class), any(), any())).thenReturn("new-access");
 
         ResponseEntity<Void> result = authController.refresh(request, response);
 

@@ -1,0 +1,68 @@
+{
+  "app": {
+    "name": "SafeTrack",
+    "tagline": "Emergency Status Tracker"
+  },
+  "navigation": {
+    "dashboard": "Dashboard",
+    "report": "Report Status",
+    "team": "My Team",
+    "organization": "Organization",
+    "contacts": "Contacts",
+    "sendAlert": "Send Alert",
+    "teamManagement": "Team Management",
+    "permissions": "Permissions",
+    "administration": "Administration"
+  },
+  "mobileNav": {
+    "dashboard": "Dashboard",
+    "report": "Report",
+    "team": "Team",
+    "organization": "Org",
+    "contacts": "Contacts",
+    "alert": "Alert",
+    "permissions": "Perms"
+  },
+  "common": {
+    "search": "Search employees...",
+    "organization": "Organization",
+    "noOrganization": "No Organization",
+    "noOrganizations": "No organizations",
+    "signOut": "Sign Out",
+    "guest": "Guest",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "loading": "Loading..."
+  },
+  "notifications": {
+    "title": "Notifications",
+    "markAllAsRead": "Mark all as read",
+    "noNotifications": "No notifications",
+    "timeAgo": {
+      "justNow": "just now",
+      "minutes_one": "{{count}}m ago",
+      "minutes_other": "{{count}}m ago",
+      "hours_one": "{{count}}h ago",
+      "hours_other": "{{count}}h ago",
+      "days_one": "{{count}}d ago",
+      "days_other": "{{count}}d ago"
+    }
+  },
+  "auth": {
+    "signIn": "Sign In",
+    "createAccount": "Create Account",
+    "signInSubtitle": "Sign in to your SafeTrack account",
+    "registerSubtitle": "Register your organization to get started",
+    "sessionExpired": "Your session has expired. Please sign in again.",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "organizationName": "Organization Name",
+    "email": "Email",
+    "password": "Password",
+    "alreadyHaveAccount": "Already have an account? Sign in",
+    "dontHaveAccount": "Don't have an account? Create one"
+  }
+}

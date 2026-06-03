@@ -36,10 +36,17 @@ export interface StatusHistoryEntry {
 
 export type ViewName = 'dashboard' | 'report' | 'team' | 'organization' | 'alert' | 'contacts' | 'team-management' | 'permissions';
 
+export interface ToastAction {
+  label: string;
+  onClick: () => void;
+}
+
 export interface ToastItem {
   id: string;
   message: string;
   type: 'success' | 'error' | 'info';
+  action?: ToastAction;
+  duration?: number;
 }
 
 // Backend API types
@@ -158,6 +165,7 @@ export interface RegisterRequest {
   firstName: string;
   lastName: string;
   organizationName?: string;
+  inviteToken?: string;
 }
 
 export interface LoginRequest {
@@ -186,4 +194,52 @@ export interface PermissionCatalogItem {
   action: string;
   description: string;
   category: string;
+}
+
+export interface Invitation {
+  id: string;
+  email: string;
+  organizationName: string;
+  teamName?: string;
+  orgRole: string;
+  status: 'PENDING' | 'ACCEPTED' | 'EXPIRED' | 'CANCELLED';
+  expiresAt: string;
+  createdAt: string;
+}
+
+export interface CreateInvitationRequest {
+  email: string;
+  firstName?: string;
+  lastName?: string;
+  teamId?: string;
+  orgRole?: string;
+  phoneNumber?: string;
+  alternatePhoneNumber?: string;
+  nextOfKinName?: string;
+  nextOfKinRelationship?: string;
+  nextOfKinPhone?: string;
+  nextOfKinEmail?: string;
+}
+
+export interface AcceptInvitationRequest {
+  token: string;
+  password?: string;
+  firstName?: string;
+  lastName?: string;
+}
+
+export interface BatchInvitationResponse {
+  createdCount: number;
+  skippedCount: number;
+  errors: { row: number; email: string; reason: string }[];
+}
+
+export interface InvitationValidationResponse {
+  token: string;
+  email: string;
+  organizationName: string;
+  teamName: string | null;
+  orgRole: string;
+  expiresAt: string;
+  existingUser: boolean;
 }

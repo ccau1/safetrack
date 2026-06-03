@@ -1,0 +1,2 @@
+email,firstName,lastName,teamName,orgRole,phoneNumber,alternatePhoneNumber,nextOfKinName,nextOfKinRelationship,nextOfKinPhone,nextOfKinEmail
+john.doe@example.com,John,Doe,Engineering,ORG_MEMBER,+1-555-0100,+1-555-0101,Jane Doe,Spouse,+1-555-0200,jane.doe@example.com

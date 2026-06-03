@@ -38,6 +38,17 @@ function Toast({ toast, onClose }: { toast: ToastItem; onClose: () => void }) {
     >
       <Icon size={18} className={color} />
       <span className="text-sm text-[#1A1A1A] flex-1">{toast.message}</span>
+      {toast.action && (
+        <button
+          onClick={() => {
+            toast.action!.onClick();
+            onClose();
+          }}
+          className="text-xs font-semibold text-[#4A5548] hover:text-[#3D463B] uppercase tracking-wide transition-colors duration-150"
+        >
+          {toast.action.label}
+        </button>
+      )}
       <button
         onClick={onClose}
         className="text-[#8A8A8A] hover:text-[#1A1A1A] transition-colors duration-150"

@@ -9,6 +9,7 @@ Policies:
             - "safetrack:status:report"
             - "safetrack:status:readOwn"
             - "safetrack:employee:readOwn"
+            - "safetrack:alert:read"
           Resource: "*"
 
   - PolicyName: ManagerPolicy

@@ -1,0 +1,68 @@
+{
+  "app": {
+    "name": "SafeTrack",
+    "tagline": "紧急状态追踪器"
+  },
+  "navigation": {
+    "dashboard": "仪表盘",
+    "report": "报告状态",
+    "team": "我的团队",
+    "organization": "组织",
+    "contacts": "联系人",
+    "sendAlert": "发送警报",
+    "teamManagement": "团队管理",
+    "permissions": "权限",
+    "administration": "管理"
+  },
+  "mobileNav": {
+    "dashboard": "仪表盘",
+    "report": "报告",
+    "team": "团队",
+    "organization": "组织",
+    "contacts": "联系人",
+    "alert": "警报",
+    "permissions": "权限"
+  },
+  "common": {
+    "search": "搜索员工...",
+    "organization": "组织",
+    "noOrganization": "无组织",
+    "noOrganizations": "无组织",
+    "signOut": "退出登录",
+    "guest": "访客",
+    "cancel": "取消",
+    "save": "保存",
+    "delete": "删除",
+    "edit": "编辑",
+    "create": "创建",
+    "loading": "加载中..."
+  },
+  "notifications": {
+    "title": "通知",
+    "markAllAsRead": "全部标记为已读",
+    "noNotifications": "暂无通知",
+    "timeAgo": {
+      "justNow": "刚刚",
+      "minutes_one": "{{count}}分钟前",
+      "minutes_other": "{{count}}分钟前",
+      "hours_one": "{{count}}小时前",
+      "hours_other": "{{count}}小时前",
+      "days_one": "{{count}}天前",
+      "days_other": "{{count}}天前"
+    }
+  },
+  "auth": {
+    "signIn": "登录",
+    "createAccount": "创建账户",
+    "signInSubtitle": "登录您的 SafeTrack 账户",
+    "registerSubtitle": "注册您的组织以开始使用",
+    "sessionExpired": "您的会话已过期，请重新登录。",
+    "firstName": "名字",
+    "lastName": "姓氏",
+    "organizationName": "组织名称",
+    "email": "电子邮箱",
+    "password": "密码",
+    "alreadyHaveAccount": "已有账户？登录",
+    "dontHaveAccount": "没有账户？创建一个"
+  }
+}
