@@ -71,6 +71,19 @@ jobs:
           $(printf '%s\n' "${{ secrets.ENV_FILE }}" | grep -vi '^[[:space:]]*APP_IMAGE=')
           EOF
 
+      - name: Prepare Traefik config
+        run: |
+          mkdir -p traefik
+          cp deploy/traefik/traefik.yml traefik/traefik.yml
+          cp deploy/traefik/docker-compose.yml traefik/docker-compose.yml
+
+          ACME_EMAIL=$(printf '%s\n' "${{ secrets.ENV_FILE }}" | grep '^ACME_EMAIL=' | cut -d= -f2- || true)
+          ACME_EMAIL="${ACME_EMAIL:-admin@example.com}"
+
+          sed -i "s|__NETWORK__|staging|g" traefik/*.yml
+          sed -i "s|__ACME_EMAIL__|$ACME_EMAIL|g" traefik/traefik.yml
+        shell: bash
+
       - name: Copy compose & nginx to staging server
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -81,6 +94,16 @@ jobs:
           target: "/opt/safetrack-staging"
           strip_components: 1
 
+      - name: Copy Traefik config to staging server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.STAGING_HETZNER_HOST }}
+          username: ${{ secrets.STAGING_HETZNER_USER }}
+          key: ${{ secrets.STAGING_HETZNER_SSH_KEY }}
+          source: "traefik/traefik.yml,traefik/docker-compose.yml"
+          target: "/opt/traefik"
+          strip_components: 1
+
       - name: Deploy on staging server
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -89,20 +112,37 @@ jobs:
           key: ${{ secrets.STAGING_HETZNER_SSH_KEY }}
           script: |
             set -e
+
+            # Create external Docker network if missing
+            if ! docker network ls --format '{{.Name}}' | grep -q '^staging$'; then
+              echo "Creating Docker network: staging"
+              docker network create staging
+            fi
+
+            # Ensure Traefik is running with latest config on standard ports
+            mkdir -p /opt/traefik/letsencrypt
+            cd /opt/traefik
+            docker compose down || true
+            docker compose up -d
+            echo "Traefik status:"
+            docker ps --filter name=traefik --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+
+            # Deploy app
             cd /opt/safetrack-staging
-
-            # Authenticate to GHCR so the server can pull private images
             echo "${{ secrets.GH_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-
-            # Set image reference and pull latest staging image
             export APP_IMAGE="${{ env.IMAGE_BASE }}:staging"
             docker compose -f docker-compose.staging.yml pull
             docker compose -f docker-compose.staging.yml up -d
 
             # Verify container status
-            echo "Container status:"
+            echo "App container status:"
             docker compose -f docker-compose.staging.yml ps
+            echo "App logs:"
             docker compose -f docker-compose.staging.yml logs --tail 30
+
+            # Verify Traefik can see the app router
+            echo "Traefik routers (checking app-staging):"
+            docker exec traefik wget -qO- http://localhost:8080/api/http/routers 2>/dev/null | grep -i staging || echo "Warning: app-staging router not found in Traefik"
 
             # Prune old dangling images to save disk
             docker image prune -af
@@ -115,8 +155,8 @@ jobs:
           echo "Waiting for containers to start..."
           for i in {1..12}; do
             sleep 5
-            echo "Attempt $i/12: curl -fsSLk --max-time 10 $HEALTH_URL"
-            HTTP_CODE=$(curl -fsSLk --max-time 10 -w "%{http_code}" \
+            echo "Attempt $i/12: curl -fsSL --max-time 10 $HEALTH_URL"
+            HTTP_CODE=$(curl -fsSL --max-time 10 -w "%{http_code}" \
               -H "User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36" \
               -H "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8" \
               -o /tmp/health_response.html \
