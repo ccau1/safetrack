@@ -14,7 +14,10 @@ export SERVER_PORT=${API_PORT}
 # ------------------------------------------
 # Generate nginx config from template
 # ------------------------------------------
-envsubst '${WEB_PORT} ${API_PORT}' < /etc/nginx/nginx.conf.template > /etc/nginx/conf.d/default.conf
+# Generate config from template, but respect read-only mounted configs (e.g. prod SSL)
+if [ ! -f /etc/nginx/conf.d/default.conf ] || [ -w /etc/nginx/conf.d/default.conf ]; then
+  envsubst '${WEB_PORT} ${API_PORT}' < /etc/nginx/nginx.conf.template > /etc/nginx/conf.d/default.conf
+fi
 
 # Validate nginx configuration
 nginx -t
