@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
-import { Bell } from 'lucide-react';
+import { Bell, CheckCircle2, Loader2 } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { StatusBadge } from './StatusBadge';
 import { useTimeAgo } from '@/hooks/useTimeAgo';
 import type { Employee } from '@/types';
@@ -9,6 +10,8 @@ interface StatusTableProps {
   updatedRowId?: number | null;
   onRowClick: (employee: Employee) => void;
   onRemind?: (employee: Employee) => void;
+  remindedMemberIds?: Set<string>;
+  remindingMemberId?: string | null;
   isAdmin?: boolean;
   showCheckboxes?: boolean;
   selectedIds?: number[];
@@ -20,6 +23,8 @@ export function StatusTable({
   updatedRowId = null,
   onRowClick,
   onRemind,
+  remindedMemberIds = new Set(),
+  remindingMemberId = null,
   isAdmin = false,
   showCheckboxes = false,
   selectedIds = [],
@@ -129,13 +134,37 @@ export function StatusTable({
               {(isAdmin || onRemind) && (
                 <td className="px-5" onClick={(e) => e.stopPropagation()}>
                   {emp.status === 'unknown' && onRemind && (
-                    <button
-                      onClick={() => onRemind(emp)}
-                      className="flex items-center gap-1.5 text-sm text-[#C44536] border border-[#C44536] rounded-[10px] px-2.5 py-1 opacity-70 hover:opacity-100 hover:bg-[#FDECEA] transition-all duration-150"
-                    >
-                      <Bell size={14} />
-                      {t('table.remind')}
-                    </button>
+                    (() => {
+                      const isReminding = remindingMemberId === emp.memberId;
+                      const hasReminded = remindedMemberIds.has(emp.memberId);
+                      return (
+                        <button
+                          onClick={() => onRemind(emp)}
+                          disabled={isReminding || hasReminded}
+                          className={`flex items-center gap-1.5 text-sm border rounded-[10px] px-2.5 py-1 transition-all duration-150 disabled:opacity-40 ${
+                            hasReminded
+                              ? 'text-[#4A7C59] border-[#4A7C59] bg-[#EDF5EF]'
+                              : 'text-[#C44536] border-[#C44536] opacity-70 hover:opacity-100 hover:bg-[#FDECEA]'
+                          }`}
+                        >
+                          {isReminding ? (
+                            <Loader2 size={14} className="animate-spin" />
+                          ) : hasReminded ? (
+                            <motion.div
+                              initial={{ scale: 0 }}
+                              animate={{ scale: 1 }}
+                              transition={{ type: 'spring', stiffness: 300, damping: 15 }}
+                              className="flex items-center"
+                            >
+                              <CheckCircle2 size={14} />
+                            </motion.div>
+                          ) : (
+                            <Bell size={14} />
+                          )}
+                          {t('table.remind')}
+                        </button>
+                      );
+                    })()
                   )}
                 </td>
               )}

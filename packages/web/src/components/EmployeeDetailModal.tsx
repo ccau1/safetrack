@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Bell } from 'lucide-react';
+import { X, Bell, CheckCircle2, Loader2 } from 'lucide-react';
 import { StatusBadge } from './StatusBadge';
 import { useTimeAgo } from '@/hooks/useTimeAgo';
 import type { Employee } from '@/types';
@@ -12,12 +12,17 @@ interface EmployeeDetailModalProps {
   onClose: () => void;
   isAdmin?: boolean;
   onRemind?: (employee: Employee) => void;
+  remindedMemberIds?: Set<string>;
+  remindingMemberId?: string | null;
 }
 
-export function EmployeeDetailModal({ employee, open, onClose, isAdmin, onRemind }: EmployeeDetailModalProps) {
+export function EmployeeDetailModal({ employee, open, onClose, isAdmin, onRemind, remindedMemberIds = new Set(), remindingMemberId = null }: EmployeeDetailModalProps) {
   const { t } = useTranslation();
   const timeAgo = useTimeAgo();
   if (!employee) return null;
+
+  const isReminding = remindingMemberId === employee.memberId;
+  const hasReminded = remindedMemberIds.has(employee.memberId);
 
   return createPortal(
     <AnimatePresence>
@@ -97,9 +102,27 @@ export function EmployeeDetailModal({ employee, open, onClose, isAdmin, onRemind
                 <div className="mt-5">
                   <button
                     onClick={() => onRemind(employee)}
-                    className="w-full flex items-center justify-center gap-2 py-3 text-sm font-medium text-white bg-[#C44536] rounded-[10px] hover:bg-[#A33A2E] transition-colors duration-150"
+                    disabled={isReminding || hasReminded}
+                    className={`w-full flex items-center justify-center gap-2 py-3 text-sm font-medium rounded-[10px] transition-colors duration-150 disabled:opacity-40 ${
+                      hasReminded
+                        ? 'text-[#4A7C59] bg-[#EDF5EF] border border-[#4A7C59]'
+                        : 'text-white bg-[#C44536] hover:bg-[#A33A2E]'
+                    }`}
                   >
-                    <Bell size={16} />
+                    {isReminding ? (
+                      <Loader2 size={16} className="animate-spin" />
+                    ) : hasReminded ? (
+                      <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ type: 'spring', stiffness: 300, damping: 15 }}
+                        className="flex items-center"
+                      >
+                        <CheckCircle2 size={16} />
+                      </motion.div>
+                    ) : (
+                      <Bell size={16} />
+                    )}
                     {t('employeeDetailModal.remind')}
                   </button>
                 </div>

@@ -21,6 +21,8 @@ export function MyTeamPage({ employees, currentUserId, isAdmin, addToast }: MyTe
   const [modalOpen, setModalOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<EmployeeStatus[]>(['safe', 'distress', 'unknown']);
+  const [remindedMemberIds, setRemindedMemberIds] = useState<Set<string>>(new Set());
+  const [remindingMemberId, setRemindingMemberId] = useState<string | null>(null);
 
   // Determine current user's team
   const currentUser = employees.find((e) => e.id === currentUserId);
@@ -61,11 +63,15 @@ export function MyTeamPage({ employees, currentUserId, isAdmin, addToast }: MyTe
   };
 
   const handleRemind = async (employee: Employee) => {
+    setRemindingMemberId(employee.memberId);
     try {
       await api.post(`/api/members/${employee.memberId}/remind`);
+      setRemindedMemberIds((prev) => new Set(prev).add(employee.memberId));
       addToast(t('myTeam.toast.reminderSent', { name: employee.name }), 'success');
     } catch {
       addToast(t('myTeam.toast.reminderFailed', { name: employee.name }), 'error');
+    } finally {
+      setRemindingMemberId(null);
     }
     setModalOpen(false);
   };
@@ -139,6 +145,8 @@ export function MyTeamPage({ employees, currentUserId, isAdmin, addToast }: MyTe
           employees={filteredTeamMembers}
           onRowClick={handleRowClick}
           onRemind={isAdmin ? handleRemind : undefined}
+          remindedMemberIds={remindedMemberIds}
+          remindingMemberId={remindingMemberId}
           isAdmin={isAdmin}
         />
       </motion.div>
@@ -150,6 +158,8 @@ export function MyTeamPage({ employees, currentUserId, isAdmin, addToast }: MyTe
         onClose={() => setModalOpen(false)}
         isAdmin={isAdmin}
         onRemind={handleRemind}
+        remindedMemberIds={remindedMemberIds}
+        remindingMemberId={remindingMemberId}
       />
     </div>
   );

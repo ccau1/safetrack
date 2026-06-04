@@ -47,6 +47,8 @@ export function DashboardPage({
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<EmployeeStatus[]>(['safe', 'distress', 'unknown']);
+  const [remindedMemberIds, setRemindedMemberIds] = useState<Set<string>>(new Set());
+  const [remindingMemberId, setRemindingMemberId] = useState<string | null>(null);
   const navigate = useNavigate();
 
   const baseEmployees = useMemo(() => {
@@ -79,11 +81,15 @@ export function DashboardPage({
   };
 
   const handleRemind = async (employee: Employee) => {
+    setRemindingMemberId(employee.memberId);
     try {
       await api.post(`/api/members/${employee.memberId}/remind`);
+      setRemindedMemberIds((prev) => new Set(prev).add(employee.memberId));
       addToast(t('dashboard.toast.reminderSent', { name: employee.name }), 'success');
     } catch {
       addToast(t('dashboard.toast.reminderFailed', { name: employee.name }), 'error');
+    } finally {
+      setRemindingMemberId(null);
     }
     setModalOpen(false);
   };
@@ -208,6 +214,8 @@ export function DashboardPage({
           employees={filteredEmployees}
           onRowClick={handleRowClick}
           onRemind={isAdmin ? handleRemind : undefined}
+          remindedMemberIds={remindedMemberIds}
+          remindingMemberId={remindingMemberId}
           isAdmin={isAdmin}
         />
       </motion.div>
@@ -219,6 +227,8 @@ export function DashboardPage({
         onClose={() => setModalOpen(false)}
         isAdmin={isAdmin}
         onRemind={handleRemind}
+        remindedMemberIds={remindedMemberIds}
+        remindingMemberId={remindingMemberId}
       />
 
       {/* Event Detail Modal */}

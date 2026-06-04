@@ -475,7 +475,10 @@
       "noMatchSearch": "No members match your search",
       "noMembersInScope": "No members in scope",
       "unassigned": "Unassigned",
-      "awaiting": "Awaiting"
+      "awaiting": "Awaiting",
+      "remind": "Remind",
+      "reminderSent": "Reminder sent to {{name}}",
+      "reminderFailed": "Failed to send reminder to {{name}}"
     },
     "reports": {
       "noStatusReports": "No status reports during this event",

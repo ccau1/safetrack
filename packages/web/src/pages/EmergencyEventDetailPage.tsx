@@ -21,6 +21,7 @@ import {
   StickyNote,
   Search,
   Share,
+  Bell,
   ChevronDown,
   ChevronUp,
   MapPin,
@@ -97,6 +98,8 @@ export function EmergencyEventDetailPage() {
   const [resolveModalOpen, setResolveModalOpen] = useState(false);
   const [distressModalOpen, setDistressModalOpen] = useState(false);
   const [safeLoading, setSafeLoading] = useState(false);
+  const [remindingMemberId, setRemindingMemberId] = useState<string | null>(null);
+  const [remindedMemberIds, setRemindedMemberIds] = useState<Set<string>>(new Set());
   const [updateText, setUpdateText] = useState('');
   const [updateType, setUpdateType] = useState<EmergencyEventUpdateApi['type']>('PROGRESSING');
   const [updateLoading, setUpdateLoading] = useState(false);
@@ -205,6 +208,20 @@ export function EmergencyEventDetailPage() {
       setDistressModalOpen(false);
     } catch {
       addToast(t('reportStatus.toast.failedDistressReport'), 'error');
+    }
+  };
+
+  const handleRemind = async (member: ScopedMember) => {
+    if (member.latestStatus === 'SAFE') return;
+    setRemindingMemberId(member.memberId);
+    try {
+      await api.post(`/api/members/${member.memberId}/remind`);
+      setRemindedMemberIds((prev) => new Set(prev).add(member.memberId));
+      addToast(t('emergencyEventDetail.members.reminderSent', { name: member.name }), 'success');
+    } catch {
+      addToast(t('emergencyEventDetail.members.reminderFailed', { name: member.name }), 'error');
+    } finally {
+      setRemindingMemberId(null);
     }
   };
 
@@ -575,24 +592,59 @@ export function EmergencyEventDetailPage() {
               const config = status ? STATUS_CONFIG[status] : null;
               const isExpanded = expandedMemberId === member.memberId;
               const memberReports = getMemberReports(member.memberId);
+              const hasReminded = remindedMemberIds.has(member.memberId);
 
               return (
                 <div key={member.memberId} className="transition-colors">
-                  <button
-                    type="button"
+                  <div
+                    className="group flex items-stretch hover:bg-[#FAFAF8] transition-colors cursor-pointer"
                     onClick={() => setExpandedMemberId(isExpanded ? null : member.memberId)}
-                    className="w-full px-6 py-3 flex items-center justify-between hover:bg-[#FAFAF8] transition-colors text-left"
+                    role="button"
+                    tabIndex={0}
                   >
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-[#E8EDE7] flex items-center justify-center text-xs font-semibold text-[#4A5548]">
-                        {member.name.split(' ').map((n) => n[0]).join('').slice(0, 2)}
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-[#1A1A1A]">{member.name}</p>
-                        <p className="text-xs text-[#8A8A8A]">{member.teamName || t('emergencyEventDetail.members.unassigned')}</p>
+                    <div className="flex-1 px-6 py-3 flex items-center justify-between min-w-0">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-[#E8EDE7] flex items-center justify-center text-xs font-semibold text-[#4A5548]">
+                          {member.name.split(' ').map((n) => n[0]).join('').slice(0, 2)}
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-[#1A1A1A]">{member.name}</p>
+                          <p className="text-xs text-[#8A8A8A]">{member.teamName || t('emergencyEventDetail.members.unassigned')}</p>
+                        </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 px-6 py-3">
+                      {canManageEvent && member.latestStatus !== 'SAFE' && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleRemind(member);
+                          }}
+                          disabled={remindingMemberId === member.memberId || hasReminded}
+                          className={`flex items-center gap-1.5 text-sm border rounded-[10px] px-2.5 py-1 transition-all duration-150 disabled:opacity-40 ${
+                            hasReminded
+                              ? 'text-[#4A7C59] border-[#4A7C59] bg-[#EDF5EF]'
+                              : 'text-[#C44536] border-[#C44536] opacity-70 hover:opacity-100 hover:bg-[#FDECEA]'
+                          }`}
+                        >
+                          {remindingMemberId === member.memberId ? (
+                            <Loader2 size={14} className="animate-spin" />
+                          ) : hasReminded ? (
+                            <motion.div
+                              initial={{ scale: 0 }}
+                              animate={{ scale: 1 }}
+                              transition={{ type: 'spring', stiffness: 300, damping: 15 }}
+                              className="flex items-center"
+                            >
+                              <CheckCircle2 size={14} />
+                            </motion.div>
+                          ) : (
+                            <Bell size={14} />
+                          )}
+                          {t('emergencyEventDetail.members.remind')}
+                        </button>
+                      )}
                       {member.latestLocation && (
                         <span className="text-xs text-[#8A8A8A] hidden sm:inline">{member.latestLocation}</span>
                       )}
@@ -614,7 +666,7 @@ export function EmergencyEventDetailPage() {
                         <ChevronDown size={16} className="text-[#8A8A8A]" />
                       )}
                     </div>
-                  </button>
+                  </div>
 
                   <AnimatePresence>
                     {isExpanded && (

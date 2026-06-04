@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { Building, Mail } from 'lucide-react';
+import { api } from '@/lib/api';
 import { EmployeeTableHeader } from '@/components/EmployeeTableHeader';
 import { StatusTable } from '@/components/StatusTable';
 import { EmployeeDetailModal } from '@/components/EmployeeDetailModal';
@@ -33,6 +34,8 @@ export function OrganizationPage({
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<EmployeeStatus[]>(['safe', 'distress', 'unknown']);
+  const [remindedMemberIds, setRemindedMemberIds] = useState<Set<string>>(new Set());
+  const [remindingMemberId, setRemindingMemberId] = useState<string | null>(null);
 
   const baseEmployees = useMemo(() => {
     return activeTeam === 'all' ? employees : employees.filter((e) => e.team === activeTeam);
@@ -63,8 +66,17 @@ export function OrganizationPage({
     setModalOpen(true);
   };
 
-  const handleRemind = (employee: Employee) => {
-    addToast(t('organization.toast.reminderSent', { name: employee.name }), 'success');
+  const handleRemind = async (employee: Employee) => {
+    setRemindingMemberId(employee.memberId);
+    try {
+      await api.post(`/api/members/${employee.memberId}/remind`);
+      setRemindedMemberIds((prev) => new Set(prev).add(employee.memberId));
+      addToast(t('organization.toast.reminderSent', { name: employee.name }), 'success');
+    } catch {
+      addToast(t('organization.toast.reminderFailed', { name: employee.name }), 'error');
+    } finally {
+      setRemindingMemberId(null);
+    }
     setModalOpen(false);
   };
 
@@ -121,6 +133,8 @@ export function OrganizationPage({
           employees={filteredEmployees}
           onRowClick={handleRowClick}
           onRemind={isAdmin ? handleRemind : undefined}
+          remindedMemberIds={remindedMemberIds}
+          remindingMemberId={remindingMemberId}
           isAdmin={isAdmin}
         />
       </motion.div>
@@ -132,6 +146,8 @@ export function OrganizationPage({
         onClose={() => setModalOpen(false)}
         isAdmin={isAdmin}
         onRemind={handleRemind}
+        remindedMemberIds={remindedMemberIds}
+        remindingMemberId={remindingMemberId}
       />
 
       {/* Invite Members Modal */}

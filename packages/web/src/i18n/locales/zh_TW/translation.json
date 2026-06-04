@@ -475,7 +475,10 @@
       "noMatchSearch": "沒有符合搜尋條件的成員",
       "noMembersInScope": "範圍內無成員",
       "unassigned": "未分配",
-      "awaiting": "等待中"
+      "awaiting": "等待中",
+      "remind": "提醒",
+      "reminderSent": "已向 {{name}} 發送提醒",
+      "reminderFailed": "向 {{name}} 發送提醒失敗"
     },
     "reports": {
       "noStatusReports": "此事件期間無狀態報告",
