@@ -502,6 +502,10 @@
       "modalMessage": "Are you sure you want to resolve <strong>{{name}}</strong>? This will mark the event as resolved.",
       "commentPlaceholder": "Add a closing comment (optional)",
       "confirm": "Resolve Event"
+    },
+    "share": {
+      "button": "Share",
+      "copied": "Link copied to clipboard"
     }
   },
   "orgSettings": {

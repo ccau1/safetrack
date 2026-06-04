@@ -502,6 +502,10 @@
       "modalMessage": "您確定要解決 <strong>{{name}}</strong> 嗎？這將把事件標記為已解決。",
       "commentPlaceholder": "新增結案備註（選填）",
       "confirm": "解決事件"
+    },
+    "share": {
+      "button": "分享",
+      "copied": "連結已複製到剪貼簿"
     }
   },
   "orgSettings": {

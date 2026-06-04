@@ -20,6 +20,7 @@ import {
   AlertOctagon,
   StickyNote,
   Search,
+  Share,
   ChevronDown,
   ChevronUp,
   MapPin,
@@ -32,10 +33,15 @@ import { useEmergencyEventUpdates } from '@/hooks/useEmergencyEventUpdates';
 import { useEmergencyEventMembers } from '@/hooks/useEmergencyEventMembers';
 import { useMemberEmergencyStatusReports } from '@/hooks/useMemberEmergencyStatusReports';
 import { ResolveEmergencyEventModal } from '@/components/ResolveEmergencyEventModal';
+import { DistressFormModal } from '@/components/DistressFormModal';
 import { useAuth } from '@/context/AuthContext';
 import { api } from '@/lib/api';
 import { useTimeAgo } from '@/hooks/useTimeAgo';
-import type { EmergencyEventUpdateApi, ScopedMember, MemberEmergencyStatusReportApi } from '@/types';
+import { useMyMembership } from '@/hooks/useMyMembership';
+import { LanguageSwitcher } from '@/components/LanguageSwitcher';
+import { ToastContainer } from '@/components/ToastContainer';
+import { useToast } from '@/hooks/useToast';
+import type { EmergencyEventUpdateApi, ScopedMember, MemberEmergencyStatusReportApi, Severity } from '@/types';
 
 const TYPE_ICONS: Record<string, typeof Flame> = {
   EMERGENCY: AlertTriangle,
@@ -76,6 +82,7 @@ const UPDATE_TYPE_CONFIG: Record<EmergencyEventUpdateApi['type'], { label: strin
 export function EmergencyEventDetailPage() {
   const { t } = useTranslation();
   const timeAgo = useTimeAgo();
+  const { toasts, addToast, removeToast } = useToast();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { hasAction } = useAuth();
@@ -83,10 +90,13 @@ export function EmergencyEventDetailPage() {
 
   const { event, isLoading: eventLoading, refetch: refetchEvent } = useEmergencyEvent(id || null);
   const { updates, isLoading: updatesLoading, createUpdate, refetch: refetchUpdates } = useEmergencyEventUpdates(id || null);
-  const { members: scopedMembers, isLoading: membersLoading } = useEmergencyEventMembers(id || null);
-  const { reports: allReports, isLoading: reportsLoading } = useMemberEmergencyStatusReports(id || null, null);
+  const { members: scopedMembers, isLoading: membersLoading, refetch: refetchMembers } = useEmergencyEventMembers(id || null);
+  const { member: myMembership } = useMyMembership(event?.organizationId || null);
+  const { reports: allReports, isLoading: reportsLoading, createReport } = useMemberEmergencyStatusReports(id || null, myMembership?.id || null);
 
   const [resolveModalOpen, setResolveModalOpen] = useState(false);
+  const [distressModalOpen, setDistressModalOpen] = useState(false);
+  const [safeLoading, setSafeLoading] = useState(false);
   const [updateText, setUpdateText] = useState('');
   const [updateType, setUpdateType] = useState<EmergencyEventUpdateApi['type']>('PROGRESSING');
   const [updateLoading, setUpdateLoading] = useState(false);
@@ -172,6 +182,38 @@ export function EmergencyEventDetailPage() {
     setIsEditing(true);
   };
 
+  const handleReportSafe = async () => {
+    if (!id || !myMembership) return;
+    setSafeLoading(true);
+    try {
+      await createReport('SAFE');
+      refetchMembers();
+      addToast(t('reportStatus.toast.statusUpdatedSafe'), 'success');
+    } catch {
+      addToast(t('reportStatus.toast.failedUpdateStatus'), 'error');
+    } finally {
+      setSafeLoading(false);
+    }
+  };
+
+  const handleDistressSubmit = async (location: string, _severity: Severity, details: string) => {
+    if (!id || !myMembership) return;
+    try {
+      await createReport('NEEDS_HELP', location, details);
+      refetchMembers();
+      addToast(t('reportStatus.toast.distressSubmitted'), 'success');
+      setDistressModalOpen(false);
+    } catch {
+      addToast(t('reportStatus.toast.failedDistressReport'), 'error');
+    }
+  };
+
+  const myLatestReport = myMembership
+    ? allReports
+        .filter((r) => r.memberId === myMembership.id)
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0]
+    : undefined;
+
   const totalScoped = scopedMembers.length;
   const safe = scopedMembers.filter((m) => m.latestStatus === 'SAFE').length;
   const distress = scopedMembers.filter((m) => m.latestStatus === 'NEEDS_HELP').length;
@@ -224,22 +266,57 @@ export function EmergencyEventDetailPage() {
   const TypeIcon = TYPE_ICONS[event.type] || AlertTriangle;
   const typeColor = TYPE_COLORS[event.type] || '#C44536';
   const isActive = event.status === 'ACTIVE';
+  const showStatusCta = isActive && myMembership && myLatestReport?.status !== 'SAFE';
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8 pt-12 px-4 sm:px-6">
+    <div
+      className="min-h-screen bg-white"
+      style={{ marginTop: '-env(safe-area-inset-top)', paddingTop: 'env(safe-area-inset-top)' }}
+    >
+      <div className="max-w-4xl mx-auto space-y-8 pt-0 sm:pt-4 px-4 sm:px-6">
+        <ToastContainer toasts={toasts} removeToast={removeToast} />
       {/* Back + Header */}
       <motion.div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
       >
-        <button
-          onClick={() => navigate('/emergency-events')}
-          className="flex items-center gap-1.5 text-sm text-[#5C5C5C] hover:text-[#1A1A1A] mb-4 transition-colors"
-        >
-          <ArrowLeft size={16} />
-          {t('emergencyEventDetail.backToEvents')}
-        </button>
+        <div className="flex items-center justify-between mb-4 gap-3">
+          <button
+            onClick={() => navigate('/emergency-events')}
+            className="flex items-center gap-1.5 text-sm text-[#5C5C5C] hover:text-[#1A1A1A] transition-colors"
+          >
+            <ArrowLeft size={16} />
+            {t('emergencyEventDetail.backToEvents')}
+          </button>
+
+          <div className="flex items-center gap-1">
+            <LanguageSwitcher />
+            <button
+              onClick={async () => {
+                const shareData = { title: event.title, url: window.location.href };
+                const nav = navigator as Navigator & { share?: (data: { title?: string; url?: string }) => Promise<void> };
+                if (nav.share) {
+                  try {
+                    await nav.share(shareData);
+                  } catch (err) {
+                    if ((err as Error).name !== 'AbortError') {
+                      // ignore other share errors
+                    }
+                  }
+                } else if (navigator.clipboard) {
+                  await navigator.clipboard.writeText(window.location.href);
+                  addToast(t('emergencyEventDetail.share.copied'), 'success');
+                }
+              }}
+              className="flex items-center justify-center h-8 w-8 rounded-[10px] text-[#5C5C5C] hover:text-[#1A1A1A] hover:bg-[#F7F6F2] transition-colors"
+              aria-label={t('emergencyEventDetail.share.button')}
+              title={t('emergencyEventDetail.share.button')}
+            >
+              <Share size={18} />
+            </button>
+          </div>
+        </div>
 
         <div className="bg-white border border-[#E5E4E0] rounded-[14px] p-6">
           {isEditing ? (
@@ -380,6 +457,37 @@ export function EmergencyEventDetailPage() {
           )}
         </div>
       </motion.div>
+
+      {/* Status CTA */}
+      {showStatusCta && (
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.05 }}
+          className="bg-white border border-[#E5E4E0] rounded-[14px] p-5"
+        >
+          <h3 className="text-sm font-medium text-[#5C5C5C] mb-3">
+            {t('reportStatus.title')}
+          </h3>
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              onClick={handleReportSafe}
+              disabled={safeLoading}
+              className="flex flex-col items-center justify-center gap-2 rounded-[10px] border-2 border-[#4A7C59] bg-[#EDF5EF] p-4 text-[#4A7C59] hover:bg-[#D8E8DC] transition-colors disabled:opacity-70"
+            >
+              <ShieldCheck size={28} />
+              <span className="text-sm font-semibold">{t('reportStatus.cards.imSafe.title')}</span>
+            </button>
+            <button
+              onClick={() => setDistressModalOpen(true)}
+              className="flex flex-col items-center justify-center gap-2 rounded-[10px] border-2 border-[#C44536] bg-[#FDECEA] p-4 text-[#C44536] hover:bg-[#FCD5D0] transition-colors"
+            >
+              <AlertTriangle size={28} />
+              <span className="text-sm font-semibold">{t('reportStatus.cards.iNeedHelp.title')}</span>
+            </button>
+          </div>
+        </motion.div>
+      )}
 
       {/* Stats */}
       <motion.div
@@ -603,7 +711,7 @@ export function EmergencyEventDetailPage() {
                       {t(config.label)}
                     </button>
                   );
-                })},
+                })}
               </div>
               <div className="flex gap-3">
                 <input
@@ -682,7 +790,15 @@ export function EmergencyEventDetailPage() {
         onResolve={handleResolve}
       />
 
+      {/* Distress Modal */}
+      <DistressFormModal
+        open={distressModalOpen}
+        onClose={() => setDistressModalOpen(false)}
+        onSubmit={handleDistressSubmit}
+      />
 
+
+    </div>
     </div>
   );
 }
