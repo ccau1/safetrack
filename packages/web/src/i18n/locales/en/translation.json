@@ -29,6 +29,9 @@
   },
   "common": {
     "search": "Search employees...",
+    "searchMembers": "Search members...",
+    "searchTeams": "Search teams...",
+    "searchEmergencies": "Search emergencies...",
     "organization": "Organization",
     "noOrganization": "No Organization",
     "noOrganizations": "No organizations",
@@ -39,7 +42,54 @@
     "delete": "Delete",
     "edit": "Edit",
     "create": "Create",
-    "loading": "Loading..."
+    "loading": "Loading...",
+    "back": "Back",
+    "inviteMembers": "Invite Members",
+    "members": "members",
+    "member_one": "member",
+    "member_other": "members",
+    "team": "Team",
+    "employees": "employees",
+    "employee_one": "employee",
+    "employee_other": "employees",
+    "all": "All",
+    "name": "Name",
+    "email": "Email",
+    "phone": "Phone Number",
+    "password": "Password",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "description": "Description",
+    "yes": "Yes",
+    "no": "No",
+    "close": "Close",
+    "confirm": "Confirm",
+    "submit": "Submit",
+    "update": "Update",
+    "add": "Add",
+    "remove": "Remove",
+    "unknown": "Unknown",
+    "notAssigned": "Not Assigned",
+    "unassigned": "Unassigned",
+    "more": "more",
+    "select": "Select...",
+    "noResults": "No results",
+    "success": "Success",
+    "error": "Error",
+    "info": "Info",
+    "warning": "Warning",
+    "active": "Active",
+    "resolved": "Resolved",
+    "cancelled": "Cancelled",
+    "started": "Started",
+    "justNow": "Just now",
+    "minAgo": "{{count}} min ago",
+    "hoursAgo": "{{count}} hours ago",
+    "daysAgo": "{{count}} days ago",
+    "minuteAgo": "{{count}} minute ago",
+    "minutesAgo": "{{count}} minutes ago",
+    "hourAgo": "{{count}} hour ago",
+    "dayAgo": "{{count}} day ago"
   },
   "notifications": {
     "title": "Notifications",
@@ -72,6 +122,582 @@
     "email": "Email",
     "password": "Password",
     "alreadyHaveAccount": "Already have an account? Sign in",
-    "dontHaveAccount": "Don't have an account? Create one"
+    "dontHaveAccount": "Don't have an account? Create one",
+    "or": "or",
+    "google": "Google",
+    "microsoft": "Microsoft"
+  },
+  "dashboard": {
+    "stats": {
+      "totalEmployees": "Total Employees",
+      "markedSafe": "Marked Safe",
+      "inDistress": "In Distress",
+      "notUpdated": "Not Updated",
+      "organizationWide": "Organization-wide",
+      "needsImmediateHelp": "Needs immediate help",
+      "percentOfTotal": "{{percent}}% of total"
+    },
+    "eventBanner": {
+      "activeEvent": "Active Event: {{name}}",
+      "started": "Started {{date}}",
+      "fullDetails": "Full Details",
+      "quickView": "Quick View",
+      "noActiveEvents": "No active emergency events",
+      "createEvent": "Create Event"
+    },
+    "employeeStatus": {
+      "title": "Employee Status",
+      "subtitle": "Real-time updates from your organization"
+    },
+    "toast": {
+      "reminderSent": "Reminder sent to {{name}}",
+      "reminderFailed": "Failed to send reminder to {{name}}",
+      "eventCreated": "Emergency event created"
+    }
+  },
+  "emergencies": {
+    "title": "Emergencies",
+    "totalActive": "{{total}} total · {{active}} active",
+    "searchPlaceholder": "Search emergencies...",
+    "filters": {
+      "all": "All",
+      "active": "Active",
+      "resolved": "Resolved",
+      "cancelled": "Cancelled"
+    },
+    "types": {
+      "FIRE_DRILL": "Fire Drill",
+      "EMERGENCY": "Emergency",
+      "EVACUATION": "Evacuation",
+      "LOCKDOWN": "Lockdown"
+    },
+    "eventCard": {
+      "noDescription": "No description",
+      "started": "Started {{date}}",
+      "team_one": "{{count}} team",
+      "team_other": "{{count}} teams",
+      "group_one": "{{count}} group",
+      "group_other": "{{count}} groups",
+      "noEmergenciesYet": "No emergencies yet.",
+      "noMatchFilters": "No emergencies match your filters."
+    }
+  },
+  "reportStatus": {
+    "title": "Your Current Status",
+    "status": {
+      "safe": "Safe",
+      "distress": "In Distress",
+      "unknown": "Not Reported"
+    },
+    "lastUpdated": "Last updated: {{time}}",
+    "noStatusReported": "No status reported yet",
+    "cards": {
+      "imSafe": {
+        "title": "I'm Safe",
+        "description": "Quickly report that you are safe and accounted for.",
+        "button": "Report Safe"
+      },
+      "iNeedHelp": {
+        "title": "I Need Help",
+        "description": "Report that you are in distress and need assistance.",
+        "button": "Report Distress"
+      }
+    },
+    "statusHistory": {
+      "title": "Status History",
+      "subtitle": "Your check-in history for this event",
+      "noHistory": "No status history yet",
+      "markedSafe": "Marked Safe",
+      "reportedInDistress": "Reported In Distress",
+      "statusUnknown": "Status Unknown"
+    },
+    "toast": {
+      "noActiveEvent": "No active event to report to",
+      "statusUpdatedSafe": "Status updated: You are marked as safe",
+      "failedUpdateStatus": "Failed to update status. Please try again.",
+      "distressSubmitted": "Distress report submitted",
+      "failedDistressReport": "Failed to submit distress report"
+    }
+  },
+  "contacts": {
+    "title": "Emergency Contacts",
+    "subtitle": "Keep your contact information up to date so we can reach you or your next of kin in an emergency.",
+    "sections": {
+      "personalContact": "Personal Contact",
+      "nextOfKin": "Next of Kin"
+    },
+    "fields": {
+      "email": "Email",
+      "phoneNumber": "Phone Number",
+      "alternatePhone": "Alternate Phone",
+      "fullName": "Full Name",
+      "relationship": "Relationship",
+      "nextOfKinPhone": "Phone Number",
+      "nextOfKinEmail": "Email"
+    },
+    "placeholders": {
+      "email": "you@company.com",
+      "phoneNumber": "+1 555 123 4567",
+      "alternatePhone": "+1 555 987 6543",
+      "fullName": "Jane Doe",
+      "relationship": "Spouse",
+      "nextOfKinPhone": "+1 555 234 5678",
+      "nextOfKinEmail": "jane@example.com"
+    },
+    "button": "Save Contacts",
+    "toast": {
+      "updated": "Emergency contacts updated successfully",
+      "failed": "Failed to update emergency contacts"
+    }
+  },
+  "myTeam": {
+    "teamHeader": "{{team}} Team",
+    "membersCount": "{{count}} members",
+    "stats": {
+      "safe": "Safe",
+      "distress": "Distress",
+      "notUpdated": "Not Updated"
+    },
+    "teamMembers": {
+      "title": "Team Members",
+      "subtitle": "Status of your {{team}} team"
+    },
+    "toast": {
+      "reminderSent": "Reminder sent to {{name}}",
+      "reminderFailed": "Failed to send reminder to {{name}}"
+    }
+  },
+  "organization": {
+    "title": "Organization",
+    "employeeCount": "{{count}} employees across {{teams}} teams",
+    "inviteMembers": "Invite Members",
+    "allEmployees": {
+      "title": "All Employees",
+      "subtitle": "Full organization status overview"
+    },
+    "toast": {
+      "reminderSent": "Reminder sent to {{name}}",
+      "reminderFailed": "Failed to send reminder to {{name}}"
+    }
+  },
+  "sendAlert": {
+    "title": "Send Alert",
+    "subtitle": "Send notifications to employees who haven't updated their status.",
+    "tabs": {
+      "all": "All Not Updated",
+      "team": "By Team",
+      "specific": "Specific People"
+    },
+    "counts": {
+      "selectIndividual": "Select individual employees to notify",
+      "notUpdated_one": "employee has not updated their status",
+      "notUpdated_other": "employees have not updated their status"
+    },
+    "teamCard": {
+      "notUpdated": "{{count}} not updated",
+      "selectAll": "Select All in Team",
+      "deselectTeam": "Deselect Team"
+    },
+    "allUpdated": "All employees have updated their status",
+    "message": {
+      "label": "Alert Message",
+      "placeholder": "Please update your status immediately. Let us know if you need help."
+    },
+    "presets": {
+      "checkIn": "Please check in now",
+      "areYouSafe": "Are you safe?",
+      "updateStatus": "Update your status",
+      "needHelp": "Need help? Reply here"
+    },
+    "confirmation": {
+      "title": "Confirm Alert",
+      "confirmText_one": "Send to {{count}} Employee",
+      "confirmText_other": "Send to {{count}} Employees",
+      "message_one": "You are about to send an alert to {{count}} employee who has not updated their status. This action cannot be undone.",
+      "message_other": "You are about to send an alert to {{count}} employees who have not updated their status. This action cannot be undone."
+    },
+    "sendButton_one": "Send Alert to {{count}} Employee",
+    "sendButton_other": "Send Alert to {{count}} Employees"
+  },
+  "teamManagement": {
+    "title": "Team Management",
+    "subtitle": "Create teams and assign members",
+    "newTeam": "New Team",
+    "createForm": {
+      "placeholder": "Team name (e.g., Engineering)",
+      "create": "Create",
+      "cancel": "Cancel"
+    },
+    "teamCard": {
+      "members": "{{count}} members",
+      "noMembers": "No members assigned",
+      "more": "+{{count}} more"
+    },
+    "noTeams": "No teams yet. Create your first team above.",
+    "unassignedMembers": {
+      "title": "Unassigned Members",
+      "subtitle": "Assign members to teams to organize your organization",
+      "allAssigned": "All members are assigned to teams",
+      "assignToTeam": "Assign to Team",
+      "save": "Save",
+      "unassigned": "Unassigned"
+    },
+    "deleteModal": {
+      "title": "Delete Team",
+      "message": "Are you sure you want to delete <strong>{{name}}</strong>? Members assigned to this team will be unassigned.",
+      "cancel": "Cancel",
+      "delete": "Delete"
+    },
+    "toast": {
+      "created": "Team \"{{name}}\" created",
+      "failedCreate": "Failed to create team",
+      "assignmentUpdated": "Team assignment updated",
+      "failedAssignment": "Failed to update team assignment",
+      "deleted": "Team \"{{name}}\" deleted",
+      "failedDelete": "Failed to delete team",
+      "undo": "Undo"
+    }
+  },
+  "groupManagement": {
+    "title": "Group Management",
+    "subtitle": "Create groups and assign members or teams for scoped emergency events",
+    "newGroup": "New Group",
+    "createForm": {
+      "groupName": "Group Name",
+      "placeholder": "e.g. Building A, Floor 3",
+      "membersSelected": "Members ({{count}} selected)",
+      "teamsSelected": "Teams ({{count}} selected)",
+      "searchMembers": "Search members...",
+      "searchTeams": "Search teams...",
+      "noMembers": "No members found",
+      "noTeams": "No teams found",
+      "create": "Create"
+    },
+    "groupCard": {
+      "members": "{{count}} members",
+      "teams": "{{count}} teams",
+      "noMembersOrTeams": "No members or teams in this group",
+      "more": "+{{count}} more"
+    },
+    "noGroups": "No groups yet. Create your first group above.",
+    "editModal": {
+      "title": "Edit Group",
+      "groupName": "Group Name",
+      "membersSelected": "Members ({{count}} selected)",
+      "teamsSelected": "Teams ({{count}} selected)",
+      "searchMembers": "Search members...",
+      "searchTeams": "Search teams...",
+      "noMembers": "No members found",
+      "noTeams": "No teams found",
+      "cancel": "Cancel",
+      "saveChanges": "Save Changes"
+    },
+    "deleteModal": {
+      "title": "Delete Group",
+      "message": "Are you sure you want to delete <strong>{{name}}</strong>?",
+      "cancel": "Cancel",
+      "delete": "Delete"
+    },
+    "toast": {
+      "created": "Group \"{{name}}\" created",
+      "failedCreate": "Failed to create group",
+      "updated": "Group updated",
+      "failedUpdate": "Failed to update group",
+      "deleted": "Group \"{{name}}\" deleted",
+      "failedDelete": "Failed to delete group"
+    }
+  },
+  "permissions": {
+    "title": "Permissions",
+    "subtitle": "Manage organization-scoped permissions for members",
+    "searchPlaceholder": "Search members by name, email, or role...",
+    "empty": {
+      "noMatch": "No members match your search",
+      "noMembers": "No members found in this organization"
+    },
+    "memberRow": {
+      "override_one": "{{count}} override",
+      "override_other": "{{count}} overrides",
+      "roleDefaults": "Role defaults"
+    },
+    "expanded": {
+      "assignedOverrides": "Assigned Overrides",
+      "noOverrides": "No permission overrides. Role-based defaults apply.",
+      "addPermission": "Add Permission",
+      "selectPermission": "Select permission...",
+      "allow": "Allow",
+      "deny": "Deny",
+      "grant": "Grant",
+      "cancel": "Cancel",
+      "revoke": "Revoke"
+    },
+    "catalog": {
+      "title": "Permission Catalog",
+      "subtitle": "Available permissions that can be granted or denied per member"
+    },
+    "toast": {
+      "loadFailed": "Failed to load member permissions",
+      "catalogFailed": "Failed to load permission catalog",
+      "granted": "Permission granted",
+      "failedGrant": "Failed to grant permission",
+      "revoked": "Permission revoked",
+      "failedRevoke": "Failed to revoke permission"
+    }
+  },
+  "emergencyEventDetail": {
+    "loading": "Loading...",
+    "notFound": "Event not found",
+    "backToEvents": "Back to Events",
+    "edit": {
+      "eventTitle": "Event Title",
+      "description": "Description",
+      "save": "Save",
+      "cancel": "Cancel"
+    },
+    "status": {
+      "active": "Active",
+      "resolved": "Resolved",
+      "cancelled": "Cancelled"
+    },
+    "scope": {
+      "allOrganizationMembers": "All organization members"
+    },
+    "stats": {
+      "totalTracked": "Total Tracked",
+      "safe": "Safe",
+      "needHelp": "Need Help",
+      "notUpdated": "Not Updated"
+    },
+    "members": {
+      "title": "Tracked Members",
+      "subtitle": "{{reported}} of {{total}} have reported",
+      "searchPlaceholder": "Search members...",
+      "noMatchSearch": "No members match your search",
+      "noMembersInScope": "No members in scope",
+      "unassigned": "Unassigned",
+      "awaiting": "Awaiting"
+    },
+    "reports": {
+      "noStatusReports": "No status reports during this event",
+      "location": "Location",
+      "note": "Note"
+    },
+    "updates": {
+      "title": "Event Updates",
+      "subtitle": "Timeline of activity and progress",
+      "addUpdatePlaceholder": "Add an update...",
+      "post": "Post",
+      "noUpdates": "No updates yet"
+    },
+    "updateTypes": {
+      "PROGRESSING": "Progressing",
+      "ESCALATED": "Escalated",
+      "DEESCALATED": "De-escalated",
+      "NOTE": "Note",
+      "RESOLVED": "Resolved"
+    },
+    "resolve": {
+      "button": "Resolve",
+      "modalTitle": "Resolve Event",
+      "modalMessage": "Are you sure you want to resolve <strong>{{name}}</strong>? This will mark the event as resolved.",
+      "commentPlaceholder": "Add a closing comment (optional)",
+      "confirm": "Resolve Event"
+    }
+  },
+  "orgSettings": {
+    "title": "Organization Settings",
+    "subtitle": "Manage organization details and ownership",
+    "details": {
+      "title": "Organization Details",
+      "name": "Name",
+      "slug": "Slug",
+      "owner": "Owner",
+      "you": "(You)"
+    },
+    "transfer": {
+      "title": "Transfer Ownership",
+      "description": "Transfer ownership of this organization to another member. You will remain an admin but will no longer be the owner.",
+      "selectMember": "Select a member...",
+      "transfer": "Transfer"
+    },
+    "dangerZone": {
+      "title": "Danger Zone",
+      "description": "Ownership transfers and organization deletion are irreversible. The new owner will have full control, or all data will be permanently lost.",
+      "deleteOrg": "Delete Organization",
+      "confirmDelete": "Are you sure you want to delete this organization? This action cannot be undone and all data will be permanently lost."
+    },
+    "toast": {
+      "nameUpdated": "Organization name updated",
+      "transferSuccess": "Ownership transferred successfully",
+      "deleted": "Organization deleted",
+      "failedUpdate": "Failed to update organization",
+      "failedTransfer": "Failed to transfer ownership",
+      "failedDelete": "Failed to delete organization"
+    }
+  },
+  "acceptInvite": {
+    "invalid": {
+      "title": "Invalid Invitation",
+      "description": "No invitation token was provided."
+    },
+    "validating": {
+      "title": "Validating invitation..."
+    },
+    "expired": {
+      "title": "Invitation Expired or Invalid",
+      "description": "This invitation link is no longer valid. Please ask your organization admin to send a new invitation."
+    },
+    "welcome": {
+      "title": "Welcome to {{name}}!",
+      "description": "You've successfully joined the organization. Redirecting..."
+    },
+    "invitation": {
+      "title": "Organization Invitation",
+      "expiresIn": "Expires in 24 hours",
+      "description": "You've been invited to join <strong>{{orgName}}</strong>{{teamName, exists, =true { on team <strong>{{teamName}}</strong>}} other {}} as <strong>{{role}}</strong>."
+    },
+    "acceptButton": "Accept Invitation",
+    "acceptAndJoin": "Accept & Join",
+    "form": {
+      "email": "Email",
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "password": "Password"
+    },
+    "placeholders": {
+      "firstName": "John",
+      "lastName": "Doe",
+      "password": "••••••••"
+    },
+    "errors": {
+      "acceptFailed": "Failed to accept invitation"
+    }
+  },
+  "noOrg": {
+    "title": "No Organization",
+    "description": "You're not a member of any organization. Create one below, ask an admin to invite you, or sign in with a different account.",
+    "createOrg": "Create Organization",
+    "orgName": "Organization Name",
+    "orgNamePlaceholder": "Acme Corp",
+    "createButton": "Create Organization"
+  },
+  "status": {
+    "safe": "Safe",
+    "distress": "In Distress",
+    "unknown": "Not Updated",
+    "SAFE": "Safe",
+    "NEEDS_HELP": "Needs Help",
+    "MISSING": "Missing",
+    "EN_ROUTE": "En Route"
+  },
+  "table": {
+    "columns": {
+      "employee": "Employee",
+      "team": "Team",
+      "lastLocation": "Last Location",
+      "status": "Status",
+      "lastUpdated": "Last Updated",
+      "actions": "Actions"
+    },
+    "noEmployees": "No employees found",
+    "remind": "Remind",
+    "filterByTeam": "Filter by Team",
+    "allTeams": "All Teams",
+    "searchByName": "Search by name...",
+    "openFilters": "Open filters",
+    "filters": "Filters",
+    "showResults": "Show Results"
+  },
+  "filters": {
+    "status": {
+      "all": "All",
+      "safe": "Safe",
+      "distress": "Distress",
+      "notUpdated": "Not Updated",
+      "allStatuses": "All Statuses"
+    }
+  },
+  "employeeDetailModal": {
+    "title": "Employee Details",
+    "status": "Status",
+    "team": "Team",
+    "lastUpdated": "Last Updated",
+    "location": "Location",
+    "notes": "Notes",
+    "severity": "Severity",
+    "details": "Details",
+    "remind": "Send Reminder"
+  },
+  "distressFormModal": {
+    "title": "Report Distress",
+    "location": "Your Current Location *",
+    "locationPlaceholder": "e.g., Building A, Floor 3, Room 302",
+    "severity": "How urgent is your situation?",
+    "low": "Low",
+    "medium": "Medium",
+    "high": "High",
+    "details": "Additional Details (Optional)",
+    "detailsPlaceholder": "Describe your situation...",
+    "cancel": "Cancel",
+    "submit": "Submit Report"
+  },
+  "emergencyEventDetailModal": {
+    "started": "Started {{time}}",
+    "totalAffected": "Total Affected",
+    "duration": "Duration",
+    "accountedFor": "Accounted For",
+    "percentOfOrg": "{{percent}}% of organization",
+    "needHelp": "Need Help",
+    "awaitingResponse": "{{count}} awaiting response",
+    "eventDescription": "Event Description",
+    "defaultDescription": "A {{type}} is currently in progress. All employees are requested to check in with their status immediately. If you are safe, please report your location. If you need assistance, report your distress with location details so response teams can reach you.",
+    "responseTeam": "Response Team Contact",
+    "emergencyHotline": "Emergency Hotline",
+    "floorWardens": "Floor Wardens",
+    "hrEmergency": "HR Emergency",
+    "ext": "ext. {{number}}",
+    "close": "Close"
+  },
+  "createEmergencyEvent": {
+    "title": "Create Emergency Event",
+    "eventTitle": "Event Title",
+    "eventTitlePlaceholder": "e.g. Fire on Floor 3",
+    "eventType": "Event Type",
+    "whenDidItStart": "When did it start?",
+    "presetNow": "Now",
+    "presetMinAgo": "{{count}} min ago",
+    "presetHrAgo": "{{count}} hr ago",
+    "scope": "Scope",
+    "allMembers": "All Members",
+    "selectedTeamsGroups": "Selected Teams & Groups",
+    "searchTeamsGroups": "Search teams or groups...",
+    "teams": "Teams",
+    "groups": "Groups",
+    "noTeamsGroupsFound": "No teams or groups found",
+    "description": "Description",
+    "descriptionPlaceholder": "Add any details about the emergency...",
+    "cancel": "Cancel",
+    "createEvent": "Create Event"
+  },
+  "resolveEventModal": {
+    "title": "Resolve Event",
+    "aboutToResolve": "You are about to resolve:",
+    "commentLabel": "Resolution Comment",
+    "commentOptional": "(optional)",
+    "commentPlaceholder": "Describe how the situation was resolved...",
+    "cancel": "Cancel",
+    "confirm": "Confirm Resolve"
+  },
+  "timeAgo": {
+    "justNow": "just now",
+    "minutes_one": "{{count}}m ago",
+    "minutes_other": "{{count}}m ago",
+    "hours_one": "{{count}}h ago",
+    "hours_other": "{{count}}h ago",
+    "days_one": "{{count}}d ago",
+    "days_other": "{{count}}d ago"
+  },
+  "confirmationModal": {
+    "cancel": "Cancel"
   }
 }

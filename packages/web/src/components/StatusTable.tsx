@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { Bell } from 'lucide-react';
 import { StatusBadge } from './StatusBadge';
+import { useTimeAgo } from '@/hooks/useTimeAgo';
 import type { Employee } from '@/types';
 
 interface StatusTableProps {
@@ -25,6 +26,7 @@ export function StatusTable({
   onToggleSelect,
 }: StatusTableProps) {
   const { t } = useTranslation();
+  const timeAgo = useTimeAgo();
   if (employees.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16">
@@ -34,7 +36,7 @@ export function StatusTable({
           <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
           <path d="M16 3.13a4 4 0 0 1 0 7.75" />
         </svg>
-        <p className="text-sm text-[#8A8A8A]">No employees found</p>
+        <p className="text-sm text-[#8A8A8A]">{t('table.noEmployees')}</p>
       </div>
     );
   }
@@ -72,12 +74,12 @@ export function StatusTable({
                 />
               </th>
             )}
-            <th className="px-5 text-[11px] font-medium text-[#8A8A8A] uppercase tracking-wider">Employee</th>
-            <th className="px-5 text-[11px] font-medium text-[#8A8A8A] uppercase tracking-wider">Team</th>
-            <th className="px-5 text-[11px] font-medium text-[#8A8A8A] uppercase tracking-wider">Last Location</th>
-            <th className="px-5 text-[11px] font-medium text-[#8A8A8A] uppercase tracking-wider">Status</th>
-            <th className="px-5 text-[11px] font-medium text-[#8A8A8A] uppercase tracking-wider">Last Updated</th>
-            {(isAdmin || onRemind) && <th className="px-5 text-[11px] font-medium text-[#8A8A8A] uppercase tracking-wider">Actions</th>}
+            <th className="px-5 text-[11px] font-medium text-[#8A8A8A] uppercase tracking-wider">{t('table.columns.employee')}</th>
+            <th className="px-5 text-[11px] font-medium text-[#8A8A8A] uppercase tracking-wider">{t('table.columns.team')}</th>
+            <th className="px-5 text-[11px] font-medium text-[#8A8A8A] uppercase tracking-wider">{t('table.columns.lastLocation')}</th>
+            <th className="px-5 text-[11px] font-medium text-[#8A8A8A] uppercase tracking-wider">{t('table.columns.status')}</th>
+            <th className="px-5 text-[11px] font-medium text-[#8A8A8A] uppercase tracking-wider">{t('table.columns.lastUpdated')}</th>
+            {(isAdmin || onRemind) && <th className="px-5 text-[11px] font-medium text-[#8A8A8A] uppercase tracking-wider">{t('table.columns.actions')}</th>}
           </tr>
         </thead>
         <tbody>
@@ -123,7 +125,7 @@ export function StatusTable({
               <td className="px-5">
                 <StatusBadge status={emp.status} />
               </td>
-              <td className="px-5 text-sm text-[#8A8A8A]">{emp.lastUpdated}</td>
+              <td className="px-5 text-sm text-[#8A8A8A]">{emp.lastUpdated !== '-' ? timeAgo(emp.lastUpdated) : '-'}</td>
               {(isAdmin || onRemind) && (
                 <td className="px-5" onClick={(e) => e.stopPropagation()}>
                   {emp.status === 'unknown' && onRemind && (
@@ -132,7 +134,7 @@ export function StatusTable({
                       className="flex items-center gap-1.5 text-sm text-[#C44536] border border-[#C44536] rounded-[10px] px-2.5 py-1 opacity-70 hover:opacity-100 hover:bg-[#FDECEA] transition-all duration-150"
                     >
                       <Bell size={14} />
-                      Remind
+                      {t('table.remind')}
                     </button>
                   )}
                 </td>

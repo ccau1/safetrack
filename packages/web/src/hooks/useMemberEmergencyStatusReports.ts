@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { api } from '@/lib/api';
+
 import type { MemberEmergencyStatusReportApi, StatusHistoryEntry } from '@/types';
 
 interface UseMemberEmergencyStatusReportsResult {
@@ -56,7 +57,7 @@ export function useMemberEmergencyStatusReports(
 
       return myReports.map((r) => ({
         status: mapBackendStatusToFrontend(r.status),
-        timestamp: formatTimestamp(r.createdAt),
+        timestamp: r.createdAt,
         note: r.note || undefined,
       }));
     },
@@ -84,16 +85,4 @@ function mapBackendStatusToFrontend(status: MemberEmergencyStatusReportApi['stat
   }
 }
 
-function formatTimestamp(iso: string): string {
-  const date = new Date(iso);
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffMins = Math.floor(diffMs / 60000);
-  const diffHours = Math.floor(diffMs / 3600000);
-  const diffDays = Math.floor(diffMs / 86400000);
 
-  if (diffMins < 1) return 'Just now';
-  if (diffMins < 60) return `${diffMins} min ago`;
-  if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
-  return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
-}

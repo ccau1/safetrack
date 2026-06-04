@@ -5,6 +5,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useNotifications } from '@/hooks/useNotifications';
 import type { EmergencyEvent, Notification } from '@/types';
 import { Logo } from './Logo';
+import { LanguageSwitcher } from './LanguageSwitcher';
 
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 
@@ -168,6 +169,7 @@ export function Header({ event, onMenuToggle }: HeaderProps) {
           </PopoverContent>
         </Popover>
 
+        <LanguageSwitcher />
         <div className="w-9 h-9 rounded-full bg-[#E8EDE7] flex items-center justify-center text-sm font-semibold text-[#4A5548]">
           {initials}
         </div>

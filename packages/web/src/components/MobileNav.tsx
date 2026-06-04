@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import React, { useMemo } from 'react';
 import {
   LayoutDashboard,
   Shield,
@@ -39,21 +39,26 @@ export function MobileNav({ currentView, onNavigate }: MobileNavProps) {
   const visibleItems = navItems.filter((item) => !item.adminOnly || isAdmin);
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 h-16 bg-white border-t border-[#E5E4E0] z-50 flex items-center overflow-x-auto lg:hidden">
-      {visibleItems.map((item) => {
+    <nav className="fixed bottom-0 left-0 right-0 h-16 bg-white border-t border-[#E5E4E0] z-50 flex items-center overflow-x-auto lg:hidden pb-[env(safe-area-inset-bottom)]">
+      {visibleItems.map((item, index) => {
         const isActive = currentView === item.view;
         const Icon = item.icon;
+        const isFirstAdminItem = item.adminOnly && index > 0 && !visibleItems[index - 1].adminOnly;
         return (
-          <button
-            key={item.label}
-            onClick={() => onNavigate(item.view)}
-            className={`flex flex-col items-center gap-1 py-2 px-3 shrink-0 ${
-              isActive ? 'text-[#4A5548]' : 'text-[#8A8A8A]'
-            }`}
-          >
-            <Icon size={20} />
-            <span className="text-[10px] font-medium">{item.label}</span>
-          </button>
+          <React.Fragment key={item.label}>
+            {isFirstAdminItem && (
+              <div className="w-px h-8 bg-[#E5E4E0] shrink-0 mx-1" />
+            )}
+            <button
+              onClick={() => onNavigate(item.view)}
+              className={`flex flex-col items-center gap-1 py-2 px-4 shrink-0 ${
+                isActive ? 'text-[#4A5548]' : 'text-[#8A8A8A]'
+              }`}
+            >
+              <Icon size={20} />
+              <span className="text-[10px] font-medium">{item.label}</span>
+            </button>
+          </React.Fragment>
         );
       })}
     </nav>

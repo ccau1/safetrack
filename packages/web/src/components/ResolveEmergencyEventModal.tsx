@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import { X, CheckCircle2 } from 'lucide-react';
 
 interface ResolveEmergencyEventModalProps {
@@ -11,6 +12,7 @@ interface ResolveEmergencyEventModalProps {
 }
 
 export function ResolveEmergencyEventModal({ open, onClose, eventName, onResolve }: ResolveEmergencyEventModalProps) {
+  const { t } = useTranslation();
   const [comment, setComment] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -50,7 +52,7 @@ export function ResolveEmergencyEventModal({ open, onClose, eventName, onResolve
             <div className="flex items-center justify-between px-6 py-5 border-b border-[#E5E4E0]">
               <div className="flex items-center gap-2">
                 <CheckCircle2 size={20} className="text-[#4A7C59]" />
-                <h3 className="text-lg font-semibold text-[#1A1A1A]">Resolve Event</h3>
+                <h3 className="text-lg font-semibold text-[#1A1A1A]">{t('resolveEventModal.title')}</h3>
               </div>
               <button
                 onClick={onClose}
@@ -62,18 +64,18 @@ export function ResolveEmergencyEventModal({ open, onClose, eventName, onResolve
 
             <form onSubmit={handleSubmit} className="px-6 py-5 space-y-5">
               <div className="bg-[#EDF5EF] rounded-[10px] p-4">
-                <p className="text-sm text-[#4A7C59] font-medium">You are about to resolve:</p>
+                <p className="text-sm text-[#4A7C59] font-medium">{t('resolveEventModal.aboutToResolve')}</p>
                 <p className="text-base font-semibold text-[#1A1A1A] mt-0.5">{eventName}</p>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-[#1A1A1A] mb-1.5">
-                  Resolution Comment <span className="text-[#8A8A8A] font-normal">(optional)</span>
+                  {t('resolveEventModal.commentLabel')} <span className="text-[#8A8A8A] font-normal">{t('resolveEventModal.commentOptional')}</span>
                 </label>
                 <textarea
                   value={comment}
                   onChange={(e) => setComment(e.target.value)}
-                  placeholder="Describe how the situation was resolved..."
+                  placeholder={t('resolveEventModal.commentPlaceholder')}
                   rows={4}
                   className="w-full px-3 py-2 bg-white border border-[#E5E4E0] rounded-[10px] text-sm text-[#1A1A1A] placeholder:text-[#8A8A8A] focus:outline-none focus:border-[#4A5548] focus:ring-[0_0_0_3px_rgba(74,85,72,0.15)] transition-all duration-150 resize-none"
                 />
@@ -85,7 +87,7 @@ export function ResolveEmergencyEventModal({ open, onClose, eventName, onResolve
                   onClick={onClose}
                   className="flex-1 py-2.5 text-sm font-medium text-[#5C5C5C] bg-[#F7F6F2] border border-[#E5E4E0] rounded-[10px] hover:bg-[#EFEFEC] transition-colors duration-150"
                 >
-                  Cancel
+                  {t('resolveEventModal.cancel')}
                 </button>
                 <button
                   type="submit"
@@ -95,7 +97,7 @@ export function ResolveEmergencyEventModal({ open, onClose, eventName, onResolve
                   {loading ? (
                     <span className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                   ) : (
-                    'Confirm Resolve'
+                    t('resolveEventModal.confirm')
                   )}
                 </button>
               </div>

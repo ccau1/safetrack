@@ -1,5 +1,6 @@
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import { AlertTriangle, X } from 'lucide-react';
 
 interface ConfirmationModalProps {
@@ -9,10 +10,10 @@ interface ConfirmationModalProps {
   title: string;
   message: string;
   confirmText: string;
-  recipientCount: number;
 }
 
-export function ConfirmationModal({ open, onClose, onConfirm, title, message, confirmText, recipientCount }: ConfirmationModalProps) {
+export function ConfirmationModal({ open, onClose, onConfirm, title, message, confirmText }: ConfirmationModalProps) {
+  const { t } = useTranslation();
   return createPortal(
     <AnimatePresence>
       {open && (
@@ -58,7 +59,7 @@ export function ConfirmationModal({ open, onClose, onConfirm, title, message, co
                 onClick={onClose}
                 className="px-5 py-2.5 text-sm font-medium text-[#5C5C5C] bg-[#F7F6F2] border border-[#E5E4E0] rounded-[10px] hover:bg-[#EFEFEC] transition-colors duration-150"
               >
-                Cancel
+                {t('confirmationModal.cancel')}
               </button>
               <button
                 onClick={() => {
@@ -67,7 +68,7 @@ export function ConfirmationModal({ open, onClose, onConfirm, title, message, co
                 }}
                 className="px-6 py-2.5 text-sm font-medium text-white bg-[#C44536] rounded-[10px] hover:bg-[#A33A2E] transition-colors duration-150"
               >
-                {confirmText.replace('{count}', recipientCount.toString())}
+                {confirmText}
               </button>
             </div>
           </motion.div>

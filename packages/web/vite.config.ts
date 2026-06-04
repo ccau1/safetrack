@@ -5,12 +5,12 @@ import { VitePWA } from 'vite-plugin-pwa'
 import { inspectAttr } from 'kimi-plugin-inspect-react'
 
 // https://vite.dev/config/
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   base: '/',
   plugins: [
     inspectAttr(),
     react(),
-    VitePWA({
+    mode !== 'development' && VitePWA({
       registerType: 'autoUpdate',
       manifest: {
         name: 'SafeTrack - Emergency Status Tracker',
@@ -33,20 +33,21 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,svg,png,ico,txt,woff2}'],
       },
     }),
-  ],
+  ].filter(Boolean as any),
   server: {
+    host: '0.0.0.0',
     port: 3000,
     proxy: {
       '/api': {
-        target: 'http://localhost:8485',
+        target: process.env.VITE_API_PROXY || 'http://localhost:8485',
         changeOrigin: true,
       },
       '/oauth2': {
-        target: 'http://localhost:8485',
+        target: process.env.VITE_API_PROXY || 'http://localhost:8485',
         changeOrigin: true,
       },
       '/login': {
-        target: 'http://localhost:8485',
+        target: process.env.VITE_API_PROXY || 'http://localhost:8485',
         changeOrigin: true,
       },
     },
@@ -56,4 +57,4 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
-});
+}));

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { ShieldCheck, AlertTriangle, HelpCircle } from 'lucide-react';
 import type { EmployeeStatus } from '@/types';
 
@@ -7,23 +8,25 @@ interface StatusBadgeProps {
 }
 
 export function StatusBadge({ status, size = 'sm' }: StatusBadgeProps) {
+  const { t } = useTranslation();
+
   const config = {
     safe: {
-      text: 'Safe',
+      labelKey: 'status.safe',
       textColor: 'text-[#4A7C59]',
       bgColor: 'bg-[#EDF5EF]',
       icon: ShieldCheck,
       iconColor: 'text-[#4A7C59]',
     },
     distress: {
-      text: 'In Distress',
+      labelKey: 'status.distress',
       textColor: 'text-[#C44536]',
       bgColor: 'bg-[#FDECEA]',
       icon: AlertTriangle,
       iconColor: 'text-[#C44536]',
     },
     unknown: {
-      text: 'Not Updated',
+      labelKey: 'status.unknown',
       textColor: 'text-[#9A9A9A]',
       bgColor: 'bg-[#F0F0F0]',
       icon: HelpCircle,
@@ -33,6 +36,7 @@ export function StatusBadge({ status, size = 'sm' }: StatusBadgeProps) {
 
   const c = config[status];
   const Icon = c.icon;
+  const text = t(c.labelKey);
 
   const sizeClasses = {
     sm: 'text-xs px-3 py-1 gap-1.5',
@@ -49,10 +53,10 @@ export function StatusBadge({ status, size = 'sm' }: StatusBadgeProps) {
   return (
     <span
       className={`inline-flex items-center rounded-full font-semibold ${c.textColor} ${c.bgColor} ${sizeClasses[size]}`}
-      aria-label={`Status: ${c.text}`}
+      aria-label={`${t('table.columns.status')}: ${text}`}
     >
       <Icon size={iconSizes[size]} className={c.iconColor} />
-      {c.text}
+      {text}
     </span>
   );
 }

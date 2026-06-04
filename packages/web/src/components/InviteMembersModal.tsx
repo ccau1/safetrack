@@ -169,7 +169,7 @@ export function InviteMembersModal({ orgId, open, onClose, addToast }: InviteMem
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div>
                     <label className="block text-[11px] font-medium text-[#8A8A8A] uppercase tracking-wider mb-1.5">
-                      Email *
+                      {t('common.email')} *
                     </label>
                     <input
                       type="email"
@@ -184,7 +184,7 @@ export function InviteMembersModal({ orgId, open, onClose, addToast }: InviteMem
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label className="block text-[11px] font-medium text-[#8A8A8A] uppercase tracking-wider mb-1.5">
-                        First Name
+                        {t('common.firstName')}
                       </label>
                       <input
                         type="text"
@@ -196,7 +196,7 @@ export function InviteMembersModal({ orgId, open, onClose, addToast }: InviteMem
                     </div>
                     <div>
                       <label className="block text-[11px] font-medium text-[#8A8A8A] uppercase tracking-wider mb-1.5">
-                        Last Name
+                        {t('common.lastName')}
                       </label>
                       <input
                         type="text"
@@ -218,7 +218,7 @@ export function InviteMembersModal({ orgId, open, onClose, addToast }: InviteMem
                         onChange={(e) => setForm((f) => ({ ...f, teamId: e.target.value }))}
                         className="w-full h-10 border border-[#E5E4E0] rounded-[10px] px-3 text-sm text-[#1A1A1A] bg-white focus:outline-none focus:border-[#4A5548] focus:ring-[0_0_0_3px_rgba(74,85,72,0.15)] transition-all duration-150"
                       >
-                        <option value="">No team</option>
+                        <option value="">{t('common.notAssigned')}</option>
                         {teams.map((t) => (
                           <option key={t.id} value={t.id}>
                             {t.name}
@@ -245,7 +245,7 @@ export function InviteMembersModal({ orgId, open, onClose, addToast }: InviteMem
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label className="block text-[11px] font-medium text-[#8A8A8A] uppercase tracking-wider mb-1.5">
-                        Phone
+                        {t('common.phone')}
                       </label>
                       <input
                         type="tel"
@@ -257,7 +257,7 @@ export function InviteMembersModal({ orgId, open, onClose, addToast }: InviteMem
                     </div>
                     <div>
                       <label className="block text-[11px] font-medium text-[#8A8A8A] uppercase tracking-wider mb-1.5">
-                        Alt Phone
+                        {t('contacts.fields.alternatePhone')}
                       </label>
                       <input
                         type="tel"
@@ -271,7 +271,7 @@ export function InviteMembersModal({ orgId, open, onClose, addToast }: InviteMem
 
                   <div>
                     <label className="block text-[11px] font-medium text-[#8A8A8A] uppercase tracking-wider mb-1.5">
-                      Next of Kin Name
+                      {t('contacts.fields.fullName')}
                     </label>
                     <input
                       type="text"
@@ -285,7 +285,7 @@ export function InviteMembersModal({ orgId, open, onClose, addToast }: InviteMem
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label className="block text-[11px] font-medium text-[#8A8A8A] uppercase tracking-wider mb-1.5">
-                        Relationship
+                        {t('contacts.fields.relationship')}
                       </label>
                       <input
                         type="text"
@@ -297,7 +297,7 @@ export function InviteMembersModal({ orgId, open, onClose, addToast }: InviteMem
                     </div>
                     <div>
                       <label className="block text-[11px] font-medium text-[#8A8A8A] uppercase tracking-wider mb-1.5">
-                        NOK Phone
+                        {t('contacts.fields.nextOfKinPhone')}
                       </label>
                       <input
                         type="tel"
@@ -311,7 +311,7 @@ export function InviteMembersModal({ orgId, open, onClose, addToast }: InviteMem
 
                   <div>
                     <label className="block text-[11px] font-medium text-[#8A8A8A] uppercase tracking-wider mb-1.5">
-                      NOK Email
+                      {t('contacts.fields.nextOfKinEmail')}
                     </label>
                     <input
                       type="email"

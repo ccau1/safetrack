@@ -54,7 +54,7 @@ app:
     same-site: ${COOKIE_SAME_SITE:Lax}
   invitation:
     expiry-hours: 24
-    base-url: ${INVITE_BASE_URL:http://localhost:3010}
+    base-url: ${INVITE_BASE_URL:${WEB_BASE_URL:http://localhost:3010}}
 
 management:
   health:

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import {
   ArrowLeft,
   Flame,
@@ -33,6 +34,7 @@ import { useMemberEmergencyStatusReports } from '@/hooks/useMemberEmergencyStatu
 import { ResolveEmergencyEventModal } from '@/components/ResolveEmergencyEventModal';
 import { useAuth } from '@/context/AuthContext';
 import { api } from '@/lib/api';
+import { useTimeAgo } from '@/hooks/useTimeAgo';
 import type { EmergencyEventUpdateApi, ScopedMember, MemberEmergencyStatusReportApi } from '@/types';
 
 const TYPE_ICONS: Record<string, typeof Flame> = {
@@ -50,28 +52,30 @@ const TYPE_COLORS: Record<string, string> = {
 };
 
 const STATUS_CONFIG: Record<NonNullable<ScopedMember['latestStatus']>, { label: string; color: string; bg: string }> = {
-  SAFE: { label: 'Safe', color: '#4A7C59', bg: '#EDF5EF' },
-  NEEDS_HELP: { label: 'Needs Help', color: '#C44536', bg: '#FDECEA' },
-  MISSING: { label: 'Missing', color: '#8A8A8A', bg: '#F7F6F2' },
-  EN_ROUTE: { label: 'En Route', color: '#5B7B8A', bg: '#E8F0F2' },
+  SAFE: { label: 'status.SAFE', color: '#4A7C59', bg: '#EDF5EF' },
+  NEEDS_HELP: { label: 'status.NEEDS_HELP', color: '#C44536', bg: '#FDECEA' },
+  MISSING: { label: 'status.MISSING', color: '#8A8A8A', bg: '#F7F6F2' },
+  EN_ROUTE: { label: 'status.EN_ROUTE', color: '#5B7B8A', bg: '#E8F0F2' },
 };
 
 const REPORT_STATUS_CONFIG: Record<MemberEmergencyStatusReportApi['status'], { label: string; color: string; bg: string }> = {
-  SAFE: { label: 'Safe', color: '#4A7C59', bg: '#EDF5EF' },
-  NEEDS_HELP: { label: 'Needs Help', color: '#C44536', bg: '#FDECEA' },
-  MISSING: { label: 'Missing', color: '#8A8A8A', bg: '#F7F6F2' },
-  EN_ROUTE: { label: 'En Route', color: '#5B7B8A', bg: '#E8F0F2' },
+  SAFE: { label: 'status.SAFE', color: '#4A7C59', bg: '#EDF5EF' },
+  NEEDS_HELP: { label: 'status.NEEDS_HELP', color: '#C44536', bg: '#FDECEA' },
+  MISSING: { label: 'status.MISSING', color: '#8A8A8A', bg: '#F7F6F2' },
+  EN_ROUTE: { label: 'status.EN_ROUTE', color: '#5B7B8A', bg: '#E8F0F2' },
 };
 
 const UPDATE_TYPE_CONFIG: Record<EmergencyEventUpdateApi['type'], { label: string; color: string; icon: typeof TrendingUp }> = {
-  PROGRESSING: { label: 'Progressing', color: '#5B7B8A', icon: TrendingUp },
-  ESCALATED: { label: 'Escalated', color: '#C44536', icon: AlertOctagon },
-  DEESCALATED: { label: 'De-escalated', color: '#4A7C59', icon: TrendingDown },
-  NOTE: { label: 'Note', color: '#8A8A8A', icon: StickyNote },
-  RESOLVED: { label: 'Resolved', color: '#4A7C59', icon: CheckCircle2 },
+  PROGRESSING: { label: 'emergencyEventDetail.updateTypes.PROGRESSING', color: '#5B7B8A', icon: TrendingUp },
+  ESCALATED: { label: 'emergencyEventDetail.updateTypes.ESCALATED', color: '#C44536', icon: AlertOctagon },
+  DEESCALATED: { label: 'emergencyEventDetail.updateTypes.DEESCALATED', color: '#4A7C59', icon: TrendingDown },
+  NOTE: { label: 'emergencyEventDetail.updateTypes.NOTE', color: '#8A8A8A', icon: StickyNote },
+  RESOLVED: { label: 'emergencyEventDetail.updateTypes.RESOLVED', color: '#4A7C59', icon: CheckCircle2 },
 };
 
 export function EmergencyEventDetailPage() {
+  const { t } = useTranslation();
+  const timeAgo = useTimeAgo();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { hasAction } = useAuth();
@@ -101,20 +105,16 @@ export function EmergencyEventDetailPage() {
   const toggleFilter = (key: FilterKey) => {
     setActiveFilters((prev) => {
       if (prev.size === 4) {
-        // All active → isolate the clicked one
         return new Set([key]);
       }
       if (prev.size === 1 && prev.has(key)) {
-        // Only this one active → reactivate all
         return new Set(['all', 'safe', 'distress', 'unknown']);
       }
       if (prev.has(key)) {
-        // Multiple active and clicking an active one → remove it
         const next = new Set(prev);
         next.delete(key);
         return next;
       }
-      // Clicking an inactive one → add it
       return new Set([...prev, key]);
     });
   };
@@ -182,7 +182,6 @@ export function EmergencyEventDetailPage() {
     return matchesSearch && matchesFilter(m);
   });
 
-  // Filter reports to event time window
   const eventReports = allReports.filter((r) => {
     if (!event) return false;
     const reportTime = new Date(r.createdAt).getTime();
@@ -200,8 +199,6 @@ export function EmergencyEventDetailPage() {
       .filter((r) => r.memberId === memberId)
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
-
-
   if (eventLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -213,12 +210,12 @@ export function EmergencyEventDetailPage() {
   if (!event) {
     return (
       <div className="text-center py-16">
-        <p className="text-lg text-[#8A8A8A]">Event not found</p>
+        <p className="text-lg text-[#8A8A8A]">{t('emergencyEventDetail.notFound')}</p>
         <button
           onClick={() => navigate('/emergency-events')}
           className="mt-4 text-sm font-medium text-[#4A5548] hover:underline"
         >
-          Back to Events
+          {t('emergencyEventDetail.backToEvents')}
         </button>
       </div>
     );
@@ -241,14 +238,14 @@ export function EmergencyEventDetailPage() {
           className="flex items-center gap-1.5 text-sm text-[#5C5C5C] hover:text-[#1A1A1A] mb-4 transition-colors"
         >
           <ArrowLeft size={16} />
-          Back to Events
+          {t('emergencyEventDetail.backToEvents')}
         </button>
 
         <div className="bg-white border border-[#E5E4E0] rounded-[14px] p-6">
           {isEditing ? (
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-[#1A1A1A] mb-1.5">Event Title</label>
+                <label className="block text-sm font-medium text-[#1A1A1A] mb-1.5">{t('emergencyEventDetail.edit.eventTitle')}</label>
                 <input
                   type="text"
                   value={editTitle}
@@ -257,7 +254,7 @@ export function EmergencyEventDetailPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-[#1A1A1A] mb-1.5">Description</label>
+                <label className="block text-sm font-medium text-[#1A1A1A] mb-1.5">{t('emergencyEventDetail.edit.description')}</label>
                 <textarea
                   value={editDescription}
                   onChange={(e) => setEditDescription(e.target.value)}
@@ -272,14 +269,14 @@ export function EmergencyEventDetailPage() {
                   className="h-10 px-4 text-sm font-semibold text-white bg-[#4A5548] rounded-[10px] hover:bg-[#3D463B] transition-colors disabled:opacity-60 flex items-center gap-2"
                 >
                   {editLoading ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle2 size={16} />}
-                  Save
+                  {t('emergencyEventDetail.edit.save')}
                 </button>
                 <button
                   onClick={() => setIsEditing(false)}
                   disabled={editLoading}
                   className="h-10 px-4 text-sm font-medium text-[#5C5C5C] hover:text-[#1A1A1A] transition-colors"
                 >
-                  Cancel
+                  {t('emergencyEventDetail.edit.cancel')}
                 </button>
               </div>
             </div>
@@ -300,7 +297,7 @@ export function EmergencyEventDetailPage() {
                         className="inline-flex items-center gap-1 text-xs font-semibold rounded-full px-2.5 py-0.5"
                         style={{ backgroundColor: `${typeColor}15`, color: typeColor }}
                       >
-                        {event.type.replace('_', ' ')}
+                        {t(`emergencies.types.${event.type}`, event.type.replace('_', ' '))}
                       </span>
                       <span
                         className={`inline-flex items-center gap-1 text-xs font-semibold rounded-full px-2.5 py-0.5 ${
@@ -317,16 +314,16 @@ export function EmergencyEventDetailPage() {
                             <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#C44536]" />
                           </span>
                         )}
-                        {event.status}
+                        {event.status === 'ACTIVE' ? t('emergencyEventDetail.status.active') : event.status === 'RESOLVED' ? t('emergencyEventDetail.status.resolved') : t('emergencyEventDetail.status.cancelled')}
                       </span>
                       <span className="text-xs text-[#8A8A8A] flex items-center gap-1">
                         <Clock size={12} />
-                        Started {formatRelativeTime(event.startedAt)}
+                        {t('common.started')} {timeAgo(event.startedAt)}
                       </span>
                       {event.resolvedAt && (
                         <span className="text-xs text-[#8A8A8A] flex items-center gap-1">
                           <CheckCircle2 size={12} />
-                          Resolved {formatRelativeTime(event.resolvedAt)}
+                          {t('common.resolved')} {timeAgo(event.resolvedAt)}
                         </span>
                       )}
                     </div>
@@ -340,7 +337,7 @@ export function EmergencyEventDetailPage() {
                       className="flex items-center gap-2 text-sm font-semibold text-[#5B7B8A] bg-[#E8F0F2] border border-[#D0E0E4] rounded-[10px] px-4 py-2 hover:bg-[#D8E8EC] transition-colors"
                     >
                       <Pencil size={16} />
-                      Edit
+                      {t('common.edit')}
                     </button>
                   )}
                   {isActive && canManageEvent && (
@@ -349,7 +346,7 @@ export function EmergencyEventDetailPage() {
                       className="flex items-center gap-2 text-sm font-semibold text-white bg-[#4A7C59] rounded-[10px] px-4 py-2 hover:bg-[#3D6B4A] transition-colors"
                     >
                       <CheckCircle2 size={16} />
-                      Resolve
+                      {t('emergencyEventDetail.resolve.button')}
                     </button>
                   )}
                 </div>
@@ -376,7 +373,7 @@ export function EmergencyEventDetailPage() {
               ) : (
                 <div className="mt-4 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-[#F7F6F2] text-[#8A8A8A] border border-[#E5E4E0]">
                   <Users size={10} />
-                  All organization members
+                  {t('emergencyEventDetail.scope.allOrganizationMembers')}
                 </div>
               )}
             </>
@@ -393,7 +390,7 @@ export function EmergencyEventDetailPage() {
       >
         <StatCard
           icon={Users}
-          label="Total Tracked"
+          label={t('emergencyEventDetail.stats.totalTracked')}
           value={totalScoped}
           color="#8A8A8A"
           bg="#F7F6F2"
@@ -402,7 +399,7 @@ export function EmergencyEventDetailPage() {
         />
         <StatCard
           icon={ShieldCheck}
-          label="Safe"
+          label={t('emergencyEventDetail.stats.safe')}
           value={safe}
           color="#4A7C59"
           bg="#EDF5EF"
@@ -411,7 +408,7 @@ export function EmergencyEventDetailPage() {
         />
         <StatCard
           icon={AlertTriangle}
-          label="Need Help"
+          label={t('emergencyEventDetail.stats.needHelp')}
           value={distress}
           color="#C44536"
           bg="#FDECEA"
@@ -420,7 +417,7 @@ export function EmergencyEventDetailPage() {
         />
         <StatCard
           icon={HelpCircle}
-          label="Not Updated"
+          label={t('emergencyEventDetail.stats.notUpdated')}
           value={unknown}
           color="#8A8A8A"
           bg="#F7F6F2"
@@ -438,9 +435,9 @@ export function EmergencyEventDetailPage() {
       >
         <div className="px-6 py-4 border-b border-[#E5E4E0] flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-semibold text-[#1A1A1A]">Tracked Members</h2>
+            <h2 className="text-lg font-semibold text-[#1A1A1A]">{t('emergencyEventDetail.members.title')}</h2>
             <p className="text-sm text-[#8A8A8A]">
-              {safe + distress} of {totalScoped} have reported
+              {t('emergencyEventDetail.members.subtitle', { reported: safe + distress, total: totalScoped })}
             </p>
           </div>
           <div className="relative w-56">
@@ -449,7 +446,7 @@ export function EmergencyEventDetailPage() {
               type="text"
               value={memberSearch}
               onChange={(e) => setMemberSearch(e.target.value)}
-              placeholder="Search members..."
+              placeholder={t('emergencyEventDetail.members.searchPlaceholder')}
               className="w-full h-9 pl-9 pr-3 bg-[#F7F6F2] border border-[#E5E4E0] rounded-[10px] text-sm text-[#1A1A1A] placeholder:text-[#8A8A8A] focus:outline-none focus:border-[#4A5548] focus:ring-[0_0_0_3px_rgba(74,85,72,0.15)] transition-all duration-150"
             />
           </div>
@@ -462,7 +459,7 @@ export function EmergencyEventDetailPage() {
             </div>
           ) : filteredMembers.length === 0 ? (
             <div className="py-8 text-center text-sm text-[#8A8A8A]">
-              {memberSearch.trim() ? 'No members match your search' : 'No members in scope'}
+              {memberSearch.trim() ? t('emergencyEventDetail.members.noMatchSearch') : t('emergencyEventDetail.members.noMembersInScope')}
             </div>
           ) : (
             filteredMembers.map((member) => {
@@ -484,7 +481,7 @@ export function EmergencyEventDetailPage() {
                       </div>
                       <div>
                         <p className="text-sm font-medium text-[#1A1A1A]">{member.name}</p>
-                        <p className="text-xs text-[#8A8A8A]">{member.teamName || 'Unassigned'}</p>
+                        <p className="text-xs text-[#8A8A8A]">{member.teamName || t('emergencyEventDetail.members.unassigned')}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
@@ -496,11 +493,11 @@ export function EmergencyEventDetailPage() {
                           className="inline-flex items-center gap-1 text-xs font-medium rounded-full px-2 py-0.5"
                           style={{ backgroundColor: config.bg, color: config.color }}
                         >
-                          {config.label}
+                          {t(config.label)}
                         </span>
                       ) : (
                         <span className="inline-flex items-center gap-1 text-xs font-medium rounded-full px-2 py-0.5 bg-[#F7F6F2] text-[#8A8A8A]">
-                          Awaiting
+                          {t('emergencyEventDetail.members.awaiting')}
                         </span>
                       )}
                       {isExpanded ? (
@@ -522,7 +519,7 @@ export function EmergencyEventDetailPage() {
                       >
                         <div className="px-6 pb-4 bg-[#FAFAF8]">
                           {memberReports.length === 0 ? (
-                            <p className="text-sm text-[#8A8A8A] py-2">No status reports during this event</p>
+                            <p className="text-sm text-[#8A8A8A] py-2">{t('emergencyEventDetail.reports.noStatusReports')}</p>
                           ) : (
                             <div className="space-y-2 pt-1">
                               {memberReports.map((report) => {
@@ -537,10 +534,10 @@ export function EmergencyEventDetailPage() {
                                         className="inline-flex items-center gap-1 text-xs font-medium rounded-full px-2 py-0.5"
                                         style={{ backgroundColor: rConfig.bg, color: rConfig.color }}
                                       >
-                                        {rConfig.label}
+                                        {t(rConfig.label)}
                                       </span>
                                       <span className="text-[11px] text-[#8A8A8A]">
-                                        {formatRelativeTime(report.createdAt)}
+                                        {timeAgo(report.createdAt)}
                                       </span>
                                     </div>
                                     <div className="space-y-1">
@@ -581,8 +578,8 @@ export function EmergencyEventDetailPage() {
         className="bg-white border border-[#E5E4E0] rounded-[14px] overflow-hidden"
       >
         <div className="px-6 py-4 border-b border-[#E5E4E0]">
-          <h2 className="text-lg font-semibold text-[#1A1A1A]">Event Updates</h2>
-          <p className="text-sm text-[#8A8A8A]">Timeline of activity and progress</p>
+          <h2 className="text-lg font-semibold text-[#1A1A1A]">{t('emergencyEventDetail.updates.title')}</h2>
+          <p className="text-sm text-[#8A8A8A]">{t('emergencyEventDetail.updates.subtitle')}</p>
         </div>
 
         <div className="px-6 py-5 space-y-6">
@@ -590,30 +587,30 @@ export function EmergencyEventDetailPage() {
           {isActive && canManageEvent && (
             <form onSubmit={handleAddUpdate} className="space-y-3">
               <div className="flex gap-2 flex-wrap">
-                {(['PROGRESSING', 'ESCALATED', 'DEESCALATED', 'NOTE'] as const).map((t) => {
-                  const config = UPDATE_TYPE_CONFIG[t];
+                {(['PROGRESSING', 'ESCALATED', 'DEESCALATED', 'NOTE'] as const).map((updateTypeKey) => {
+                  const config = UPDATE_TYPE_CONFIG[updateTypeKey];
                   return (
                     <button
-                      key={t}
+                      key={updateTypeKey}
                       type="button"
-                      onClick={() => setUpdateType(t)}
+                      onClick={() => setUpdateType(updateTypeKey)}
                       className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
-                        updateType === t
+                        updateType === updateTypeKey
                           ? 'border-[#4A5548] bg-[#E8EDE7] text-[#1A1A1A]'
                           : 'border-[#E5E4E0] text-[#5C5C5C] hover:border-[#1A1A1A]'
                       }`}
                     >
-                      {config.label}
+                      {t(config.label)}
                     </button>
                   );
-                })}
+                })},
               </div>
               <div className="flex gap-3">
                 <input
                   type="text"
                   value={updateText}
                   onChange={(e) => setUpdateText(e.target.value)}
-                  placeholder="Add an update..."
+                  placeholder={t('emergencyEventDetail.updates.addUpdatePlaceholder')}
                   className="flex-1 h-10 px-3 bg-white border border-[#E5E4E0] rounded-[10px] text-sm text-[#1A1A1A] placeholder:text-[#8A8A8A] focus:outline-none focus:border-[#4A5548] focus:ring-[0_0_0_3px_rgba(74,85,72,0.15)] transition-all"
                 />
                 <button
@@ -622,7 +619,7 @@ export function EmergencyEventDetailPage() {
                   className="h-10 px-4 text-sm font-medium text-white bg-[#1A1A1A] rounded-[10px] hover:bg-[#333] transition-colors disabled:opacity-60 flex items-center gap-1.5"
                 >
                   <Send size={14} />
-                  Post
+                  {t('emergencyEventDetail.updates.post')}
                 </button>
               </div>
             </form>
@@ -636,7 +633,7 @@ export function EmergencyEventDetailPage() {
           ) : updates.length === 0 ? (
             <div className="py-8 text-center">
               <MessageSquare size={32} className="text-[#D8D8D8] mx-auto mb-2" />
-              <p className="text-sm text-[#8A8A8A]">No updates yet</p>
+              <p className="text-sm text-[#8A8A8A]">{t('emergencyEventDetail.updates.noUpdates')}</p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -663,11 +660,11 @@ export function EmergencyEventDetailPage() {
                           className="text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded"
                           style={{ backgroundColor: `${config.color}15`, color: config.color }}
                         >
-                          {config.label}
+                          {t(config.label)}
                         </span>
                       </div>
                       <p className="text-sm text-[#5C5C5C] mt-1 leading-relaxed">{update.text}</p>
-                      <p className="text-xs text-[#8A8A8A] mt-1">{formatRelativeTime(update.createdAt)}</p>
+                      <p className="text-xs text-[#8A8A8A] mt-1">{timeAgo(update.createdAt)}</p>
                     </div>
                   </div>
                 );
@@ -729,15 +726,4 @@ function StatCard({
 
 
 
-function formatRelativeTime(iso: string): string {
-  const date = new Date(iso);
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffMins = Math.floor(diffMs / 60000);
-  if (diffMins < 1) return 'Just now';
-  if (diffMins < 60) return `${diffMins} min ago`;
-  const diffHours = Math.floor(diffMs / 3600000);
-  if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
-  const diffDays = Math.floor(diffMs / 86400000);
-  return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
-}
+

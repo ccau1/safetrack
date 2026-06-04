@@ -33,13 +33,11 @@ services:
       AZURE_CLIENT_ID: ${AZURE_CLIENT_ID:-}
       AZURE_CLIENT_SECRET: ${AZURE_CLIENT_SECRET:-}
       AZURE_TENANT_ID: ${AZURE_TENANT_ID:-common}
-      # Email / Invitation config (optional — leave blank to log invites to console)
       SMTP_HOST: ${SMTP_HOST:-}
       SMTP_PORT: ${SMTP_PORT:-587}
       SMTP_USER: ${SMTP_USER:-}
       SMTP_PASS: ${SMTP_PASS:-}
-      WEB_BASE_URL: ${WEB_BASE_URL:-http://localhost:3010}
-      INVITE_BASE_URL: ${INVITE_BASE_URL:-}
+      INVITE_BASE_URL: ${INVITE_BASE_URL:-http://localhost:3010}
     depends_on:
       postgres:
         condition: service_healthy
@@ -62,11 +60,16 @@ services:
     restart: unless-stopped
 
   web:
-    build:
-      context: ./packages/web
-      dockerfile: Dockerfile
+    image: node:22-alpine
+    working_dir: /app
+    volumes:
+      - ./packages/web:/app
     ports:
-      - "3010:80"
+      - "3010:3000"
+    environment:
+      - NODE_ENV=development
+      - VITE_API_PROXY=http://server:8080
+    command: sh -c "npm install && npx vite --host 0.0.0.0 --port 3000"
     depends_on:
       server:
         condition: service_healthy

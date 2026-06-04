@@ -40,7 +40,7 @@ export function PermissionsPage({ orgId, addToast }: PermissionsPageProps) {
       const res = await api.get<MemberPermission[]>(`/api/organizations/${orgId}/admin/permissions/members`);
       setMemberPermissions(res.data);
     } catch {
-      addToast('Failed to load member permissions', 'error');
+      addToast(t('permissions.toast.loadFailed'), 'error');
     } finally {
       setIsLoading(false);
     }
@@ -53,7 +53,7 @@ export function PermissionsPage({ orgId, addToast }: PermissionsPageProps) {
       const res = await api.get<PermissionCatalogItem[]>(`/api/organizations/${orgId}/admin/permissions/catalog`);
       setCatalog(res.data);
     } catch {
-      addToast('Failed to load permission catalog', 'error');
+      addToast(t('permissions.toast.catalogFailed'), 'error');
     } finally {
       setIsCatalogLoading(false);
     }
@@ -95,13 +95,13 @@ export function PermissionsPage({ orgId, addToast }: PermissionsPageProps) {
         action: selectedAction,
         effect: selectedEffect,
       });
-      addToast('Permission granted', 'success');
+      addToast(t('permissions.toast.granted'), 'success');
       setGrantingMemberId(null);
       setSelectedAction('');
       setSelectedEffect('Allow');
       await fetchPermissions();
     } catch {
-      addToast('Failed to grant permission', 'error');
+      addToast(t('permissions.toast.failedGrant'), 'error');
     } finally {
       setIsSubmitting(false);
     }
@@ -111,10 +111,10 @@ export function PermissionsPage({ orgId, addToast }: PermissionsPageProps) {
     if (!orgId) return;
     try {
       await api.delete(`/api/organizations/${orgId}/admin/permissions/members/${memberId}/${action}`);
-      addToast('Permission revoked', 'success');
+      addToast(t('permissions.toast.revoked'), 'success');
       await fetchPermissions();
     } catch {
-      addToast('Failed to revoke permission', 'error');
+      addToast(t('permissions.toast.failedRevoke'), 'error');
     }
   };
 
@@ -133,9 +133,9 @@ export function PermissionsPage({ orgId, addToast }: PermissionsPageProps) {
         className="flex flex-col sm:flex-row sm:items-center justify-between gap-4"
       >
         <div>
-          <h2 className="text-2xl font-bold text-[#1A1A1A]">Permissions</h2>
+          <h2 className="text-2xl font-bold text-[#1A1A1A]">{t('permissions.title')}</h2>
           <p className="text-sm text-[#8A8A8A] mt-1">
-            Manage organization-scoped permissions for members
+            {t('permissions.subtitle')}
           </p>
         </div>
       </motion.div>
@@ -152,7 +152,7 @@ export function PermissionsPage({ orgId, addToast }: PermissionsPageProps) {
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search members by name, email, or role..."
+          placeholder={t('permissions.searchPlaceholder')}
           className="w-full h-11 pl-10 pr-4 bg-white border border-[#E5E4E0] rounded-[14px] text-sm text-[#1A1A1A] placeholder:text-[#8A8A8A] focus:outline-none focus:border-[#4A5548] focus:ring-[0_0_0_3px_rgba(74,85,72,0.15)] transition-all duration-150"
         />
       </motion.div>
@@ -172,7 +172,7 @@ export function PermissionsPage({ orgId, addToast }: PermissionsPageProps) {
           <div className="flex flex-col items-center justify-center py-16 text-center">
             <Shield size={32} className="text-[#D8E0D6] mb-3" />
             <p className="text-sm text-[#8A8A8A]">
-              {search.trim() ? 'No members match your search' : 'No members found in this organization'}
+              {search.trim() ? t('permissions.empty.noMatch') : t('permissions.empty.noMembers')}
             </p>
           </div>
         ) : (
@@ -209,14 +209,13 @@ export function PermissionsPage({ orgId, addToast }: PermissionsPageProps) {
                           <>
                             <Lock size={14} className="text-[#4A5548]" />
                             <span className="text-xs font-medium text-[#4A5548]">
-                              {member.permissions.length} override
-                              {member.permissions.length !== 1 ? 's' : ''}
+                              {t('permissions.memberRow.override', { count: member.permissions.length })}
                             </span>
                           </>
                         ) : (
                           <>
                             <Unlock size={14} className="text-[#8A8A8A]" />
-                            <span className="text-xs text-[#8A8A8A]">Role defaults</span>
+                            <span className="text-xs text-[#8A8A8A]">{t('permissions.memberRow.roleDefaults')}</span>
                           </>
                         )}
                       </div>
@@ -243,7 +242,7 @@ export function PermissionsPage({ orgId, addToast }: PermissionsPageProps) {
                           {member.permissions.length > 0 ? (
                             <div className="mb-4">
                               <h4 className="text-xs font-semibold text-[#5C5C5C] uppercase tracking-wider mb-2">
-                                Assigned Overrides
+                                {t('permissions.expanded.assignedOverrides')}
                               </h4>
                               <div className="flex flex-wrap gap-2">
                                 {member.permissions.map((perm) => (
@@ -267,7 +266,7 @@ export function PermissionsPage({ orgId, addToast }: PermissionsPageProps) {
                                         handleRevoke(member.memberId, perm.action);
                                       }}
                                       className="ml-0.5 hover:opacity-70 transition-opacity"
-                                      title="Revoke"
+                                      title={t('permissions.expanded.revoke')}
                                     >
                                       <X size={12} />
                                     </button>
@@ -277,7 +276,7 @@ export function PermissionsPage({ orgId, addToast }: PermissionsPageProps) {
                             </div>
                           ) : (
                             <div className="mb-4 text-xs text-[#8A8A8A]">
-                              No permission overrides. Role-based defaults apply.
+                              {t('permissions.expanded.noOverrides')}
                             </div>
                           )}
 
@@ -290,7 +289,7 @@ export function PermissionsPage({ orgId, addToast }: PermissionsPageProps) {
                                   onChange={(e) => setSelectedAction(e.target.value)}
                                   className="h-9 text-sm bg-[#F7F6F2] border border-[#E5E4E0] rounded-[10px] px-3 focus:outline-none focus:border-[#4A5548] min-w-[200px]"
                                 >
-                                  <option value="">Select permission...</option>
+                                  <option value="">{t('permissions.expanded.selectPermission')}</option>
                                   {Object.entries(groupedCatalog).map(([category, items]) => (
                                     <optgroup key={category} label={category}>
                                       {items
@@ -308,8 +307,8 @@ export function PermissionsPage({ orgId, addToast }: PermissionsPageProps) {
                                   onChange={(e) => setSelectedEffect(e.target.value as PermissionEffect)}
                                   className="h-9 text-sm bg-[#F7F6F2] border border-[#E5E4E0] rounded-[10px] px-3 focus:outline-none focus:border-[#4A5548]"
                                 >
-                                  <option value="Allow">Allow</option>
-                                  <option value="Deny">Deny</option>
+                                  <option value="Allow">{t('permissions.expanded.allow')}</option>
+                                  <option value="Deny">{t('permissions.expanded.deny')}</option>
                                 </select>
                                 <button
                                   onClick={() => handleGrant(member.memberId)}
@@ -319,7 +318,7 @@ export function PermissionsPage({ orgId, addToast }: PermissionsPageProps) {
                                   {isSubmitting ? (
                                     <Loader2 size={14} className="animate-spin" />
                                   ) : (
-                                    'Grant'
+                                    t('permissions.expanded.grant')
                                   )}
                                 </button>
                                 <button
@@ -331,7 +330,7 @@ export function PermissionsPage({ orgId, addToast }: PermissionsPageProps) {
                                   }}
                                   className="h-9 px-3 text-xs text-[#5C5C5C] hover:text-[#1A1A1A] transition-colors"
                                 >
-                                  Cancel
+                                  {t('permissions.expanded.cancel')}
                                 </button>
                               </div>
                               {selectedAction && (
@@ -355,7 +354,7 @@ export function PermissionsPage({ orgId, addToast }: PermissionsPageProps) {
                                 className="inline-flex items-center gap-1.5 text-xs font-medium text-[#4A5548] bg-[#E8EDE7] rounded-[10px] px-3 py-2 hover:bg-[#D8E0D6] transition-colors"
                               >
                                 <Plus size={14} />
-                                Add Permission
+                                {t('permissions.expanded.addPermission')}
                               </button>
                             )
                           )}
@@ -379,9 +378,9 @@ export function PermissionsPage({ orgId, addToast }: PermissionsPageProps) {
           className="bg-white border border-[#E5E4E0] rounded-[14px] overflow-hidden"
         >
           <div className="px-5 py-4 border-b border-[#E5E4E0]">
-            <h3 className="text-sm font-semibold text-[#1A1A1A]">Permission Catalog</h3>
+            <h3 className="text-sm font-semibold text-[#1A1A1A]">{t('permissions.catalog.title')}</h3>
             <p className="text-xs text-[#8A8A8A] mt-0.5">
-              Available permissions that can be granted or denied per member
+              {t('permissions.catalog.subtitle')}
             </p>
           </div>
           <div className="divide-y divide-[#E5E4E0]">

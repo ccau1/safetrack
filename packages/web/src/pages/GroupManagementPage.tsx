@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import { Plus, Users, Search, X, Trash2, Loader2, Check, Pencil, Building2 } from 'lucide-react';
 import { api } from '@/lib/api';
 import type { MemberGroup, Member, TeamApi, ToastItem } from '@/types';
@@ -21,6 +22,7 @@ export function GroupManagementPage({
   addToast,
   onMutated,
 }: GroupManagementPageProps) {
+  const { t } = useTranslation();
   const [createOpen, setCreateOpen] = useState(false);
   const [newGroupName, setNewGroupName] = useState('');
   const [creating, setCreating] = useState(false);
@@ -121,7 +123,7 @@ export function GroupManagementPage({
         memberIds: Array.from(selectedMemberIds),
         teamIds: Array.from(selectedTeamIds),
       });
-      addToast(`Group "${newGroupName.trim()}" created`, 'success');
+      addToast(t('groupManagement.toast.created', { name: newGroupName.trim() }), 'success');
       setNewGroupName('');
       setSelectedMemberIds(new Set());
       setSelectedTeamIds(new Set());
@@ -130,7 +132,7 @@ export function GroupManagementPage({
       setCreateOpen(false);
       onMutated();
     } catch {
-      addToast('Failed to create group', 'error');
+      addToast(t('groupManagement.toast.failedCreate'), 'error');
     } finally {
       setCreating(false);
     }
@@ -154,11 +156,11 @@ export function GroupManagementPage({
         memberIds: Array.from(editMemberIds),
         teamIds: Array.from(editTeamIds),
       });
-      addToast('Group updated', 'success');
+      addToast(t('groupManagement.toast.updated'), 'success');
       setEditingGroup(null);
       onMutated();
     } catch {
-      addToast('Failed to update group', 'error');
+      addToast(t('groupManagement.toast.failedUpdate'), 'error');
     } finally {
       setSaving(false);
     }
@@ -169,11 +171,11 @@ export function GroupManagementPage({
     setDeleting(true);
     try {
       await api.delete(`/api/member-groups/${confirmDelete.id}`);
-      addToast(`Group "${confirmDelete.name}" deleted`, 'success');
+      addToast(t('groupManagement.toast.deleted', { name: confirmDelete.name }), 'success');
       setConfirmDelete(null);
       onMutated();
     } catch {
-      addToast('Failed to delete group', 'error');
+      addToast(t('groupManagement.toast.failedDelete'), 'error');
     } finally {
       setDeleting(false);
     }
@@ -189,9 +191,9 @@ export function GroupManagementPage({
         className="flex items-center justify-between"
       >
         <div>
-          <h2 className="text-2xl font-bold text-[#1A1A1A]">Group Management</h2>
+          <h2 className="text-2xl font-bold text-[#1A1A1A]">{t('groupManagement.title')}</h2>
           <p className="text-sm text-[#8A8A8A] mt-1">
-            Create groups and assign members or teams for scoped emergency events
+            {t('groupManagement.subtitle')}
           </p>
         </div>
         <button
@@ -199,7 +201,7 @@ export function GroupManagementPage({
           className="flex items-center gap-2 px-4 h-10 text-sm font-semibold text-white bg-[#4A5548] rounded-[10px] hover:bg-[#3D463B] transition-colors duration-150"
         >
           <Plus size={16} />
-          New Group
+          {t('groupManagement.newGroup')}
         </button>
       </motion.div>
 
@@ -213,12 +215,12 @@ export function GroupManagementPage({
           className="bg-white border border-[#E5E4E0] rounded-[14px] p-5 space-y-4"
         >
           <div>
-            <label className="block text-sm font-medium text-[#1A1A1A] mb-1.5">Group Name</label>
+            <label className="block text-sm font-medium text-[#1A1A1A] mb-1.5">{t('groupManagement.createForm.groupName')}</label>
             <input
               type="text"
               value={newGroupName}
               onChange={(e) => setNewGroupName(e.target.value)}
-              placeholder="e.g. Building A, Floor 3"
+              placeholder={t('groupManagement.createForm.placeholder')}
               required
               className="w-full h-10 bg-[#F7F6F2] border border-[#E5E4E0] rounded-[10px] px-3 text-sm text-[#1A1A1A] placeholder:text-[#8A8A8A] focus:outline-none focus:border-[#4A5548] focus:ring-[0_0_0_3px_rgba(74,85,72,0.15)] transition-all duration-150"
             />
@@ -228,7 +230,7 @@ export function GroupManagementPage({
             {/* Members selector */}
             <div>
               <label className="block text-sm font-medium text-[#1A1A1A] mb-1.5">
-                Members ({selectedMemberIds.size} selected)
+                {t('groupManagement.createForm.membersSelected', { count: selectedMemberIds.size })}
               </label>
               <div className="relative mb-2">
                 <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8A8A8A]" />
@@ -236,13 +238,13 @@ export function GroupManagementPage({
                   type="text"
                   value={memberSearch}
                   onChange={(e) => setMemberSearch(e.target.value)}
-                  placeholder="Search members..."
+                  placeholder={t('groupManagement.createForm.searchMembers')}
                   className="w-full h-9 pl-9 pr-3 bg-[#F7F6F2] border border-[#E5E4E0] rounded-[10px] text-sm text-[#1A1A1A] placeholder:text-[#8A8A8A] focus:outline-none focus:border-[#4A5548] focus:ring-[0_0_0_3px_rgba(74,85,72,0.15)] transition-all duration-150"
                 />
               </div>
               <div className="border border-[#E5E4E0] rounded-[10px] max-h-[200px] overflow-y-auto">
                 {filteredMembers.length === 0 ? (
-                  <p className="text-sm text-[#8A8A8A] text-center py-4">No members found</p>
+                  <p className="text-sm text-[#8A8A8A] text-center py-4">{t('groupManagement.createForm.noMembers')}</p>
                 ) : (
                   filteredMembers.map((member) => {
                     const isSelected = selectedMemberIds.has(member.id);
@@ -281,7 +283,7 @@ export function GroupManagementPage({
             {/* Teams selector */}
             <div>
               <label className="block text-sm font-medium text-[#1A1A1A] mb-1.5">
-                Teams ({selectedTeamIds.size} selected)
+                {t('groupManagement.createForm.teamsSelected', { count: selectedTeamIds.size })}
               </label>
               <div className="relative mb-2">
                 <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8A8A8A]" />
@@ -289,13 +291,13 @@ export function GroupManagementPage({
                   type="text"
                   value={teamSearch}
                   onChange={(e) => setTeamSearch(e.target.value)}
-                  placeholder="Search teams..."
+                  placeholder={t('groupManagement.createForm.searchTeams')}
                   className="w-full h-9 pl-9 pr-3 bg-[#F7F6F2] border border-[#E5E4E0] rounded-[10px] text-sm text-[#1A1A1A] placeholder:text-[#8A8A8A] focus:outline-none focus:border-[#4A5548] focus:ring-[0_0_0_3px_rgba(74,85,72,0.15)] transition-all duration-150"
                 />
               </div>
               <div className="border border-[#E5E4E0] rounded-[10px] max-h-[200px] overflow-y-auto">
                 {filteredTeams.length === 0 ? (
-                  <p className="text-sm text-[#8A8A8A] text-center py-4">No teams found</p>
+                  <p className="text-sm text-[#8A8A8A] text-center py-4">{t('groupManagement.createForm.noTeams')}</p>
                 ) : (
                   filteredTeams.map((team) => {
                     const isSelected = selectedTeamIds.has(team.id);
@@ -335,7 +337,7 @@ export function GroupManagementPage({
               disabled={creating}
               className="h-10 px-4 text-sm font-semibold text-white bg-[#4A5548] rounded-[10px] hover:bg-[#3D463B] transition-colors duration-150 disabled:opacity-60"
             >
-              {creating ? <Loader2 size={16} className="animate-spin" /> : 'Create'}
+              {creating ? <Loader2 size={16} className="animate-spin" /> : t('groupManagement.createForm.create')}
             </button>
             <button
               type="button"
@@ -375,7 +377,7 @@ export function GroupManagementPage({
                 <div>
                   <h3 className="text-base font-semibold text-[#1A1A1A]">{group.name}</h3>
                   <p className="text-xs text-[#8A8A8A]">
-                    {group.members.length} members · {group.teams.length} teams
+                    {t('groupManagement.groupCard.members', { count: group.members.length })} · {t('groupManagement.groupCard.teams', { count: group.teams.length })}
                   </p>
                 </div>
               </div>
@@ -383,14 +385,14 @@ export function GroupManagementPage({
                 <button
                   onClick={() => startEdit(group)}
                   className="p-2 text-[#8A8A8A] hover:text-[#4A5548] transition-colors"
-                  title="Edit group"
+                  title={t('common.edit')}
                 >
                   <Pencil size={16} />
                 </button>
                 <button
                   onClick={() => setConfirmDelete(group)}
                   className="p-2 text-[#8A8A8A] hover:text-[#C44536] transition-colors"
-                  title="Delete group"
+                  title={t('common.delete')}
                 >
                   <Trash2 size={16} />
                 </button>
@@ -409,7 +411,7 @@ export function GroupManagementPage({
                   </span>
                 ))}
                 {group.members.length > 6 && (
-                  <span className="text-xs text-[#8A8A8A] px-1">+{group.members.length - 6} more</span>
+                  <span className="text-xs text-[#8A8A8A] px-1">{t('groupManagement.groupCard.more', { count: group.members.length - 6 })}</span>
                 )}
               </div>
             )}
@@ -427,13 +429,13 @@ export function GroupManagementPage({
                   </span>
                 ))}
                 {group.teams.length > 6 && (
-                  <span className="text-xs text-[#8A8A8A] px-1">+{group.teams.length - 6} more</span>
+                  <span className="text-xs text-[#8A8A8A] px-1">{t('groupManagement.groupCard.more', { count: group.teams.length - 6 })}</span>
                 )}
               </div>
             )}
 
             {group.members.length === 0 && group.teams.length === 0 && (
-              <span className="text-xs text-[#8A8A8A]">No members or teams in this group</span>
+              <span className="text-xs text-[#8A8A8A]">{t('groupManagement.groupCard.noMembersOrTeams')}</span>
             )}
           </div>
         ))}
@@ -441,7 +443,7 @@ export function GroupManagementPage({
         {groups.length === 0 && (
           <div className="col-span-2 text-center py-12 bg-white border border-[#E5E4E0] rounded-[14px]">
             <Users size={32} className="text-[#D8E0D6] mx-auto mb-3" />
-            <p className="text-sm text-[#8A8A8A]">No groups yet. Create your first group above.</p>
+            <p className="text-sm text-[#8A8A8A]">{t('groupManagement.noGroups')}</p>
           </div>
         )}
       </motion.div>
@@ -457,7 +459,7 @@ export function GroupManagementPage({
             className="bg-white rounded-[14px] shadow-[0_8px_40px_rgba(0,0,0,0.12)] w-[560px] max-w-[92vw] max-h-[85vh] overflow-y-auto"
           >
             <div className="flex items-center justify-between px-6 py-5 border-b border-[#E5E4E0]">
-              <h3 className="text-lg font-semibold text-[#1A1A1A]">Edit Group</h3>
+              <h3 className="text-lg font-semibold text-[#1A1A1A]">{t('groupManagement.editModal.title')}</h3>
               <button
                 onClick={() => setEditingGroup(null)}
                 className="w-8 h-8 flex items-center justify-center rounded-full text-[#8A8A8A] hover:text-[#1A1A1A] hover:bg-[#F7F6F2] transition-colors"
@@ -468,7 +470,7 @@ export function GroupManagementPage({
 
             <div className="px-6 py-5 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-[#1A1A1A] mb-1.5">Group Name</label>
+                <label className="block text-sm font-medium text-[#1A1A1A] mb-1.5">{t('groupManagement.editModal.groupName')}</label>
                 <input
                   type="text"
                   value={editName}
@@ -482,7 +484,7 @@ export function GroupManagementPage({
                 {/* Edit Members */}
                 <div>
                   <label className="block text-sm font-medium text-[#1A1A1A] mb-1.5">
-                    Members ({editMemberIds.size} selected)
+                    {t('groupManagement.editModal.membersSelected', { count: editMemberIds.size })}
                   </label>
                   <div className="relative mb-2">
                     <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8A8A8A]" />
@@ -490,13 +492,13 @@ export function GroupManagementPage({
                       type="text"
                       value={editSearch}
                       onChange={(e) => setEditSearch(e.target.value)}
-                      placeholder="Search members..."
+                      placeholder={t('groupManagement.editModal.searchMembers')}
                       className="w-full h-9 pl-9 pr-3 bg-[#F7F6F2] border border-[#E5E4E0] rounded-[10px] text-sm text-[#1A1A1A] placeholder:text-[#8A8A8A] focus:outline-none focus:border-[#4A5548] focus:ring-[0_0_0_3px_rgba(74,85,72,0.15)] transition-all duration-150"
                     />
                   </div>
                   <div className="border border-[#E5E4E0] rounded-[10px] max-h-[240px] overflow-y-auto">
                     {filteredEditMembers.length === 0 ? (
-                      <p className="text-sm text-[#8A8A8A] text-center py-4">No members found</p>
+                      <p className="text-sm text-[#8A8A8A] text-center py-4">{t('groupManagement.editModal.noMembers')}</p>
                     ) : (
                       filteredEditMembers.map((member) => {
                         const isSelected = editMemberIds.has(member.id);
@@ -535,7 +537,7 @@ export function GroupManagementPage({
                 {/* Edit Teams */}
                 <div>
                   <label className="block text-sm font-medium text-[#1A1A1A] mb-1.5">
-                    Teams ({editTeamIds.size} selected)
+                    {t('groupManagement.editModal.teamsSelected', { count: editTeamIds.size })}
                   </label>
                   <div className="relative mb-2">
                     <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8A8A8A]" />
@@ -543,13 +545,13 @@ export function GroupManagementPage({
                       type="text"
                       value={editTeamSearch}
                       onChange={(e) => setEditTeamSearch(e.target.value)}
-                      placeholder="Search teams..."
+                      placeholder={t('groupManagement.editModal.searchTeams')}
                       className="w-full h-9 pl-9 pr-3 bg-[#F7F6F2] border border-[#E5E4E0] rounded-[10px] text-sm text-[#1A1A1A] placeholder:text-[#8A8A8A] focus:outline-none focus:border-[#4A5548] focus:ring-[0_0_0_3px_rgba(74,85,72,0.15)] transition-all duration-150"
                     />
                   </div>
                   <div className="border border-[#E5E4E0] rounded-[10px] max-h-[240px] overflow-y-auto">
                     {filteredEditTeams.length === 0 ? (
-                      <p className="text-sm text-[#8A8A8A] text-center py-4">No teams found</p>
+                      <p className="text-sm text-[#8A8A8A] text-center py-4">{t('groupManagement.editModal.noTeams')}</p>
                     ) : (
                       filteredEditTeams.map((team) => {
                         const isSelected = editTeamIds.has(team.id);
@@ -589,14 +591,14 @@ export function GroupManagementPage({
                 onClick={() => setEditingGroup(null)}
                 className="h-10 px-4 text-sm font-medium text-[#5C5C5C] hover:text-[#1A1A1A] transition-colors"
               >
-                Cancel
+                {t('groupManagement.editModal.cancel')}
               </button>
               <button
                 onClick={handleSaveEdit}
                 disabled={saving || !editName.trim()}
                 className="h-10 px-4 text-sm font-semibold text-white bg-[#4A5548] rounded-[10px] hover:bg-[#3D463B] transition-colors disabled:opacity-60"
               >
-                {saving ? <Loader2 size={16} className="animate-spin" /> : 'Save Changes'}
+                {saving ? <Loader2 size={16} className="animate-spin" /> : t('groupManagement.editModal.saveChanges')}
               </button>
             </div>
           </motion.div>
@@ -613,23 +615,23 @@ export function GroupManagementPage({
             transition={{ duration: 0.15 }}
             className="bg-white rounded-[14px] p-6 w-full max-w-sm mx-4 shadow-lg"
           >
-            <h3 className="text-lg font-semibold text-[#1A1A1A]">Delete Group</h3>
-            <p className="text-sm text-[#5C5C5C] mt-2">
-              Are you sure you want to delete <strong>{confirmDelete.name}</strong>?
-            </p>
+            <h3 className="text-lg font-semibold text-[#1A1A1A]">{t('groupManagement.deleteModal.title')}</h3>
+            <p className="text-sm text-[#5C5C5C] mt-2"
+              dangerouslySetInnerHTML={{ __html: t('groupManagement.deleteModal.message', { name: confirmDelete.name }) }}
+            />
             <div className="flex items-center justify-end gap-3 mt-6">
               <button
                 onClick={() => setConfirmDelete(null)}
                 className="h-10 px-4 text-sm font-medium text-[#5C5C5C] hover:text-[#1A1A1A] transition-colors"
               >
-                Cancel
+                {t('groupManagement.deleteModal.cancel')}
               </button>
               <button
                 onClick={handleDelete}
                 disabled={deleting}
                 className="h-10 px-4 text-sm font-semibold text-white bg-[#C44536] rounded-[10px] hover:bg-[#A63A2E] transition-colors disabled:opacity-60"
               >
-                {deleting ? <Loader2 size={16} className="animate-spin" /> : 'Delete'}
+                {deleting ? <Loader2 size={16} className="animate-spin" /> : t('groupManagement.deleteModal.delete')}
               </button>
             </div>
           </motion.div>

@@ -1,26 +1,9 @@
 import { useState, useCallback, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import { X, AlertTriangle, Flame, DoorOpen, ShieldAlert, Search, Users, Check } from 'lucide-react';
 import type { EmergencyEventApi, TeamApi, MemberGroup } from '@/types';
-
-const QUICK_PRESETS = [
-  { label: 'Now', minutes: 0 },
-  { label: '5 min ago', minutes: 5 },
-  { label: '10 min ago', minutes: 10 },
-  { label: '15 min ago', minutes: 15 },
-  { label: '20 min ago', minutes: 20 },
-  { label: '25 min ago', minutes: 25 },
-  { label: '30 min ago', minutes: 30 },
-  { label: '1 hr ago', minutes: 60 },
-];
-
-const EVENT_TYPES: { type: EmergencyEventApi['type']; label: string; icon: typeof Flame; color: string }[] = [
-  { type: 'EMERGENCY', label: 'Emergency', icon: AlertTriangle, color: '#C44536' },
-  { type: 'FIRE_DRILL', label: 'Fire Drill', icon: Flame, color: '#E07A5F' },
-  { type: 'EVACUATION', label: 'Evacuation', icon: DoorOpen, color: '#4A7C59' },
-  { type: 'LOCKDOWN', label: 'Lockdown', icon: ShieldAlert, color: '#5B7B8A' },
-];
 
 interface CreateEmergencyEventModalProps {
   open: boolean;
@@ -44,6 +27,7 @@ function toLocalIsoString(date: Date): string {
 }
 
 export function CreateEmergencyEventModal({ open, onClose, teams, groups, onCreate }: CreateEmergencyEventModalProps) {
+  const { t } = useTranslation();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [type, setType] = useState<EmergencyEventApi['type']>('EMERGENCY');
@@ -56,6 +40,24 @@ export function CreateEmergencyEventModal({ open, onClose, teams, groups, onCrea
   const [selectedTeamIds, setSelectedTeamIds] = useState<Set<string>>(new Set());
   const [selectedGroupIds, setSelectedGroupIds] = useState<Set<string>>(new Set());
   const [searchQuery, setSearchQuery] = useState('');
+
+  const eventTypes = [
+    { type: 'EMERGENCY' as EmergencyEventApi['type'], icon: AlertTriangle, color: '#C44536' },
+    { type: 'FIRE_DRILL' as EmergencyEventApi['type'], icon: Flame, color: '#E07A5F' },
+    { type: 'EVACUATION' as EmergencyEventApi['type'], icon: DoorOpen, color: '#4A7C59' },
+    { type: 'LOCKDOWN' as EmergencyEventApi['type'], icon: ShieldAlert, color: '#5B7B8A' },
+  ];
+
+  const quickPresets = [
+    { minutes: 0, key: 'presetNow' },
+    { minutes: 5, key: 'presetMinAgo' },
+    { minutes: 10, key: 'presetMinAgo' },
+    { minutes: 15, key: 'presetMinAgo' },
+    { minutes: 20, key: 'presetMinAgo' },
+    { minutes: 25, key: 'presetMinAgo' },
+    { minutes: 30, key: 'presetMinAgo' },
+    { minutes: 60, key: 'presetHrAgo' },
+  ];
 
   const applyPreset = useCallback((minutes: number, index: number) => {
     const now = new Date();
@@ -151,7 +153,7 @@ export function CreateEmergencyEventModal({ open, onClose, teams, groups, onCrea
           >
             {/* Header */}
             <div className="flex items-center justify-between px-6 py-5 border-b border-[#E5E4E0]">
-              <h3 className="text-lg font-semibold text-[#1A1A1A]">Create Emergency Event</h3>
+              <h3 className="text-lg font-semibold text-[#1A1A1A]">{t('createEmergencyEvent.title')}</h3>
               <button
                 onClick={onClose}
                 className="w-8 h-8 flex items-center justify-center rounded-full text-[#8A8A8A] hover:text-[#1A1A1A] hover:bg-[#F7F6F2] transition-colors duration-150"
@@ -163,12 +165,12 @@ export function CreateEmergencyEventModal({ open, onClose, teams, groups, onCrea
             <form onSubmit={handleSubmit} className="px-6 py-5 space-y-5">
               {/* Title */}
               <div>
-                <label className="block text-sm font-medium text-[#1A1A1A] mb-1.5">Event Title</label>
+                <label className="block text-sm font-medium text-[#1A1A1A] mb-1.5">{t('createEmergencyEvent.eventTitle')}</label>
                 <input
                   type="text"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  placeholder="e.g. Fire on Floor 3"
+                  placeholder={t('createEmergencyEvent.eventTitlePlaceholder')}
                   required
                   className="w-full h-10 px-3 bg-white border border-[#E5E4E0] rounded-[10px] text-sm text-[#1A1A1A] placeholder:text-[#8A8A8A] focus:outline-none focus:border-[#4A5548] focus:ring-[0_0_0_3px_rgba(74,85,72,0.15)] transition-all duration-150"
                 />
@@ -176,21 +178,21 @@ export function CreateEmergencyEventModal({ open, onClose, teams, groups, onCrea
 
               {/* Type */}
               <div>
-                <label className="block text-sm font-medium text-[#1A1A1A] mb-2">Event Type</label>
+                <label className="block text-sm font-medium text-[#1A1A1A] mb-2">{t('createEmergencyEvent.eventType')}</label>
                 <div className="grid grid-cols-2 gap-2">
-                  {EVENT_TYPES.map(({ type: t, label, icon: Icon, color }) => (
+                  {eventTypes.map(({ type: typeKey, icon: Icon, color }) => (
                     <button
-                      key={t}
+                      key={typeKey}
                       type="button"
-                      onClick={() => setType(t)}
+                      onClick={() => setType(typeKey)}
                       className={`flex items-center gap-2 px-3 py-2.5 rounded-[10px] border text-sm font-medium transition-all duration-150 ${
-                        type === t
+                        type === typeKey
                           ? 'border-[#4A5548] bg-[#E8EDE7] text-[#1A1A1A]'
                           : 'border-[#E5E4E0] bg-white text-[#5C5C5C] hover:bg-[#F7F6F2]'
                       }`}
                     >
                       <Icon size={16} style={{ color }} />
-                      {label}
+                      {t(`emergencies.types.${typeKey}`, typeKey.replace('_', ' '))}
                     </button>
                   ))}
                 </div>
@@ -198,9 +200,9 @@ export function CreateEmergencyEventModal({ open, onClose, teams, groups, onCrea
 
               {/* Start Time Presets */}
               <div>
-                <label className="block text-sm font-medium text-[#1A1A1A] mb-2">When did it start?</label>
+                <label className="block text-sm font-medium text-[#1A1A1A] mb-2">{t('createEmergencyEvent.whenDidItStart')}</label>
                 <div className="flex flex-wrap gap-2 mb-3">
-                  {QUICK_PRESETS.map((preset, idx) => (
+                  {quickPresets.map((preset, idx) => (
                     <button
                       key={preset.minutes}
                       type="button"
@@ -211,7 +213,11 @@ export function CreateEmergencyEventModal({ open, onClose, teams, groups, onCrea
                           : 'bg-white text-[#5C5C5C] border-[#E5E4E0] hover:border-[#1A1A1A]'
                       }`}
                     >
-                      {preset.label}
+                      {preset.minutes === 0
+                        ? t('createEmergencyEvent.presetNow')
+                        : preset.minutes < 60
+                        ? t('createEmergencyEvent.presetMinAgo', { count: preset.minutes })
+                        : t('createEmergencyEvent.presetHrAgo', { count: preset.minutes / 60 })}
                     </button>
                   ))}
                 </div>
@@ -226,7 +232,7 @@ export function CreateEmergencyEventModal({ open, onClose, teams, groups, onCrea
 
               {/* Scope Section */}
               <div>
-                <label className="block text-sm font-medium text-[#1A1A1A] mb-2">Scope</label>
+                <label className="block text-sm font-medium text-[#1A1A1A] mb-2">{t('createEmergencyEvent.scope')}</label>
                 <div className="flex gap-2 mb-3">
                   <button
                     type="button"
@@ -237,7 +243,7 @@ export function CreateEmergencyEventModal({ open, onClose, teams, groups, onCrea
                         : 'border-[#E5E4E0] bg-white text-[#5C5C5C] hover:bg-[#F7F6F2]'
                     }`}
                   >
-                    All Members
+                    {t('createEmergencyEvent.allMembers')}
                   </button>
                   <button
                     type="button"
@@ -248,7 +254,7 @@ export function CreateEmergencyEventModal({ open, onClose, teams, groups, onCrea
                         : 'border-[#E5E4E0] bg-white text-[#5C5C5C] hover:bg-[#F7F6F2]'
                     }`}
                   >
-                    Selected Teams & Groups
+                    {t('createEmergencyEvent.selectedTeamsGroups')}
                     {selectedCount > 0 && (
                       <span className="ml-1.5 inline-flex items-center justify-center w-5 h-5 rounded-full bg-[#4A5548] text-white text-[10px] font-bold">
                         {selectedCount}
@@ -266,7 +272,7 @@ export function CreateEmergencyEventModal({ open, onClose, teams, groups, onCrea
                         type="text"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder="Search teams or groups..."
+                        placeholder={t('createEmergencyEvent.searchTeamsGroups')}
                         className="w-full h-9 pl-9 pr-3 bg-[#F7F6F2] border border-[#E5E4E0] rounded-[10px] text-sm text-[#1A1A1A] placeholder:text-[#8A8A8A] focus:outline-none focus:border-[#4A5548] focus:ring-[0_0_0_3px_rgba(74,85,72,0.15)] transition-all duration-150"
                       />
                     </div>
@@ -318,7 +324,7 @@ export function CreateEmergencyEventModal({ open, onClose, teams, groups, onCrea
                     {/* Teams list */}
                     {filteredTeams.length > 0 && (
                       <div>
-                        <p className="text-[11px] font-medium text-[#8A8A8A] uppercase tracking-wider mb-1.5">Teams</p>
+                        <p className="text-[11px] font-medium text-[#8A8A8A] uppercase tracking-wider mb-1.5">{t('createEmergencyEvent.teams')}</p>
                         <div className="space-y-1 max-h-[140px] overflow-y-auto">
                           {filteredTeams.map((team) => {
                             const isSelected = selectedTeamIds.has(team.id);
@@ -347,7 +353,7 @@ export function CreateEmergencyEventModal({ open, onClose, teams, groups, onCrea
                                 </div>
                                 <span className="text-xs text-[#8A8A8A] flex items-center gap-1">
                                   <Users size={12} />
-                                  {team.name === 'Unassigned' ? 0 : (team as TeamApi & { memberCount?: number }).memberCount ?? '-'}
+                                  {(team as TeamApi & { memberCount?: number }).memberCount ?? '-'}
                                 </span>
                               </button>
                             );
@@ -359,7 +365,7 @@ export function CreateEmergencyEventModal({ open, onClose, teams, groups, onCrea
                     {/* Groups list */}
                     {filteredGroups.length > 0 && (
                       <div>
-                        <p className="text-[11px] font-medium text-[#8A8A8A] uppercase tracking-wider mb-1.5">Groups</p>
+                        <p className="text-[11px] font-medium text-[#8A8A8A] uppercase tracking-wider mb-1.5">{t('createEmergencyEvent.groups')}</p>
                         <div className="space-y-1 max-h-[140px] overflow-y-auto">
                           {filteredGroups.map((group) => {
                             const isSelected = selectedGroupIds.has(group.id);
@@ -398,7 +404,7 @@ export function CreateEmergencyEventModal({ open, onClose, teams, groups, onCrea
                     )}
 
                     {filteredTeams.length === 0 && filteredGroups.length === 0 && (
-                      <p className="text-sm text-[#8A8A8A] text-center py-2">No teams or groups found</p>
+                      <p className="text-sm text-[#8A8A8A] text-center py-2">{t('createEmergencyEvent.noTeamsGroupsFound')}</p>
                     )}
                   </div>
                 )}
@@ -406,11 +412,11 @@ export function CreateEmergencyEventModal({ open, onClose, teams, groups, onCrea
 
               {/* Description */}
               <div>
-                <label className="block text-sm font-medium text-[#1A1A1A] mb-1.5">Description</label>
+                <label className="block text-sm font-medium text-[#1A1A1A] mb-1.5">{t('createEmergencyEvent.description')}</label>
                 <textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Add any details about the emergency..."
+                  placeholder={t('createEmergencyEvent.descriptionPlaceholder')}
                   rows={3}
                   className="w-full px-3 py-2 bg-white border border-[#E5E4E0] rounded-[10px] text-sm text-[#1A1A1A] placeholder:text-[#8A8A8A] focus:outline-none focus:border-[#4A5548] focus:ring-[0_0_0_3px_rgba(74,85,72,0.15)] transition-all duration-150 resize-none"
                 />
@@ -423,7 +429,7 @@ export function CreateEmergencyEventModal({ open, onClose, teams, groups, onCrea
                   onClick={onClose}
                   className="flex-1 py-2.5 text-sm font-medium text-[#5C5C5C] bg-[#F7F6F2] border border-[#E5E4E0] rounded-[10px] hover:bg-[#EFEFEC] transition-colors duration-150"
                 >
-                  Cancel
+                  {t('createEmergencyEvent.cancel')}
                 </button>
                 <button
                   type="submit"
@@ -433,7 +439,7 @@ export function CreateEmergencyEventModal({ open, onClose, teams, groups, onCrea
                   {loading ? (
                     <span className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                   ) : (
-                    'Create Event'
+                    t('createEmergencyEvent.createEvent')
                   )}
                 </button>
               </div>

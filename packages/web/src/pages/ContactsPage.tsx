@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import { Phone, Mail, User, Heart, Save, Loader2 } from 'lucide-react';
 import { useContacts } from '@/hooks/useContacts';
 import type { ToastItem } from '@/types';
@@ -9,6 +10,7 @@ interface ContactsPageProps {
 }
 
 export function ContactsPage({ addToast }: ContactsPageProps) {
+  const { t } = useTranslation();
   const { contact, isLoading, updateContact } = useContacts();
   const [saving, setSaving] = useState(false);
 
@@ -54,9 +56,9 @@ export function ContactsPage({ addToast }: ContactsPageProps) {
         nextOfKinPhone: form.nextOfKinPhone || null,
         nextOfKinEmail: form.nextOfKinEmail || null,
       });
-      addToast('Emergency contacts updated successfully', 'success');
+      addToast(t('contacts.toast.updated'), 'success');
     } catch {
-      addToast('Failed to update emergency contacts', 'error');
+      addToast(t('contacts.toast.failed'), 'error');
     } finally {
       setSaving(false);
     }
@@ -108,9 +110,9 @@ export function ContactsPage({ addToast }: ContactsPageProps) {
         transition={{ duration: 0.4 }}
         className="mb-6"
       >
-        <h2 className="text-2xl font-bold text-[#1A1A1A]">Emergency Contacts</h2>
+        <h2 className="text-2xl font-bold text-[#1A1A1A]">{t('contacts.title')}</h2>
         <p className="text-sm text-[#8A8A8A] mt-1">
-          Keep your contact information up to date so we can reach you or your next of kin in an emergency.
+          {t('contacts.subtitle')}
         </p>
       </motion.div>
 
@@ -125,16 +127,16 @@ export function ContactsPage({ addToast }: ContactsPageProps) {
         <div>
           <h3 className="text-sm font-semibold text-[#1A1A1A] mb-4 flex items-center gap-2">
             <Phone size={16} className="text-[#4A5548]" />
-            Personal Contact
+            {t('contacts.sections.personalContact')}
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Field icon={Mail} label="Email" field="email" type="email" placeholder="you@company.com" />
-            <Field icon={Phone} label="Phone Number" field="phoneNumber" placeholder="+1 555 123 4567" />
+            <Field icon={Mail} label={t('contacts.fields.email')} field="email" type="email" placeholder={t('contacts.placeholders.email')} />
+            <Field icon={Phone} label={t('contacts.fields.phoneNumber')} field="phoneNumber" placeholder={t('contacts.placeholders.phoneNumber')} />
             <Field
               icon={Phone}
-              label="Alternate Phone"
+              label={t('contacts.fields.alternatePhone')}
               field="alternatePhoneNumber"
-              placeholder="+1 555 987 6543"
+              placeholder={t('contacts.placeholders.alternatePhone')}
             />
           </div>
         </div>
@@ -145,13 +147,13 @@ export function ContactsPage({ addToast }: ContactsPageProps) {
         <div>
           <h3 className="text-sm font-semibold text-[#1A1A1A] mb-4 flex items-center gap-2">
             <Heart size={16} className="text-[#C44536]" />
-            Next of Kin
+            {t('contacts.sections.nextOfKin')}
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Field icon={User} label="Full Name" field="nextOfKinName" placeholder="Jane Doe" />
-            <Field icon={User} label="Relationship" field="nextOfKinRelationship" placeholder="Spouse" />
-            <Field icon={Phone} label="Phone Number" field="nextOfKinPhone" placeholder="+1 555 234 5678" />
-            <Field icon={Mail} label="Email" field="nextOfKinEmail" type="email" placeholder="jane@example.com" />
+            <Field icon={User} label={t('contacts.fields.fullName')} field="nextOfKinName" placeholder={t('contacts.placeholders.fullName')} />
+            <Field icon={User} label={t('contacts.fields.relationship')} field="nextOfKinRelationship" placeholder={t('contacts.placeholders.relationship')} />
+            <Field icon={Phone} label={t('contacts.fields.nextOfKinPhone')} field="nextOfKinPhone" placeholder={t('contacts.placeholders.nextOfKinPhone')} />
+            <Field icon={Mail} label={t('contacts.fields.nextOfKinEmail')} field="nextOfKinEmail" type="email" placeholder={t('contacts.placeholders.nextOfKinEmail')} />
           </div>
         </div>
 
@@ -166,7 +168,7 @@ export function ContactsPage({ addToast }: ContactsPageProps) {
             ) : (
               <Save size={16} />
             )}
-            Save Contacts
+            {t('contacts.button')}
           </button>
         </div>
       </motion.form>

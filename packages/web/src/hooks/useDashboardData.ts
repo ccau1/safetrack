@@ -6,6 +6,7 @@ import { useMemberGroups } from './useMemberGroups';
 import { useEmergencyEvents } from './useEmergencyEvents';
 import { useEmergencyEventMembers } from './useEmergencyEventMembers';
 import { useMyMembership } from './useMyMembership';
+
 import type { Employee, Team, EmergencyEvent, Member, ScopedMember } from '@/types';
 
 export function useDashboardData() {
@@ -136,7 +137,7 @@ function mapMemberToEmployee(member: Member, scoped?: ScopedMember): Employee {
     team: member.teamName || 'Unassigned',
     status,
     location: scoped?.latestLocation || '-',
-    lastUpdated: scoped?.latestReportAt ? formatRelativeTime(scoped.latestReportAt) : '-',
+    lastUpdated: scoped?.latestReportAt || '-',
     severity: status === 'distress' ? 'medium' : undefined,
     details: undefined,
   };
@@ -166,19 +167,6 @@ function hashId(uuid: string): number {
   return Math.abs(hash);
 }
 
-function formatRelativeTime(iso: string): string {
-  const date = new Date(iso);
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffMins = Math.floor(diffMs / 60000);
-  if (diffMins < 1) return 'Just now';
-  if (diffMins < 60) return `${diffMins} min ago`;
-  const diffHours = Math.floor(diffMs / 3600000);
-  if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
-  const diffDays = Math.floor(diffMs / 86400000);
-  return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
-}
-
 function formatStartedAt(iso: string): string {
-  return formatRelativeTime(iso);
+  return iso;
 }

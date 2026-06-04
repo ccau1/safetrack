@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import { Megaphone, Send } from 'lucide-react';
 import { StatusTable } from '@/components/StatusTable';
 import { ConfirmationModal } from '@/components/ConfirmationModal';
@@ -12,14 +13,8 @@ interface SendAlertPageProps {
 
 type AlertTab = 'all' | 'team' | 'specific';
 
-const PRESET_MESSAGES = [
-  'Please check in now',
-  'Are you safe?',
-  'Update your status',
-  'Need help? Reply here',
-];
-
 export function SendAlertPage({ employees, addToast }: SendAlertPageProps) {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<AlertTab>('all');
   const [message, setMessage] = useState('');
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
@@ -63,10 +58,23 @@ export function SendAlertPage({ employees, addToast }: SendAlertPageProps) {
   };
 
   const handleConfirmSend = () => {
-    addToast(`Alert sent to ${recipientCount} employees`, 'success');
+    addToast(t('sendAlert.confirmation.confirmText', { count: recipientCount }), 'success');
     setMessage('');
     setSelectedIds([]);
   };
+
+  const presetMessages = [
+    t('sendAlert.presets.checkIn'),
+    t('sendAlert.presets.areYouSafe'),
+    t('sendAlert.presets.updateStatus'),
+    t('sendAlert.presets.needHelp'),
+  ];
+
+  const tabs = [
+    { key: 'all' as AlertTab, label: t('sendAlert.tabs.all') },
+    { key: 'team' as AlertTab, label: t('sendAlert.tabs.team') },
+    { key: 'specific' as AlertTab, label: t('sendAlert.tabs.specific') },
+  ];
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -79,10 +87,10 @@ export function SendAlertPage({ employees, addToast }: SendAlertPageProps) {
       >
         <div className="flex items-center gap-3 mb-2">
           <Megaphone size={24} />
-          <h2 className="text-2xl font-bold">Send Alert</h2>
+          <h2 className="text-2xl font-bold">{t('sendAlert.title')}</h2>
         </div>
         <p className="text-sm text-white/80">
-          Send notifications to employees who haven&apos;t updated their status.
+          {t('sendAlert.subtitle')}
         </p>
       </motion.div>
 
@@ -95,11 +103,7 @@ export function SendAlertPage({ employees, addToast }: SendAlertPageProps) {
       >
         {/* Tabs */}
         <div className="flex items-center gap-2 mb-5">
-          {([
-            { key: 'all' as AlertTab, label: 'All Not Updated' },
-            { key: 'team' as AlertTab, label: 'By Team' },
-            { key: 'specific' as AlertTab, label: 'Specific People' },
-          ]).map((tab) => (
+          {tabs.map((tab) => (
             <button
               key={tab.key}
               onClick={() => {
@@ -121,7 +125,7 @@ export function SendAlertPage({ employees, addToast }: SendAlertPageProps) {
         {activeTab === 'all' && (
           <div>
             <p className="text-sm text-[#5C5C5C] mb-4">
-              <span className="font-semibold text-[#C44536]">{unknownEmployees.length}</span> employees have not updated their status
+              <span className="font-semibold text-[#C44536]">{unknownEmployees.length}</span> {t('sendAlert.counts.notUpdated', { count: unknownEmployees.length })}
             </p>
             <StatusTable
               employees={unknownEmployees}
@@ -142,7 +146,7 @@ export function SendAlertPage({ employees, addToast }: SendAlertPageProps) {
                 className="border border-[#E5E4E0] rounded-[14px] p-4 hover:bg-[#FAFAF8] transition-colors duration-150"
               >
                 <h4 className="text-base font-semibold text-[#1A1A1A] mb-1">{team.name}</h4>
-                <p className="text-sm text-[#C44536] mb-3">{team.count} not updated</p>
+                <p className="text-sm text-[#C44536] mb-3">{t('sendAlert.teamCard.notUpdated', { count: team.count })}</p>
                 <button
                   onClick={() => handleSelectAllInTeam(team.name)}
                   className="text-sm font-medium text-[#4A5548] bg-[#E8EDE7] rounded-[10px] px-4 py-2 hover:bg-[#D8E0D6] transition-colors duration-150"
@@ -150,14 +154,14 @@ export function SendAlertPage({ employees, addToast }: SendAlertPageProps) {
                   {selectedIds.some((id) =>
                     unknownEmployees.find((e) => e.id === id && e.team === team.name)
                   )
-                    ? 'Deselect Team'
-                    : 'Select All in Team'}
+                    ? t('sendAlert.teamCard.deselectTeam')
+                    : t('sendAlert.teamCard.selectAll')}
                 </button>
               </div>
             ))}
             {teams.length === 0 && (
               <div className="col-span-2 text-center py-8 text-sm text-[#8A8A8A]">
-                All employees have updated their status
+                {t('sendAlert.allUpdated')}
               </div>
             )}
           </div>
@@ -166,7 +170,7 @@ export function SendAlertPage({ employees, addToast }: SendAlertPageProps) {
         {activeTab === 'specific' && (
           <div>
             <p className="text-sm text-[#5C5C5C] mb-4">
-              Select individual employees to notify
+              {t('sendAlert.counts.selectIndividual')}
             </p>
             <StatusTable
               employees={unknownEmployees}
@@ -188,18 +192,18 @@ export function SendAlertPage({ employees, addToast }: SendAlertPageProps) {
         className="bg-white border border-[#E5E4E0] rounded-[14px] p-5"
       >
         <label className="block text-[11px] font-medium text-[#8A8A8A] uppercase tracking-wider mb-2">
-          Alert Message
+          {t('sendAlert.message.label')}
         </label>
         <textarea
           value={message}
           onChange={(e) => setMessage(e.target.value.slice(0, 500))}
-          placeholder="Please update your status immediately. Let us know if you need help."
+          placeholder={t('sendAlert.message.placeholder')}
           rows={5}
           className="w-full border border-[#E5E4E0] rounded-[10px] px-3 py-3 text-sm text-[#1A1A1A] placeholder:text-[#8A8A8A] focus:outline-none focus:border-[#4A5548] focus:ring-[0_0_0_3px_rgba(74,85,72,0.15)] transition-all duration-150 resize-none"
         />
         <div className="flex items-center justify-between mt-2">
           <div className="flex items-center gap-2 flex-wrap">
-            {PRESET_MESSAGES.map((preset) => (
+            {presetMessages.map((preset) => (
               <button
                 key={preset}
                 onClick={() => setMessage(preset)}
@@ -225,7 +229,7 @@ export function SendAlertPage({ employees, addToast }: SendAlertPageProps) {
           className="w-full flex items-center justify-center gap-2 py-3.5 text-sm font-semibold text-white bg-[#C44536] rounded-[10px] hover:bg-[#A33A2E] hover:shadow-[0_2px_8px_rgba(0,0,0,0.06)] transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed"
         >
           <Send size={16} />
-          Send Alert to {recipientCount} {recipientCount === 1 ? 'Employee' : 'Employees'}
+          {t('sendAlert.sendButton', { count: recipientCount })}
         </button>
       </motion.div>
 
@@ -234,10 +238,9 @@ export function SendAlertPage({ employees, addToast }: SendAlertPageProps) {
         open={confirmOpen}
         onClose={() => setConfirmOpen(false)}
         onConfirm={handleConfirmSend}
-        title="Confirm Alert"
-        message={`You are about to send an alert to ${recipientCount} employees who have not updated their status. This action cannot be undone.`}
-        confirmText="Send to {count} Employees"
-        recipientCount={recipientCount}
+        title={t('sendAlert.confirmation.title')}
+        message={t('sendAlert.confirmation.message', { count: recipientCount })}
+        confirmText={t('sendAlert.confirmation.confirmText', { count: recipientCount })}
       />
     </div>
   );

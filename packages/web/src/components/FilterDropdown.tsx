@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Filter, Check } from 'lucide-react';
 
 interface FilterDropdownProps {
@@ -8,6 +9,7 @@ interface FilterDropdownProps {
 }
 
 export function FilterDropdown({ teams, activeTeam, onSelect }: FilterDropdownProps) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -30,7 +32,7 @@ export function FilterDropdown({ teams, activeTeam, onSelect }: FilterDropdownPr
         className="flex items-center gap-2 text-sm text-[#5C5C5C] border border-[#E5E4E0] rounded-[10px] px-3 py-1.5 bg-transparent hover:bg-[#FAFAF8] transition-all duration-150"
       >
         <Filter size={16} />
-        <span>Filter by Team</span>
+        <span>{t('table.filterByTeam')}</span>
       </button>
 
       {open && (
@@ -46,7 +48,7 @@ export function FilterDropdown({ teams, activeTeam, onSelect }: FilterDropdownPr
                 activeTeam === team ? 'text-[#4A5548] font-medium' : 'text-[#5C5C5C]'
               }`}
             >
-              {team === 'all' ? 'All Teams' : team}
+              {team === 'all' ? t('table.allTeams') : team}
               {activeTeam === team && <Check size={14} className="text-[#4A5548]" />}
             </button>
           ))}

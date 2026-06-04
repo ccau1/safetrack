@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import { Siren, CheckCircle, XCircle, Clock, Search, AlertTriangle, Flame, DoorOpen, Lock } from 'lucide-react';
 import type { EmergencyEventApi, ToastItem } from '@/types';
@@ -11,34 +12,35 @@ interface EmergenciesPageProps {
   onMutated: () => void;
 }
 
-const typeConfig: Record<EmergencyEventApi['type'], { label: string; icon: typeof Flame; color: string; bg: string }> = {
-  FIRE_DRILL: { label: 'Fire Drill', icon: Flame, color: 'text-[#C44536]', bg: 'bg-[#FDF2F0]' },
-  EMERGENCY: { label: 'Emergency', icon: AlertTriangle, color: 'text-[#C44536]', bg: 'bg-[#FDF2F0]' },
-  EVACUATION: { label: 'Evacuation', icon: DoorOpen, color: 'text-[#5B7B8A]', bg: 'bg-[#E8F0F2]' },
-  LOCKDOWN: { label: 'Lockdown', icon: Lock, color: 'text-[#8A6B3A]', bg: 'bg-[#F5F0E6]' },
-};
-
-const statusConfig: Record<EmergencyEventApi['status'], { label: string; color: string; bg: string; icon: typeof CheckCircle }> = {
-  ACTIVE: { label: 'Active', color: 'text-[#C44536]', bg: 'bg-[#FDF2F0]', icon: Clock },
-  RESOLVED: { label: 'Resolved', color: 'text-[#4A7C59]', bg: 'bg-[#E8EDE7]', icon: CheckCircle },
-  CANCELLED: { label: 'Cancelled', color: 'text-[#8A8A8A]', bg: 'bg-[#F7F6F2]', icon: XCircle },
-};
-
-function formatDate(iso: string) {
-  const d = new Date(iso);
-  return d.toLocaleDateString(undefined, {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-}
-
 export function EmergenciesPage({ events, activeEventCount, addToast: _addToast, onMutated: _onMutated }: EmergenciesPageProps) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'ACTIVE' | 'RESOLVED' | 'CANCELLED'>('all');
+
+  const typeConfig: Record<EmergencyEventApi['type'], { label: string; icon: typeof Flame; color: string; bg: string }> = {
+    FIRE_DRILL: { label: t('emergencies.types.FIRE_DRILL'), icon: Flame, color: 'text-[#C44536]', bg: 'bg-[#FDF2F0]' },
+    EMERGENCY: { label: t('emergencies.types.EMERGENCY'), icon: AlertTriangle, color: 'text-[#C44536]', bg: 'bg-[#FDF2F0]' },
+    EVACUATION: { label: t('emergencies.types.EVACUATION'), icon: DoorOpen, color: 'text-[#5B7B8A]', bg: 'bg-[#E8F0F2]' },
+    LOCKDOWN: { label: t('emergencies.types.LOCKDOWN'), icon: Lock, color: 'text-[#8A6B3A]', bg: 'bg-[#F5F0E6]' },
+  };
+
+  const statusConfig: Record<EmergencyEventApi['status'], { label: string; color: string; bg: string; icon: typeof CheckCircle }> = {
+    ACTIVE: { label: t('common.active'), color: 'text-[#C44536]', bg: 'bg-[#FDF2F0]', icon: Clock },
+    RESOLVED: { label: t('common.resolved'), color: 'text-[#4A7C59]', bg: 'bg-[#E8EDE7]', icon: CheckCircle },
+    CANCELLED: { label: t('common.cancelled'), color: 'text-[#8A8A8A]', bg: 'bg-[#F7F6F2]', icon: XCircle },
+  };
+
+  function formatDate(iso: string) {
+    const d = new Date(iso);
+    return d.toLocaleDateString(undefined, {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  }
 
   const filteredEvents = useMemo(() => {
     let result = [...events];
@@ -73,9 +75,9 @@ export function EmergenciesPage({ events, activeEventCount, addToast: _addToast,
         className="flex items-center justify-between"
       >
         <div>
-          <h2 className="text-2xl font-bold text-[#1A1A1A]">Emergencies</h2>
+          <h2 className="text-2xl font-bold text-[#1A1A1A]">{t('emergencies.title')}</h2>
           <p className="text-sm text-[#8A8A8A] mt-1">
-            {events.length} total · {activeEventCount} active
+            {t('emergencies.totalActive', { total: events.length, active: activeEventCount })}
           </p>
         </div>
       </motion.div>
@@ -93,7 +95,7 @@ export function EmergenciesPage({ events, activeEventCount, addToast: _addToast,
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search emergencies..."
+            placeholder={t('emergencies.searchPlaceholder')}
             className="w-full sm:w-[280px] h-10 pl-9 pr-3 bg-white border border-[#E5E4E0] rounded-[10px] text-sm text-[#1A1A1A] placeholder:text-[#8A8A8A] focus:outline-none focus:border-[#4A5548] focus:ring-[0_0_0_3px_rgba(74,85,72,0.15)] transition-all duration-150"
           />
         </div>
@@ -108,7 +110,7 @@ export function EmergenciesPage({ events, activeEventCount, addToast: _addToast,
                   : 'bg-white border border-[#E5E4E0] text-[#5C5C5C] hover:text-[#1A1A1A]'
               }`}
             >
-              {s === 'all' ? 'All' : statusConfig[s].label}
+              {s === 'all' ? t('emergencies.filters.all') : statusConfig[s].label}
             </button>
           ))}
         </div>
@@ -150,22 +152,22 @@ export function EmergenciesPage({ events, activeEventCount, addToast: _addToast,
                       </span>
                     </div>
                     <p className="text-sm text-[#5C5C5C] mt-0.5">
-                      {event.description || 'No description'}
+                      {event.description || t('emergencies.eventCard.noDescription')}
                     </p>
                     <div className="flex items-center gap-4 mt-2 text-xs text-[#8A8A8A]">
                       <span>{typeInfo.label}</span>
                       <span>·</span>
-                      <span>Started {formatDate(event.startedAt)}</span>
+                      <span>{t('emergencies.eventCard.started', { date: formatDate(event.startedAt) })}</span>
                       {event.targetTeams.length > 0 && (
                         <>
                           <span>·</span>
-                          <span>{event.targetTeams.length} team{event.targetTeams.length > 1 ? 's' : ''}</span>
+                          <span>{t('emergencies.eventCard.team_other', { count: event.targetTeams.length })}</span>
                         </>
                       )}
                       {event.targetGroups.length > 0 && (
                         <>
                           <span>·</span>
-                          <span>{event.targetGroups.length} group{event.targetGroups.length > 1 ? 's' : ''}</span>
+                          <span>{t('emergencies.eventCard.group_other', { count: event.targetGroups.length })}</span>
                         </>
                       )}
                     </div>
@@ -180,7 +182,7 @@ export function EmergenciesPage({ events, activeEventCount, addToast: _addToast,
           <div className="text-center py-16 bg-white border border-[#E5E4E0] rounded-[14px]">
             <Siren size={32} className="text-[#D8E0D6] mx-auto mb-3" />
             <p className="text-sm text-[#8A8A8A]">
-              {events.length === 0 ? 'No emergencies yet.' : 'No emergencies match your filters.'}
+              {events.length === 0 ? t('emergencies.eventCard.noEmergenciesYet') : t('emergencies.eventCard.noMatchFilters')}
             </p>
           </div>
         )}

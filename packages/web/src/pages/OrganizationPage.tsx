@@ -1,11 +1,12 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import { Building, Mail } from 'lucide-react';
-import { FilterDropdown } from '@/components/FilterDropdown';
+import { EmployeeTableHeader } from '@/components/EmployeeTableHeader';
 import { StatusTable } from '@/components/StatusTable';
 import { EmployeeDetailModal } from '@/components/EmployeeDetailModal';
 import { InviteMembersModal } from '@/components/InviteMembersModal';
-import type { Employee } from '@/types';
+import type { Employee, EmployeeStatus } from '@/types';
 
 interface OrganizationPageProps {
   employees: Employee[];
@@ -26,13 +27,36 @@ export function OrganizationPage({
   addToast,
   orgId,
 }: OrganizationPageProps) {
+  const { t } = useTranslation();
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState<EmployeeStatus[]>(['safe', 'distress', 'unknown']);
 
-  const filteredEmployees = activeTeam === 'all'
-    ? employees
-    : employees.filter((e) => e.team === activeTeam);
+  const baseEmployees = useMemo(() => {
+    return activeTeam === 'all' ? employees : employees.filter((e) => e.team === activeTeam);
+  }, [employees, activeTeam]);
+
+  const statusCounts = useMemo(() => {
+    return {
+      safe: baseEmployees.filter((e) => e.status === 'safe').length,
+      distress: baseEmployees.filter((e) => e.status === 'distress').length,
+      unknown: baseEmployees.filter((e) => e.status === 'unknown').length,
+    };
+  }, [baseEmployees]);
+
+  const filteredEmployees = useMemo(() => {
+    let result = [...baseEmployees];
+    if (statusFilter.length > 0 && statusFilter.length < 3) {
+      result = result.filter((e) => statusFilter.includes(e.status));
+    }
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      result = result.filter((e) => e.name.toLowerCase().includes(q));
+    }
+    return result;
+  }, [baseEmployees, statusFilter, search]);
 
   const handleRowClick = (employee: Employee) => {
     setSelectedEmployee(employee);
@@ -40,7 +64,7 @@ export function OrganizationPage({
   };
 
   const handleRemind = (employee: Employee) => {
-    addToast(`Reminder sent to ${employee.name}`, 'success');
+    addToast(t('organization.toast.reminderSent', { name: employee.name }), 'success');
     setModalOpen(false);
   };
 
@@ -56,9 +80,9 @@ export function OrganizationPage({
         <div className="flex items-center gap-3">
           <Building size={24} className="text-[#4A5548]" />
           <div>
-            <h2 className="text-2xl font-bold text-[#1A1A1A]">Organization</h2>
+            <h2 className="text-2xl font-bold text-[#1A1A1A]">{t('organization.title')}</h2>
             <p className="text-sm text-[#8A8A8A]">
-              {employees.length} employees across {teams.length} teams
+              {t('organization.employeeCount', { count: employees.length, teams: teams.length })}
             </p>
           </div>
         </div>
@@ -68,7 +92,7 @@ export function OrganizationPage({
             className="flex items-center gap-2 px-4 h-10 text-sm font-semibold text-white bg-[#4A5548] rounded-[10px] hover:bg-[#3D463B] transition-colors duration-150"
           >
             <Mail size={16} />
-            Invite Members
+            {t('common.inviteMembers')}
           </button>
         )}
       </motion.div>
@@ -80,13 +104,19 @@ export function OrganizationPage({
         transition={{ duration: 0.4, delay: 0.1 }}
         className="bg-white border border-[#E5E4E0] rounded-[14px] shadow-[0_1px_3px_rgba(0,0,0,0.04)] overflow-hidden"
       >
-        <div className="flex items-center justify-between px-5 py-4 border-b border-[#E5E4E0]">
-          <div>
-            <h3 className="text-xl font-semibold text-[#1A1A1A]">All Employees</h3>
-            <p className="text-sm text-[#8A8A8A]">Full organization status overview</p>
-          </div>
-          <FilterDropdown teams={teams} activeTeam={activeTeam} onSelect={onTeamFilter} />
-        </div>
+        <EmployeeTableHeader
+          title={t('organization.allEmployees.title')}
+          subtitle={t('organization.allEmployees.subtitle')}
+          search={search}
+          onSearchChange={setSearch}
+          statusFilter={statusFilter}
+          onStatusFilterChange={setStatusFilter}
+          statusCounts={statusCounts}
+          teamFilter={activeTeam}
+          onTeamFilterChange={onTeamFilter}
+          teams={teams}
+          showTeamFilter
+        />
         <StatusTable
           employees={filteredEmployees}
           onRowClick={handleRowClick}

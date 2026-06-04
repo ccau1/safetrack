@@ -47,8 +47,8 @@ export function AcceptInvitePage() {
     return (
       <div className="min-h-screen bg-[#F7F6F2] flex items-center justify-center px-4">
         <div className="text-center">
-          <h1 className="text-xl font-semibold text-[#1A1A1A] mb-2">Invalid Invitation</h1>
-          <p className="text-sm text-[#8A8A8A]">No invitation token was provided.</p>
+          <h1 className="text-xl font-semibold text-[#1A1A1A] mb-2">{t('acceptInvite.invalid.title')}</h1>
+          <p className="text-sm text-[#8A8A8A]">{t('acceptInvite.invalid.description')}</p>
         </div>
       </div>
     );
@@ -59,7 +59,7 @@ export function AcceptInvitePage() {
       <div className="min-h-screen bg-[#F7F6F2] flex items-center justify-center px-4">
         <div className="flex flex-col items-center gap-3">
           <Loader2 size={24} className="animate-spin text-[#4A5548]" />
-          <p className="text-sm text-[#8A8A8A]">Validating invitation...</p>
+          <p className="text-sm text-[#8A8A8A]">{t('acceptInvite.validating.title')}</p>
         </div>
       </div>
     );
@@ -73,9 +73,9 @@ export function AcceptInvitePage() {
             <Logo iconSize={28} textClassName="text-xl font-bold text-[#1A1A1A]" />
           </div>
           <div className="bg-white border border-[#E5E4E0] rounded-[14px] p-6 shadow-[0_1px_3px_rgba(0,0,0,0.04)] text-center">
-            <h1 className="text-xl font-semibold text-[#1A1A1A] mb-2">Invitation Expired or Invalid</h1>
+            <h1 className="text-xl font-semibold text-[#1A1A1A] mb-2">{t('acceptInvite.expired.title')}</h1>
             <p className="text-sm text-[#8A8A8A]">
-              This invitation link is no longer valid. Please ask your organization admin to send a new invitation.
+              {t('acceptInvite.expired.description')}
             </p>
           </div>
         </div>
@@ -92,8 +92,8 @@ export function AcceptInvitePage() {
           </div>
           <div className="bg-white border border-[#E5E4E0] rounded-[14px] p-6 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
             <CheckCircle size={48} className="mx-auto text-[#4A5548] mb-4" />
-            <h1 className="text-xl font-semibold text-[#1A1A1A] mb-2">Welcome to {data.organizationName}!</h1>
-            <p className="text-sm text-[#8A8A8A]">You've successfully joined the organization. Redirecting...</p>
+            <h1 className="text-xl font-semibold text-[#1A1A1A] mb-2">{t('acceptInvite.welcome.title', { name: data.organizationName })}</h1>
+            <p className="text-sm text-[#8A8A8A]">{t('acceptInvite.welcome.description')}</p>
           </div>
         </div>
       </div>
@@ -112,22 +112,18 @@ export function AcceptInvitePage() {
               <Mail size={20} className="text-[#4A5548]" />
             </div>
             <div>
-              <h1 className="text-lg font-semibold text-[#1A1A1A]">Organization Invitation</h1>
-              <p className="text-xs text-[#8A8A8A]">Expires in 24 hours</p>
+              <h1 className="text-lg font-semibold text-[#1A1A1A]">{t('acceptInvite.invitation.title')}</h1>
+              <p className="text-xs text-[#8A8A8A]">{t('acceptInvite.invitation.expiresIn')}</p>
             </div>
           </div>
 
           <p className="text-sm text-[#8A8A8A] mb-6">
-            You've been invited to join <strong className="text-[#1A1A1A]">{data.organizationName}</strong>
-            {data.teamName ? (
-              <> on team <strong className="text-[#1A1A1A]">{data.teamName}</strong></>
-            ) : null}{' '}
-            as <strong className="text-[#1A1A1A]">{t(`roles.${data.orgRole}`, { defaultValue: data.orgRole })}</strong>.
+            {t('acceptInvite.invitation.description', { orgName: data.organizationName, role: t(`roles.${data.orgRole}`, { defaultValue: data.orgRole }) })}
           </p>
 
           {acceptError && (
             <div className="mb-4 p-3 bg-[#FEF3F2] border border-[#FECDCA] rounded-[10px] text-sm text-[#C44536]">
-              {acceptError instanceof Error ? acceptError.message : 'Failed to accept invitation'}
+              {acceptError instanceof Error ? acceptError.message : t('acceptInvite.errors.acceptFailed')}
             </div>
           )}
 
@@ -142,7 +138,7 @@ export function AcceptInvitePage() {
               ) : (
                 <>
                   <CheckCircle size={16} />
-                  Accept Invitation
+                  {t('acceptInvite.acceptButton')}
                 </>
               )}
             </button>
@@ -150,7 +146,7 @@ export function AcceptInvitePage() {
             <form onSubmit={handleAcceptAndJoin} className="space-y-3">
               <div>
                 <label className="block text-[11px] font-medium text-[#8A8A8A] uppercase tracking-wider mb-1.5">
-                  Email
+                  {t('acceptInvite.form.email')}
                 </label>
                 <input
                   type="email"
@@ -162,7 +158,7 @@ export function AcceptInvitePage() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-[11px] font-medium text-[#8A8A8A] uppercase tracking-wider mb-1.5">
-                    First Name
+                    {t('acceptInvite.form.firstName')}
                   </label>
                   <div className="relative">
                     <User size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8A8A8A]" />
@@ -172,13 +168,13 @@ export function AcceptInvitePage() {
                       value={regForm.firstName}
                       onChange={(e) => setRegForm((f) => ({ ...f, firstName: e.target.value }))}
                       className="w-full h-10 border border-[#E5E4E0] rounded-[10px] pl-9 pr-3 text-sm text-[#1A1A1A] placeholder:text-[#8A8A8A] focus:outline-none focus:border-[#4A5548] focus:ring-[0_0_0_3px_rgba(74,85,72,0.15)] transition-all duration-150"
-                      placeholder="John"
+                      placeholder={t('acceptInvite.placeholders.firstName')}
                     />
                   </div>
                 </div>
                 <div>
                   <label className="block text-[11px] font-medium text-[#8A8A8A] uppercase tracking-wider mb-1.5">
-                    Last Name
+                    {t('acceptInvite.form.lastName')}
                   </label>
                   <input
                     type="text"
@@ -186,13 +182,13 @@ export function AcceptInvitePage() {
                     value={regForm.lastName}
                     onChange={(e) => setRegForm((f) => ({ ...f, lastName: e.target.value }))}
                     className="w-full h-10 border border-[#E5E4E0] rounded-[10px] px-3 text-sm text-[#1A1A1A] placeholder:text-[#8A8A8A] focus:outline-none focus:border-[#4A5548] focus:ring-[0_0_0_3px_rgba(74,85,72,0.15)] transition-all duration-150"
-                    placeholder="Doe"
+                    placeholder={t('acceptInvite.placeholders.lastName')}
                   />
                 </div>
               </div>
               <div>
                 <label className="block text-[11px] font-medium text-[#8A8A8A] uppercase tracking-wider mb-1.5">
-                  Password
+                  {t('acceptInvite.form.password')}
                 </label>
                 <div className="relative">
                   <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8A8A8A]" />
@@ -203,7 +199,7 @@ export function AcceptInvitePage() {
                     value={regForm.password}
                     onChange={(e) => setRegForm((f) => ({ ...f, password: e.target.value }))}
                     className="w-full h-10 border border-[#E5E4E0] rounded-[10px] pl-9 pr-3 text-sm text-[#1A1A1A] placeholder:text-[#8A8A8A] focus:outline-none focus:border-[#4A5548] focus:ring-[0_0_0_3px_rgba(74,85,72,0.15)] transition-all duration-150"
-                    placeholder="••••••••"
+                    placeholder={t('acceptInvite.placeholders.password')}
                   />
                 </div>
               </div>
@@ -217,7 +213,7 @@ export function AcceptInvitePage() {
                 ) : (
                   <>
                     <CheckCircle size={16} />
-                    Accept & Join
+                    {t('acceptInvite.acceptAndJoin')}
                   </>
                 )}
               </button>

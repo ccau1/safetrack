@@ -29,6 +29,9 @@
   },
   "common": {
     "search": "搜尋員工...",
+    "searchMembers": "搜尋成員...",
+    "searchTeams": "搜尋團隊...",
+    "searchEmergencies": "搜尋緊急事件...",
     "organization": "組織",
     "noOrganization": "無組織",
     "noOrganizations": "無組織",
@@ -39,7 +42,54 @@
     "delete": "刪除",
     "edit": "編輯",
     "create": "建立",
-    "loading": "載入中..."
+    "loading": "載入中...",
+    "back": "返回",
+    "inviteMembers": "邀請成員",
+    "members": "成員",
+    "member_one": "成員",
+    "member_other": "成員",
+    "team": "團隊",
+    "employees": "員工",
+    "employee_one": "員工",
+    "employee_other": "員工",
+    "all": "全部",
+    "name": "姓名",
+    "email": "電子郵件",
+    "phone": "電話號碼",
+    "password": "密碼",
+    "firstName": "名字",
+    "lastName": "姓氏",
+    "description": "描述",
+    "yes": "是",
+    "no": "否",
+    "close": "關閉",
+    "confirm": "確認",
+    "submit": "提交",
+    "update": "更新",
+    "add": "新增",
+    "remove": "移除",
+    "unknown": "未知",
+    "notAssigned": "未分配",
+    "unassigned": "未分配",
+    "more": "更多",
+    "select": "選擇...",
+    "noResults": "無結果",
+    "success": "成功",
+    "error": "錯誤",
+    "info": "資訊",
+    "warning": "警告",
+    "active": "進行中",
+    "resolved": "已解決",
+    "cancelled": "已取消",
+    "started": "開始於",
+    "justNow": "剛剛",
+    "minAgo": "{{count}} 分鐘前",
+    "hoursAgo": "{{count}} 小時前",
+    "daysAgo": "{{count}} 天前",
+    "minuteAgo": "{{count}} 分鐘前",
+    "minutesAgo": "{{count}} 分鐘前",
+    "hourAgo": "{{count}} 小時前",
+    "dayAgo": "{{count}} 天前"
   },
   "notifications": {
     "title": "通知",
@@ -72,6 +122,582 @@
     "email": "電子郵件",
     "password": "密碼",
     "alreadyHaveAccount": "已有帳戶？登入",
-    "dontHaveAccount": "沒有帳戶？建立一個"
+    "dontHaveAccount": "沒有帳戶？建立一個",
+    "or": "或",
+    "google": "Google",
+    "microsoft": "Microsoft"
+  },
+  "dashboard": {
+    "stats": {
+      "totalEmployees": "員工總數",
+      "markedSafe": "已報平安",
+      "inDistress": "需要協助",
+      "notUpdated": "未更新狀態",
+      "organizationWide": "全組織",
+      "needsImmediateHelp": "需要立即協助",
+      "percentOfTotal": "佔總數的 {{percent}}%"
+    },
+    "eventBanner": {
+      "activeEvent": "進行中事件：{{name}}",
+      "started": "開始於 {{date}}",
+      "fullDetails": "查看詳情",
+      "quickView": "快速查看",
+      "noActiveEvents": "暫無進行中的緊急事件",
+      "createEvent": "建立事件"
+    },
+    "employeeStatus": {
+      "title": "員工狀態",
+      "subtitle": "來自您組織的即時更新"
+    },
+    "toast": {
+      "reminderSent": "已發送提醒給 {{name}}",
+      "reminderFailed": "發送提醒給 {{name}} 失敗",
+      "eventCreated": "緊急事件已建立"
+    }
+  },
+  "emergencies": {
+    "title": "緊急事件",
+    "totalActive": "共 {{total}} 個 · {{active}} 個進行中",
+    "searchPlaceholder": "搜尋緊急事件...",
+    "filters": {
+      "all": "全部",
+      "active": "進行中",
+      "resolved": "已解決",
+      "cancelled": "已取消"
+    },
+    "types": {
+      "FIRE_DRILL": "消防演習",
+      "EMERGENCY": "緊急事件",
+      "EVACUATION": "疏散",
+      "LOCKDOWN": "封鎖"
+    },
+    "eventCard": {
+      "noDescription": "無描述",
+      "started": "開始於 {{date}}",
+      "team_one": "{{count}} 個團隊",
+      "team_other": "{{count}} 個團隊",
+      "group_one": "{{count}} 個分組",
+      "group_other": "{{count}} 個分組",
+      "noEmergenciesYet": "暫無緊急事件。",
+      "noMatchFilters": "沒有符合篩選條件的緊急事件。"
+    }
+  },
+  "reportStatus": {
+    "title": "您目前的狀態",
+    "status": {
+      "safe": "安全",
+      "distress": "遇險",
+      "unknown": "未報告"
+    },
+    "lastUpdated": "最後更新：{{time}}",
+    "noStatusReported": "尚未報告狀態",
+    "cards": {
+      "imSafe": {
+        "title": "我安全",
+        "description": "快速報告您已安全並已清點。",
+        "button": "報告安全"
+      },
+      "iNeedHelp": {
+        "title": "我需要協助",
+        "description": "報告您處於遇險狀態並需要協助。",
+        "button": "報告遇險"
+      }
+    },
+    "statusHistory": {
+      "title": "狀態歷史",
+      "subtitle": "您在此事件中的簽到記錄",
+      "noHistory": "暫無狀態歷史",
+      "markedSafe": "已標記為安全",
+      "reportedInDistress": "報告遇險",
+      "statusUnknown": "狀態未知"
+    },
+    "toast": {
+      "noActiveEvent": "沒有可進行報告的活躍事件",
+      "statusUpdatedSafe": "狀態已更新：您已被標記為安全",
+      "failedUpdateStatus": "更新狀態失敗，請重試。",
+      "distressSubmitted": "遇險報告已提交",
+      "failedDistressReport": "提交遇險報告失敗"
+    }
+  },
+  "contacts": {
+    "title": "緊急聯絡人",
+    "subtitle": "保持您的聯絡資訊為最新，以便我們在緊急情況下與您或您的緊急聯絡人取得聯繫。",
+    "sections": {
+      "personalContact": "個人聯絡方式",
+      "nextOfKin": "緊急聯絡人"
+    },
+    "fields": {
+      "email": "電子郵件",
+      "phoneNumber": "電話號碼",
+      "alternatePhone": "備用電話",
+      "fullName": "全名",
+      "relationship": "關係",
+      "nextOfKinPhone": "電話號碼",
+      "nextOfKinEmail": "電子郵件"
+    },
+    "placeholders": {
+      "email": "you@company.com",
+      "phoneNumber": "+1 555 123 4567",
+      "alternatePhone": "+1 555 987 6543",
+      "fullName": "Jane Doe",
+      "relationship": "配偶",
+      "nextOfKinPhone": "+1 555 234 5678",
+      "nextOfKinEmail": "jane@example.com"
+    },
+    "button": "儲存聯絡人",
+    "toast": {
+      "updated": "緊急聯絡人更新成功",
+      "failed": "更新緊急聯絡人失敗"
+    }
+  },
+  "myTeam": {
+    "teamHeader": "{{team}} 團隊",
+    "membersCount": "{{count}} 位成員",
+    "stats": {
+      "safe": "安全",
+      "distress": "遇險",
+      "notUpdated": "未更新"
+    },
+    "teamMembers": {
+      "title": "團隊成員",
+      "subtitle": "{{team}} 團隊的狀態"
+    },
+    "toast": {
+      "reminderSent": "已發送提醒給 {{name}}",
+      "reminderFailed": "發送提醒給 {{name}} 失敗"
+    }
+  },
+  "organization": {
+    "title": "組織",
+    "employeeCount": "{{count}} 名員工分布於 {{teams}} 個團隊",
+    "inviteMembers": "邀請成員",
+    "allEmployees": {
+      "title": "所有員工",
+      "subtitle": "全組織狀態概覽"
+    },
+    "toast": {
+      "reminderSent": "已發送提醒給 {{name}}",
+      "reminderFailed": "發送提醒給 {{name}} 失敗"
+    }
+  },
+  "sendAlert": {
+    "title": "發送警報",
+    "subtitle": "向尚未更新狀態的員工發送通知。",
+    "tabs": {
+      "all": "所有未更新",
+      "team": "按團隊",
+      "specific": "指定人員"
+    },
+    "counts": {
+      "selectIndividual": "選擇要通知的個別員工",
+      "notUpdated_one": "名員工尚未更新狀態",
+      "notUpdated_other": "名員工尚未更新狀態"
+    },
+    "teamCard": {
+      "notUpdated": "{{count}} 人未更新",
+      "selectAll": "全選該團隊",
+      "deselectTeam": "取消選擇該團隊"
+    },
+    "allUpdated": "所有員工均已更新狀態",
+    "message": {
+      "label": "警報訊息",
+      "placeholder": "請立即更新您的狀態。如需協助請告知我們。"
+    },
+    "presets": {
+      "checkIn": "請立即簽到",
+      "areYouSafe": "您是否安全？",
+      "updateStatus": "更新您的狀態",
+      "needHelp": "需要協助？在此回覆"
+    },
+    "confirmation": {
+      "title": "確認發送警報",
+      "confirmText_one": "向 {{count}} 名員工發送",
+      "confirmText_other": "向 {{count}} 名員工發送",
+      "message_one": "您即將向 {{count}} 名尚未更新狀態的員工發送警報。此操作無法撤銷。",
+      "message_other": "您即將向 {{count}} 名尚未更新狀態的員工發送警報。此操作無法撤銷。"
+    },
+    "sendButton_one": "向 {{count}} 名員工發送警報",
+    "sendButton_other": "向 {{count}} 名員工發送警報"
+  },
+  "teamManagement": {
+    "title": "團隊管理",
+    "subtitle": "建立團隊並分配成員",
+    "newTeam": "新增團隊",
+    "createForm": {
+      "placeholder": "團隊名稱（例如：工程部）",
+      "create": "建立",
+      "cancel": "取消"
+    },
+    "teamCard": {
+      "members": "{{count}} 位成員",
+      "noMembers": "無已分配成員",
+      "more": "+{{count}} 更多"
+    },
+    "noTeams": "暫無團隊。請在上方建立您的第一個團隊。",
+    "unassignedMembers": {
+      "title": "未分配成員",
+      "subtitle": "將成員分配到團隊以組織您的組織",
+      "allAssigned": "所有成員均已分配到團隊",
+      "assignToTeam": "分配到團隊",
+      "save": "儲存",
+      "unassigned": "未分配"
+    },
+    "deleteModal": {
+      "title": "刪除團隊",
+      "message": "您確定要刪除 <strong>{{name}}</strong> 嗎？分配給該團隊的成員將被取消分配。",
+      "cancel": "取消",
+      "delete": "刪除"
+    },
+    "toast": {
+      "created": "團隊 \"{{name}}\" 已建立",
+      "failedCreate": "建立團隊失敗",
+      "assignmentUpdated": "團隊分配已更新",
+      "failedAssignment": "更新團隊分配失敗",
+      "deleted": "團隊 \"{{name}}\" 已刪除",
+      "failedDelete": "刪除團隊失敗",
+      "undo": "復原"
+    }
+  },
+  "groupManagement": {
+    "title": "分組管理",
+    "subtitle": "建立分組並分配成員或團隊，用於範圍限定緊急事件",
+    "newGroup": "新增分組",
+    "createForm": {
+      "groupName": "分組名稱",
+      "placeholder": "例如：A棟，3樓",
+      "membersSelected": "成員（已選 {{count}} 人）",
+      "teamsSelected": "團隊（已選 {{count}} 個）",
+      "searchMembers": "搜尋成員...",
+      "searchTeams": "搜尋團隊...",
+      "noMembers": "未找到成員",
+      "noTeams": "未找到團隊",
+      "create": "建立"
+    },
+    "groupCard": {
+      "members": "{{count}} 位成員",
+      "teams": "{{count}} 個團隊",
+      "noMembersOrTeams": "此分組中無成員或團隊",
+      "more": "+{{count}} 更多"
+    },
+    "noGroups": "暫無分組。請在上方建立您的第一個分組。",
+    "editModal": {
+      "title": "編輯分組",
+      "groupName": "分組名稱",
+      "membersSelected": "成員（已選 {{count}} 人）",
+      "teamsSelected": "團隊（已選 {{count}} 個）",
+      "searchMembers": "搜尋成員...",
+      "searchTeams": "搜尋團隊...",
+      "noMembers": "未找到成員",
+      "noTeams": "未找到團隊",
+      "cancel": "取消",
+      "saveChanges": "儲存變更"
+    },
+    "deleteModal": {
+      "title": "刪除分組",
+      "message": "您確定要刪除 <strong>{{name}}</strong> 嗎？",
+      "cancel": "取消",
+      "delete": "刪除"
+    },
+    "toast": {
+      "created": "分組 \"{{name}}\" 已建立",
+      "failedCreate": "建立分組失敗",
+      "updated": "分組已更新",
+      "failedUpdate": "更新分組失敗",
+      "deleted": "分組 \"{{name}}\" 已刪除",
+      "failedDelete": "刪除分組失敗"
+    }
+  },
+  "permissions": {
+    "title": "權限",
+    "subtitle": "管理組織範圍內成員的權限",
+    "searchPlaceholder": "按姓名、電子郵件或角色搜尋成員...",
+    "empty": {
+      "noMatch": "沒有符合搜尋條件的成員",
+      "noMembers": "該組織中未找到成員"
+    },
+    "memberRow": {
+      "override_one": "{{count}} 個覆蓋",
+      "override_other": "{{count}} 個覆蓋",
+      "roleDefaults": "角色預設"
+    },
+    "expanded": {
+      "assignedOverrides": "已分配的覆蓋",
+      "noOverrides": "無權限覆蓋。適用以角色為基礎的預設值。",
+      "addPermission": "新增權限",
+      "selectPermission": "選擇權限...",
+      "allow": "允許",
+      "deny": "拒絕",
+      "grant": "授予",
+      "cancel": "取消",
+      "revoke": "撤銷"
+    },
+    "catalog": {
+      "title": "權限目錄",
+      "subtitle": "可按成員授予或拒絕的可用權限"
+    },
+    "toast": {
+      "loadFailed": "載入成員權限失敗",
+      "catalogFailed": "載入權限目錄失敗",
+      "granted": "權限已授予",
+      "failedGrant": "授予權限失敗",
+      "revoked": "權限已撤銷",
+      "failedRevoke": "撤銷權限失敗"
+    }
+  },
+  "emergencyEventDetail": {
+    "loading": "載入中...",
+    "notFound": "未找到事件",
+    "backToEvents": "返回事件列表",
+    "edit": {
+      "eventTitle": "事件標題",
+      "description": "描述",
+      "save": "儲存",
+      "cancel": "取消"
+    },
+    "status": {
+      "active": "進行中",
+      "resolved": "已解決",
+      "cancelled": "已取消"
+    },
+    "scope": {
+      "allOrganizationMembers": "所有組織成員"
+    },
+    "stats": {
+      "totalTracked": "追蹤總數",
+      "safe": "安全",
+      "needHelp": "需要協助",
+      "notUpdated": "未更新"
+    },
+    "members": {
+      "title": "追蹤成員",
+      "subtitle": "{{reported}} / {{total}} 人已報告",
+      "searchPlaceholder": "搜尋成員...",
+      "noMatchSearch": "沒有符合搜尋條件的成員",
+      "noMembersInScope": "範圍內無成員",
+      "unassigned": "未分配",
+      "awaiting": "等待中"
+    },
+    "reports": {
+      "noStatusReports": "此事件期間無狀態報告",
+      "location": "位置",
+      "note": "備註"
+    },
+    "updates": {
+      "title": "事件更新",
+      "subtitle": "活動和進展時間線",
+      "addUpdatePlaceholder": "新增更新...",
+      "post": "發佈",
+      "noUpdates": "暫無更新"
+    },
+    "updateTypes": {
+      "PROGRESSING": "進行中",
+      "ESCALATED": "已升級",
+      "DEESCALATED": "已降級",
+      "NOTE": "備註",
+      "RESOLVED": "已解決"
+    },
+    "resolve": {
+      "button": "解決",
+      "modalTitle": "解決事件",
+      "modalMessage": "您確定要解決 <strong>{{name}}</strong> 嗎？這將把事件標記為已解決。",
+      "commentPlaceholder": "新增結案備註（選填）",
+      "confirm": "解決事件"
+    }
+  },
+  "orgSettings": {
+    "title": "組織設定",
+    "subtitle": "管理組織詳情和所有權",
+    "details": {
+      "title": "組織詳情",
+      "name": "名稱",
+      "slug": "識別碼",
+      "owner": "擁有者",
+      "you": "（您）"
+    },
+    "transfer": {
+      "title": "轉讓所有權",
+      "description": "將此組織的所有權轉讓給另一位成員。您將保留管理員身份，但不再是擁有者。",
+      "selectMember": "選擇一位成員...",
+      "transfer": "轉讓"
+    },
+    "dangerZone": {
+      "title": "危險區域",
+      "description": "所有權轉讓和組織刪除是不可逆的。新擁有者將擁有完全控制權，或者所有資料將被永久遺失。",
+      "deleteOrg": "刪除組織",
+      "confirmDelete": "您確定要刪除此組織嗎？此操作無法撤銷，所有資料將被永久遺失。"
+    },
+    "toast": {
+      "nameUpdated": "組織名稱已更新",
+      "transferSuccess": "所有權轉讓成功",
+      "deleted": "組織已刪除",
+      "failedUpdate": "更新組織失敗",
+      "failedTransfer": "轉讓所有權失敗",
+      "failedDelete": "刪除組織失敗"
+    }
+  },
+  "acceptInvite": {
+    "invalid": {
+      "title": "邀請無效",
+      "description": "未提供邀請令牌。"
+    },
+    "validating": {
+      "title": "正在驗證邀請..."
+    },
+    "expired": {
+      "title": "邀請已過期或無效",
+      "description": "此邀請連結已不再有效。請讓您的組織管理員發送新的邀請。"
+    },
+    "welcome": {
+      "title": "歡迎來到 {{name}}！",
+      "description": "您已成功加入該組織。正在跳轉..."
+    },
+    "invitation": {
+      "title": "組織邀請",
+      "expiresIn": "24 小時後過期",
+      "description": "您已被邀請加入 <strong>{{orgName}}</strong>，擔任 <strong>{{role}}</strong>。"
+    },
+    "acceptButton": "接受邀請",
+    "acceptAndJoin": "接受並加入",
+    "form": {
+      "email": "電子郵件",
+      "firstName": "名字",
+      "lastName": "姓氏",
+      "password": "密碼"
+    },
+    "placeholders": {
+      "firstName": "張三",
+      "lastName": "李四",
+      "password": "••••••••"
+    },
+    "errors": {
+      "acceptFailed": "接受邀請失敗"
+    }
+  },
+  "noOrg": {
+    "title": "無組織",
+    "description": "您不屬於任何組織。請在下方建立一個，請管理員邀請您，或使用其他帳戶登入。",
+    "createOrg": "建立組織",
+    "orgName": "組織名稱",
+    "orgNamePlaceholder": "範例公司",
+    "createButton": "建立組織"
+  },
+  "status": {
+    "safe": "安全",
+    "distress": "遇險",
+    "unknown": "未更新",
+    "SAFE": "安全",
+    "NEEDS_HELP": "需要協助",
+    "MISSING": "失蹤",
+    "EN_ROUTE": "途中"
+  },
+  "table": {
+    "columns": {
+      "employee": "員工",
+      "team": "團隊",
+      "lastLocation": "最後位置",
+      "status": "狀態",
+      "lastUpdated": "最後更新",
+      "actions": "操作"
+    },
+    "noEmployees": "未找到員工",
+    "remind": "提醒",
+    "filterByTeam": "按團隊篩選",
+    "allTeams": "所有團隊",
+    "searchByName": "按姓名搜尋...",
+    "openFilters": "打開篩選",
+    "filters": "篩選",
+    "showResults": "顯示結果"
+  },
+  "filters": {
+    "status": {
+      "all": "全部",
+      "safe": "安全",
+      "distress": "遇險",
+      "notUpdated": "未更新",
+      "allStatuses": "全部狀態"
+    }
+  },
+  "employeeDetailModal": {
+    "title": "員工詳情",
+    "status": "狀態",
+    "team": "團隊",
+    "lastUpdated": "最後更新",
+    "location": "位置",
+    "notes": "備註",
+    "severity": "嚴重程度",
+    "details": "詳情",
+    "remind": "發送提醒"
+  },
+  "distressFormModal": {
+    "title": "報告遇險",
+    "location": "您目前的位置 *",
+    "locationPlaceholder": "例如：A棟，3樓，302室",
+    "severity": "您的情況有多緊急？",
+    "low": "低",
+    "medium": "中",
+    "high": "高",
+    "details": "補充詳情（選填）",
+    "detailsPlaceholder": "描述您的情況...",
+    "cancel": "取消",
+    "submit": "提交報告"
+  },
+  "emergencyEventDetailModal": {
+    "started": "開始於 {{time}}",
+    "totalAffected": "受影響總數",
+    "duration": "持續時間",
+    "accountedFor": "已清點",
+    "percentOfOrg": "佔組織的 {{percent}}%",
+    "needHelp": "需要協助",
+    "awaitingResponse": "{{count}} 人等待回應",
+    "eventDescription": "事件描述",
+    "defaultDescription": "{{type}} 正在進行中。所有員工請立即報告您的狀態。如果您安全，請報告您的位置。如果您需要協助，請報告遇險情況並提供位置詳情，以便救援團隊能夠找到您。",
+    "responseTeam": "應急回應團隊聯絡方式",
+    "emergencyHotline": "緊急熱線",
+    "floorWardens": "樓層管理員",
+    "hrEmergency": "人力資源應急",
+    "ext": "分機 {{number}}",
+    "close": "關閉"
+  },
+  "createEmergencyEvent": {
+    "title": "建立緊急事件",
+    "eventTitle": "事件標題",
+    "eventTitlePlaceholder": "例如：3樓發生火災",
+    "eventType": "事件類型",
+    "whenDidItStart": "何時開始？",
+    "presetNow": "現在",
+    "presetMinAgo": "{{count}} 分鐘前",
+    "presetHrAgo": "{{count}} 小時前",
+    "scope": "範圍",
+    "allMembers": "所有成員",
+    "selectedTeamsGroups": "選定團隊和分組",
+    "searchTeamsGroups": "搜尋團隊或分組...",
+    "teams": "團隊",
+    "groups": "分組",
+    "noTeamsGroupsFound": "未找到團隊或分組",
+    "description": "描述",
+    "descriptionPlaceholder": "新增有關緊急情況的任何詳情...",
+    "cancel": "取消",
+    "createEvent": "建立事件"
+  },
+  "resolveEventModal": {
+    "title": "解決事件",
+    "aboutToResolve": "您即將解決：",
+    "commentLabel": "解決備註",
+    "commentOptional": "（選填）",
+    "commentPlaceholder": "描述情況是如何解決的...",
+    "cancel": "取消",
+    "confirm": "確認解決"
+  },
+  "timeAgo": {
+    "justNow": "剛剛",
+    "minutes_one": "{{count}}分鐘前",
+    "minutes_other": "{{count}}分鐘前",
+    "hours_one": "{{count}}小時前",
+    "hours_other": "{{count}}小時前",
+    "days_one": "{{count}}天前",
+    "days_other": "{{count}}天前"
+  },
+  "confirmationModal": {
+    "cancel": "取消"
   }
 }

@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Bell } from 'lucide-react';
 import { StatusBadge } from './StatusBadge';
+import { useTimeAgo } from '@/hooks/useTimeAgo';
 import type { Employee } from '@/types';
 
 interface EmployeeDetailModalProps {
@@ -15,6 +16,7 @@ interface EmployeeDetailModalProps {
 
 export function EmployeeDetailModal({ employee, open, onClose, isAdmin, onRemind }: EmployeeDetailModalProps) {
   const { t } = useTranslation();
+  const timeAgo = useTimeAgo();
   if (!employee) return null;
 
   return createPortal(
@@ -69,22 +71,22 @@ export function EmployeeDetailModal({ employee, open, onClose, isAdmin, onRemind
               {/* Info Grid */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <p className="text-[11px] font-medium text-[#8A8A8A] uppercase tracking-wider mb-1">Location</p>
+                  <p className="text-[11px] font-medium text-[#8A8A8A] uppercase tracking-wider mb-1">{t('employeeDetailModal.location')}</p>
                   <p className="text-sm text-[#1A1A1A]">{employee.location || '-'}</p>
                 </div>
                 <div>
-                  <p className="text-[11px] font-medium text-[#8A8A8A] uppercase tracking-wider mb-1">Last Updated</p>
-                  <p className="text-sm text-[#1A1A1A]">{employee.lastUpdated || '-'}</p>
+                  <p className="text-[11px] font-medium text-[#8A8A8A] uppercase tracking-wider mb-1">{t('employeeDetailModal.lastUpdated')}</p>
+                  <p className="text-sm text-[#1A1A1A]">{employee.lastUpdated !== '-' ? timeAgo(employee.lastUpdated) : '-'}</p>
                 </div>
                 {employee.severity && (
                   <div>
-                    <p className="text-[11px] font-medium text-[#8A8A8A] uppercase tracking-wider mb-1">Severity</p>
+                    <p className="text-[11px] font-medium text-[#8A8A8A] uppercase tracking-wider mb-1">{t('employeeDetailModal.severity')}</p>
                     <p className="text-sm text-[#1A1A1A] capitalize">{employee.severity}</p>
                   </div>
                 )}
                 {employee.details && (
                   <div className="col-span-2">
-                    <p className="text-[11px] font-medium text-[#8A8A8A] uppercase tracking-wider mb-1">Details</p>
+                    <p className="text-[11px] font-medium text-[#8A8A8A] uppercase tracking-wider mb-1">{t('employeeDetailModal.details')}</p>
                     <p className="text-sm text-[#1A1A1A]">{employee.details}</p>
                   </div>
                 )}
@@ -98,7 +100,7 @@ export function EmployeeDetailModal({ employee, open, onClose, isAdmin, onRemind
                     className="w-full flex items-center justify-center gap-2 py-3 text-sm font-medium text-white bg-[#C44536] rounded-[10px] hover:bg-[#A33A2E] transition-colors duration-150"
                   >
                     <Bell size={16} />
-                    Send Reminder
+                    {t('employeeDetailModal.remind')}
                   </button>
                 </div>
               )}

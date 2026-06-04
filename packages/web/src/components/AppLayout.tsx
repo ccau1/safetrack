@@ -45,7 +45,7 @@ export function AppLayout({
       <MobileNav currentView={currentView} onNavigate={onNavigate} />
 
       <main className="lg:ml-[260px] pt-16 min-h-screen">
-        <div className="p-8 pb-24 lg:pb-8">{children}</div>
+        <div className="p-8 pb-[calc(6rem+env(safe-area-inset-bottom))] lg:pb-8">{children}</div>
       </main>
 
       <ToastContainer toasts={toasts} removeToast={removeToast} />

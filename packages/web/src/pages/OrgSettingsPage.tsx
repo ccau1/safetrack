@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import { Settings, ArrowRightLeft, Building2, Loader2, ShieldAlert, Save, Trash2 } from 'lucide-react';
 import { api } from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
@@ -28,6 +29,7 @@ export function OrgSettingsPage({
   addToast,
   onMutated,
 }: OrgSettingsPageProps) {
+  const { t } = useTranslation();
   const { reloadUser } = useAuth();
   const [name, setName] = useState(orgName || '');
   const [saving, setSaving] = useState(false);
@@ -42,11 +44,11 @@ export function OrgSettingsPage({
     setSaving(true);
     try {
       await api.patch(`/api/organizations/${orgId}`, { name: name.trim() });
-      addToast('Organization name updated', 'success');
+      addToast(t('orgSettings.toast.nameUpdated'), 'success');
       await reloadUser();
       onMutated?.();
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to update organization';
+      const message = err instanceof Error ? err.message : t('orgSettings.toast.failedUpdate');
       addToast(message, 'error');
     } finally {
       setSaving(false);
@@ -60,12 +62,12 @@ export function OrgSettingsPage({
       await api.post(`/api/organizations/${orgId}/transfer-ownership`, {
         newOwnerId: transferTargetId,
       });
-      addToast('Ownership transferred successfully', 'success');
+      addToast(t('orgSettings.toast.transferSuccess'), 'success');
       setTransferTargetId('');
       await reloadUser();
       onMutated?.();
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to transfer ownership';
+      const message = err instanceof Error ? err.message : t('orgSettings.toast.failedTransfer');
       addToast(message, 'error');
     } finally {
       setTransferring(false);
@@ -74,17 +76,15 @@ export function OrgSettingsPage({
 
   const handleDelete = async () => {
     if (!orgId) return;
-    const confirmed = window.confirm(
-      'Are you sure you want to delete this organization? This action cannot be undone and all data will be permanently lost.'
-    );
+    const confirmed = window.confirm(t('orgSettings.dangerZone.confirmDelete'));
     if (!confirmed) return;
     setDeleting(true);
     try {
       await api.delete(`/api/organizations/${orgId}`);
-      addToast('Organization deleted', 'success');
+      addToast(t('orgSettings.toast.deleted'), 'success');
       await reloadUser();
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to delete organization';
+      const message = err instanceof Error ? err.message : t('orgSettings.toast.failedDelete');
       addToast(message, 'error');
       setDeleting(false);
     }
@@ -104,8 +104,8 @@ export function OrgSettingsPage({
       >
         <Settings size={24} className="text-[#4A5548]" />
         <div>
-          <h2 className="text-2xl font-bold text-[#1A1A1A]">Organization Settings</h2>
-          <p className="text-sm text-[#8A8A8A]">Manage organization details and ownership</p>
+          <h2 className="text-2xl font-bold text-[#1A1A1A]">{t('orgSettings.title')}</h2>
+          <p className="text-sm text-[#8A8A8A]">{t('orgSettings.subtitle')}</p>
         </div>
       </motion.div>
 
@@ -118,13 +118,13 @@ export function OrgSettingsPage({
       >
         <div className="flex items-center gap-2 mb-5">
           <Building2 size={18} className="text-[#5B7B8A]" />
-          <h3 className="text-sm font-semibold text-[#1A1A1A]">Organization Details</h3>
+          <h3 className="text-sm font-semibold text-[#1A1A1A]">{t('orgSettings.details.title')}</h3>
         </div>
 
         <div className="space-y-4">
           <div>
             <label className="block text-[11px] font-medium text-[#8A8A8A] uppercase tracking-wider mb-1.5">
-              Name
+              {t('orgSettings.details.name')}
             </label>
             <div className="flex items-center gap-3">
               <input
@@ -145,7 +145,7 @@ export function OrgSettingsPage({
                   ) : (
                     <>
                       <Save size={16} />
-                      Save
+                      {t('common.save')}
                     </>
                   )}
                 </button>
@@ -155,18 +155,18 @@ export function OrgSettingsPage({
 
           <div>
             <label className="block text-[11px] font-medium text-[#8A8A8A] uppercase tracking-wider mb-1">
-              Slug
+              {t('orgSettings.details.slug')}
             </label>
             <p className="text-sm text-[#8A8A8A] font-mono">{orgSlug || '—'}</p>
           </div>
 
           <div>
             <label className="block text-[11px] font-medium text-[#8A8A8A] uppercase tracking-wider mb-1">
-              Owner
+              {t('orgSettings.details.owner')}
             </label>
             <p className="text-sm text-[#1A1A1A]">
-              {ownerEmployee?.name || 'Unknown'}
-              {isOwner && ' (You)'}
+              {ownerEmployee?.name || t('common.unknown')}
+              {isOwner && t('orgSettings.details.you')}
             </p>
           </div>
         </div>
@@ -182,10 +182,10 @@ export function OrgSettingsPage({
         >
           <div className="flex items-center gap-2 mb-4">
             <ArrowRightLeft size={18} className="text-[#5B7B8A]" />
-            <h3 className="text-sm font-semibold text-[#1A1A1A]">Transfer Ownership</h3>
+            <h3 className="text-sm font-semibold text-[#1A1A1A]">{t('orgSettings.transfer.title')}</h3>
           </div>
           <p className="text-sm text-[#8A8A8A] mb-4">
-            Transfer ownership of this organization to another member. You will remain an admin but will no longer be the owner.
+            {t('orgSettings.transfer.description')}
           </p>
           <div className="flex items-center gap-3">
             <select
@@ -193,7 +193,7 @@ export function OrgSettingsPage({
               onChange={(e) => setTransferTargetId(e.target.value)}
               className="flex-1 h-10 border border-[#E5E4E0] rounded-[10px] px-3 text-sm text-[#1A1A1A] bg-white focus:outline-none focus:border-[#4A5548] focus:ring-[0_0_0_3px_rgba(74,85,72,0.15)] transition-all duration-150"
             >
-              <option value="">Select a member...</option>
+              <option value="">{t('orgSettings.transfer.selectMember')}</option>
               {transferCandidates.map((e) => (
                 <option key={e.id} value={e.memberId}>
                   {e.name}
@@ -210,7 +210,7 @@ export function OrgSettingsPage({
               ) : (
                 <>
                   <ArrowRightLeft size={16} />
-                  Transfer
+                  {t('orgSettings.transfer.transfer')}
                 </>
               )}
             </button>
@@ -228,10 +228,10 @@ export function OrgSettingsPage({
         >
           <div className="flex items-center gap-2 mb-4">
             <ShieldAlert size={18} className="text-[#C44536]" />
-            <h3 className="text-sm font-semibold text-[#C44536]">Danger Zone</h3>
+            <h3 className="text-sm font-semibold text-[#C44536]">{t('orgSettings.dangerZone.title')}</h3>
           </div>
           <p className="text-sm text-[#8A8A8A] mb-4">
-            Ownership transfers and organization deletion are irreversible. The new owner will have full control, or all data will be permanently lost.
+            {t('orgSettings.dangerZone.description')}
           </p>
           <button
             onClick={handleDelete}
@@ -243,7 +243,7 @@ export function OrgSettingsPage({
             ) : (
               <>
                 <Trash2 size={16} />
-                Delete Organization
+                {t('orgSettings.dangerZone.deleteOrg')}
               </>
             )}
           </button>
