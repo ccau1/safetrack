@@ -1,0 +1,128 @@
+# =============================================================================
+# SafeTrack — Promote Staging → Prod
+# =============================================================================
+# Domain:     safetrack.tribalorigin.com
+# Server dir: /opt/safetrack
+# =============================================================================
+
+name: Promote Staging → Prod
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: 'Image tag to promote (e.g., staging, staging-abc123)'
+        required: true
+        default: 'staging'
+      confirm:
+        description: 'Type "promote" to confirm deployment to production'
+        required: true
+        default: ''
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_BASE: ghcr.io/${{ github.repository }}
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    environment: production
+    if: ${{ github.event.inputs.confirm == 'promote' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Write production .env
+        run: |
+          mkdir -p deploy
+          cat > deploy/.env <<EOF
+          DOMAIN_PROD=safetrack.tribalorigin.com
+          INVITE_BASE_URL=https://safetrack.tribalorigin.com
+          $(printf '%s\n' "${{ secrets.ENV_FILE }}" | grep -vi '^[[:space:]]*APP_IMAGE=')
+          EOF
+
+      - name: Copy compose & nginx to prod server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.HETZNER_HOST }}
+          username: ${{ secrets.HETZNER_USER }}
+          key: ${{ secrets.HETZNER_SSH_KEY }}
+          source: "deploy/docker-compose.prod.yml,deploy/.env,deploy/nginx.ssl.conf"
+          target: "/opt/safetrack"
+          strip_components: 1
+
+      - name: Check for SSL cert secrets
+        id: certs
+        run: |
+          if [ -n "${{ secrets.CF_ORIGIN_CERT }}" ]; then
+            echo "has_certs=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_certs=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Ensure SSL certs on prod server
+        if: steps.certs.outputs.has_certs == 'true'
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.HETZNER_HOST }}
+          username: ${{ secrets.HETZNER_USER }}
+          key: ${{ secrets.HETZNER_SSH_KEY }}
+          envs: CF_ORIGIN_CERT,CF_ORIGIN_KEY
+          script: |
+            set -e
+            mkdir -p /opt/safetrack/ssl
+            printf '%s\n' "$CF_ORIGIN_CERT" > /opt/safetrack/ssl/cloudflare-origin.pem
+            printf '%s\n' "$CF_ORIGIN_KEY" > /opt/safetrack/ssl/cloudflare-origin.key
+            chmod 600 /opt/safetrack/ssl/cloudflare-origin.key
+            chmod 644 /opt/safetrack/ssl/cloudflare-origin.pem
+
+      - name: Deploy promoted image to prod
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.HETZNER_HOST }}
+          username: ${{ secrets.HETZNER_USER }}
+          key: ${{ secrets.HETZNER_SSH_KEY }}
+          script: |
+            set -e
+            cd /opt/safetrack
+
+            # Authenticate to GHCR so the server can pull private images
+            echo "${{ secrets.GH_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+            # Set image reference to the promoted tag and pull
+            export APP_IMAGE="${{ env.IMAGE_BASE }}:${{ github.event.inputs.image_tag }}"
+            docker compose -f docker-compose.prod.yml pull
+            docker compose -f docker-compose.prod.yml up -d
+
+            # Verify container status
+            echo "Container status:"
+            docker compose -f docker-compose.prod.yml ps
+            docker compose -f docker-compose.prod.yml logs --tail 30
+
+            # Prune old dangling images to save disk
+            docker image prune -af
+            docker system prune -f
+
+      - name: Health check (prod)
+        run: |
+          HEALTH_URL="https://safetrack.tribalorigin.com"
+          echo "Testing promoted site: $HEALTH_URL"
+          echo "Waiting for containers to start..."
+          for i in {1..12}; do
+            sleep 5
+            echo "Attempt $i/12: curl -fsSL --max-time 10 $HEALTH_URL"
+            HTTP_CODE=$(curl -fsSL --max-time 10 -w "%{http_code}" \
+              -H "User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36" \
+              -H "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8" \
+              -o /tmp/health_response.html \
+              "$HEALTH_URL" || true)
+            if [ "$HTTP_CODE" = "200" ]; then
+              echo "Prod health check passed: $HEALTH_URL (HTTP $HTTP_CODE)"
+              exit 0
+            fi
+            echo "Attempt $i/12 failed (HTTP ${HTTP_CODE:-no response}), retrying..."
+          done
+          echo "Prod health check failed after 60 seconds: $HEALTH_URL"
+          echo "--- Last response body ---"
+          cat /tmp/health_response.html 2>/dev/null || echo "(no response body captured)"
+          echo "--- End response body ---"
+          exit 1

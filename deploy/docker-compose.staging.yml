@@ -1,0 +1,24 @@
+# =============================================================================
+# SafeTrack Staging — Traefik + Let's Encrypt
+# =============================================================================
+version: "3.9"
+
+services:
+  app:
+    image: ${APP_IMAGE}
+    env_file: .env
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.app-staging.rule=Host(`${DOMAIN_STAGING}`)"
+      - "traefik.http.routers.app-staging.entrypoints=websecure"
+      - "traefik.http.routers.app-staging.tls.certresolver=letsencrypt"
+      - "traefik.http.services.app-staging.loadbalancer.server.port=80"
+    volumes:
+      - ./nginx.dev.conf:/etc/nginx/conf.d/default.conf:ro
+    networks:
+      - staging
+    restart: unless-stopped
+
+networks:
+  staging:
+    external: true
