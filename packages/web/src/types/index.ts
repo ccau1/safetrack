@@ -5,6 +5,7 @@ export type Severity = 'low' | 'medium' | 'high';
 export interface Employee {
   id: number;
   memberId: string;
+  userId: string;
   name: string;
   role: string;
   team: string;
@@ -22,10 +23,14 @@ export interface Team {
 
 export interface EmergencyEvent {
   id: number;
+  uuid: string;
   name: string;
   type: string;
   status: string;
   started: string;
+  description?: string;
+  startedAt: string;
+  resolvedAt: string | null;
 }
 
 export interface StatusHistoryEntry {
@@ -34,7 +39,7 @@ export interface StatusHistoryEntry {
   note?: string;
 }
 
-export type ViewName = 'dashboard' | 'report' | 'team' | 'organization' | 'alert' | 'contacts' | 'team-management' | 'permissions';
+export type ViewName = 'dashboard' | 'report' | 'team' | 'organization' | 'alert' | 'contacts' | 'team-management' | 'group-management' | 'permissions' | 'org-settings' | 'emergency-events';
 
 export interface ToastAction {
   label: string;
@@ -56,6 +61,8 @@ export interface OrganizationMembership {
   name: string;
   slug: string;
   orgRole: string;
+  isOwner?: boolean;
+  ownerId?: string;
 }
 
 export interface AuthResponse {
@@ -84,7 +91,10 @@ export interface Organization {
   name: string;
   slug: string;
   createdAt: string;
+  ownerId?: string;
 }
+
+export type OrganizationResponse = Organization;
 
 export interface TeamApi {
   id: string;
@@ -105,7 +115,16 @@ export interface Member {
   createdAt: string;
 }
 
-export interface EventApi {
+export interface MemberGroup {
+  id: string;
+  organizationId: string;
+  name: string;
+  members: Member[];
+  teams: TeamApi[];
+  createdAt: string;
+}
+
+export interface EmergencyEventApi {
   id: string;
   organizationId: string;
   title: string;
@@ -115,16 +134,38 @@ export interface EventApi {
   startedAt: string;
   resolvedAt: string | null;
   createdAt: string;
+  targetTeams: TeamApi[];
+  targetGroups: MemberGroup[];
 }
 
-export interface StatusReportApi {
+export interface ScopedMember {
+  memberId: string;
+  name: string;
+  teamId: string | null;
+  teamName: string | null;
+  latestStatus: 'SAFE' | 'NEEDS_HELP' | 'MISSING' | 'EN_ROUTE' | null;
+  latestLocation: string | null;
+  latestReportAt: string | null;
+}
+
+export interface MemberEmergencyStatusReportApi {
   id: string;
-  eventId: string;
+  emergencyEventId: string;
   memberId: string;
   memberName: string;
   status: 'SAFE' | 'NEEDS_HELP' | 'MISSING' | 'EN_ROUTE';
   location: string | null;
   note: string | null;
+  createdAt: string;
+}
+
+export interface EmergencyEventUpdateApi {
+  id: string;
+  emergencyEventId: string;
+  createdById: string;
+  createdByName: string;
+  text: string;
+  type: 'PROGRESSING' | 'ESCALATED' | 'DEESCALATED' | 'NOTE' | 'RESOLVED';
   createdAt: string;
 }
 
@@ -135,8 +176,8 @@ export interface Notification {
   message: string | null;
   organizationId: string;
   teamId: string | null;
-  eventId: string | null;
-  statusReportId: string | null;
+  emergencyEventId: string | null;
+  memberEmergencyStatusReportId: string | null;
   actorMemberId: string | null;
   actorName: string | null;
   targetMemberId: string | null;

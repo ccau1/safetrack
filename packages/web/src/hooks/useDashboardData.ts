@@ -2,10 +2,11 @@ import { useMemo } from 'react';
 import { useOrganization } from './useOrganization';
 import { useMembers } from './useMembers';
 import { useTeams } from './useTeams';
-import { useEvents } from './useEvents';
-import { useStatusReports } from './useStatusReports';
+import { useMemberGroups } from './useMemberGroups';
+import { useEmergencyEvents } from './useEmergencyEvents';
+import { useEmergencyEventMembers } from './useEmergencyEventMembers';
 import { useMyMembership } from './useMyMembership';
-import type { Employee, Team, EmergencyEvent, Member, StatusReportApi } from '@/types';
+import type { Employee, Team, EmergencyEvent, Member, ScopedMember } from '@/types';
 
 export function useDashboardData() {
   const { organization, isLoading: orgLoading } = useOrganization();
@@ -13,30 +14,33 @@ export function useDashboardData() {
 
   const { members, isLoading: membersLoading, refetch: refetchMembers } = useMembers(orgId);
   const { teams, isLoading: teamsLoading, refetch: refetchTeams } = useTeams(orgId);
-  const { activeEvent, isLoading: eventsLoading, refetch: refetchEvents } = useEvents(orgId);
-  const { reports, isLoading: reportsLoading, refetch: refetchReports } = useStatusReports(
-    activeEvent?.id || null,
-    null
+  const { groups, isLoading: groupsLoading, refetch: refetchGroups } = useMemberGroups(orgId);
+  const { events, activeEvent, isLoading: eventsLoading, refetch: refetchEvents, createEvent, resolveEvent } = useEmergencyEvents(orgId);
+  const { members: scopedMembers, isLoading: scopedMembersLoading, refetch: refetchScopedMembers } = useEmergencyEventMembers(
+    activeEvent?.id || null
   );
   const { member: myMembership } = useMyMembership(orgId);
 
-  const isLoading = orgLoading || membersLoading || teamsLoading || eventsLoading || reportsLoading;
+  const isLoading = orgLoading || membersLoading || teamsLoading || groupsLoading || eventsLoading || scopedMembersLoading;
+
+  // Build a map of memberId -> latest status from scoped members
+  const statusMap = useMemo(() => {
+    const map = new Map<string, ScopedMember>();
+    scopedMembers.forEach((sm) => {
+      map.set(sm.memberId, sm);
+    });
+    return map;
+  }, [scopedMembers]);
 
   // Map backend data to frontend Employee model
   const employees: Employee[] = useMemo(() => {
     if (!members.length) return [];
 
-    // Build a map of memberId -> latest report
-    const latestReportMap = new Map<string, StatusReportApi>();
-    reports.forEach((report) => {
-      const existing = latestReportMap.get(report.memberId);
-      if (!existing || new Date(report.createdAt) > new Date(existing.createdAt)) {
-        latestReportMap.set(report.memberId, report);
-      }
+    return members.map((m) => {
+      const scoped = statusMap.get(m.id);
+      return mapMemberToEmployee(m, scoped);
     });
-
-    return members.map((m) => mapMemberToEmployee(m, latestReportMap.get(m.id)));
-  }, [members, reports]);
+  }, [members, statusMap]);
 
   const teamList: Team[] = useMemo(() => {
     // Count members per team
@@ -63,11 +67,15 @@ export function useDashboardData() {
   const event: EmergencyEvent | null = useMemo(() => {
     if (!activeEvent) return null;
     return {
-      id: 1, // Frontend uses number IDs
+      id: hashId(activeEvent.id),
+      uuid: activeEvent.id,
       name: activeEvent.title,
       type: activeEvent.type,
       status: activeEvent.status,
       started: formatStartedAt(activeEvent.startedAt),
+      description: activeEvent.description || undefined,
+      startedAt: activeEvent.startedAt,
+      resolvedAt: activeEvent.resolvedAt,
     };
   }, [activeEvent]);
 
@@ -88,44 +96,53 @@ export function useDashboardData() {
   const refetch = () => {
     refetchMembers();
     refetchTeams();
+    refetchGroups();
     refetchEvents();
-    refetchReports();
+    refetchScopedMembers();
   };
+
+  const activeEventCount = events.filter((e) => e.status === 'ACTIVE').length;
 
   return {
     employees,
     teams: teamList,
     rawTeams: teams,
+    groups,
     rawMembers: members,
     event,
+    events,
     stats,
     currentUser,
     currentUserId,
     isLoading,
     myMembership,
-    organization,
     activeEvent,
+    activeEventCount,
+    organization,
     refetch,
+    createEvent,
+    resolveEvent,
   };
 }
 
-function mapMemberToEmployee(member: Member, report?: StatusReportApi): Employee {
-  const status = report ? mapStatus(report.status) : 'unknown';
+function mapMemberToEmployee(member: Member, scoped?: ScopedMember): Employee {
+  const status = scoped?.latestStatus ? mapStatus(scoped.latestStatus) : 'unknown';
   return {
     id: hashId(member.id),
     memberId: member.id,
+    userId: member.userId,
     name: `${member.firstName} ${member.lastName}`,
     role: member.orgRole,
     team: member.teamName || 'Unassigned',
     status,
-    location: report?.location || '-',
-    lastUpdated: report ? formatRelativeTime(report.createdAt) : '-',
+    location: scoped?.latestLocation || '-',
+    lastUpdated: scoped?.latestReportAt ? formatRelativeTime(scoped.latestReportAt) : '-',
     severity: status === 'distress' ? 'medium' : undefined,
-    details: report?.note || undefined,
+    details: undefined,
   };
 }
 
-function mapStatus(status: StatusReportApi['status']): Employee['status'] {
+function mapStatus(status: ScopedMember['latestStatus']): Employee['status'] {
   switch (status) {
     case 'SAFE':
       return 'safe';

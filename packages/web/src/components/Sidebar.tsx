@@ -9,9 +9,12 @@ import {
   Settings,
   LogOut,
   ShieldCheck,
+  Cog,
+  Siren,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/context/AuthContext';
+import { LanguageSwitcher } from './LanguageSwitcher';
 import type { ViewName } from '@/types';
 import {
   Select,
@@ -32,6 +35,7 @@ import {
 interface SidebarProps {
   currentView: ViewName;
   onNavigate: (view: ViewName) => void;
+  activeEventCount?: number;
   mobileOpen?: boolean;
   onMobileClose?: () => void;
 }
@@ -42,7 +46,7 @@ interface NavItem {
   view: ViewName;
 }
 
-function NavButton({ item, isActive, onClick }: { item: NavItem; isActive: boolean; onClick: () => void }) {
+function NavButton({ item, isActive, onClick, badge }: { item: NavItem; isActive: boolean; onClick: () => void; badge?: number }) {
   const Icon = item.icon;
   return (
     <button
@@ -54,7 +58,14 @@ function NavButton({ item, isActive, onClick }: { item: NavItem; isActive: boole
       }`}
     >
       <Icon size={18} className={isActive ? 'text-[#4A5548]' : 'text-[#8A8A8A]'} />
-      {item.label}
+      <span className="flex-1 text-left">{item.label}</span>
+      {badge !== undefined && badge > 0 && (
+        <span className={`min-w-[20px] h-5 px-1.5 flex items-center justify-center rounded-full text-[11px] font-bold ${
+          isActive ? 'bg-[#4A5548] text-white' : 'bg-[#C44536] text-white'
+        }`}>
+          {badge > 99 ? '99+' : badge}
+        </span>
+      )}
     </button>
   );
 }
@@ -65,6 +76,7 @@ function SidebarNavItems({
   currentView,
   onNavigate,
   isAdmin,
+  activeEventCount,
   t,
 }: {
   mainNavItems: NavItem[];
@@ -72,6 +84,7 @@ function SidebarNavItems({
   currentView: ViewName;
   onNavigate: (view: ViewName) => void;
   isAdmin: boolean;
+  activeEventCount: number;
   t: (key: string) => string;
 }) {
   return (
@@ -82,6 +95,7 @@ function SidebarNavItems({
           item={item}
           isActive={currentView === item.view}
           onClick={() => onNavigate(item.view)}
+          badge={item.view === 'emergency-events' ? activeEventCount : undefined}
         />
       ))}
 
@@ -186,13 +200,14 @@ function UserSection({
   );
 }
 
-export function Sidebar({ currentView, onNavigate, mobileOpen, onMobileClose }: SidebarProps) {
+export function Sidebar({ currentView, onNavigate, activeEventCount = 0, mobileOpen, onMobileClose }: SidebarProps) {
   const { t } = useTranslation();
   const { user, logout, isAdmin, organizations, selectedOrganization, selectOrganization } = useAuth();
 
   const mainNavItems = useMemo(
     () => [
       { icon: LayoutDashboard, label: t('navigation.dashboard'), view: 'dashboard' as ViewName },
+      { icon: Siren, label: t('navigation.emergencyEvents'), view: 'emergency-events' as ViewName },
       { icon: Shield, label: t('navigation.report'), view: 'report' as ViewName },
       { icon: Users, label: t('navigation.team'), view: 'team' as ViewName },
       { icon: Building, label: t('navigation.organization'), view: 'organization' as ViewName },
@@ -205,7 +220,9 @@ export function Sidebar({ currentView, onNavigate, mobileOpen, onMobileClose }: 
     () => [
       { icon: Megaphone, label: t('navigation.sendAlert'), view: 'alert' as ViewName },
       { icon: Settings, label: t('navigation.teamManagement'), view: 'team-management' as ViewName },
+      { icon: Users, label: t('navigation.groupManagement'), view: 'group-management' as ViewName },
       { icon: ShieldCheck, label: t('navigation.permissions'), view: 'permissions' as ViewName },
+      { icon: Cog, label: t('navigation.orgSettings'), view: 'org-settings' as ViewName },
     ],
     [t]
   );
@@ -233,8 +250,12 @@ export function Sidebar({ currentView, onNavigate, mobileOpen, onMobileClose }: 
           currentView={currentView}
           onNavigate={onNavigate}
           isAdmin={isAdmin}
+          activeEventCount={activeEventCount}
           t={t}
         />
+        <div className="px-3 pt-2">
+          <LanguageSwitcher />
+        </div>
         <UserSection
           initials={initials}
           fullName={fullName}
@@ -263,8 +284,12 @@ export function Sidebar({ currentView, onNavigate, mobileOpen, onMobileClose }: 
             currentView={currentView}
             onNavigate={onNavigate}
             isAdmin={isAdmin}
+            activeEventCount={activeEventCount}
             t={t}
           />
+          <div className="px-3 pt-2">
+            <LanguageSwitcher />
+          </div>
           <UserSection
             initials={initials}
             fullName={fullName}

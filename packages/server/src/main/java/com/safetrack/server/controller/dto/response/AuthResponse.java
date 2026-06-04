@@ -17,6 +17,8 @@ public record AuthResponse(
         UUID id,
         String name,
         String slug,
-        String orgRole
+        String orgRole,
+        boolean isOwner,
+        UUID ownerId
     ) {}
 }

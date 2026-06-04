@@ -11,6 +11,7 @@ interface AppLayoutProps {
   currentView: ViewName;
   onNavigate: (view: ViewName) => void;
   event: EmergencyEvent | null;
+  activeEventCount: number;
   toasts: ToastItem[];
   removeToast: (id: string) => void;
 }
@@ -20,6 +21,7 @@ export function AppLayout({
   currentView,
   onNavigate,
   event,
+  activeEventCount,
   toasts,
   removeToast,
 }: AppLayoutProps) {
@@ -36,6 +38,7 @@ export function AppLayout({
       <Sidebar
         currentView={currentView}
         onNavigate={handleNavigate}
+        activeEventCount={activeEventCount}
         mobileOpen={mobileSidebarOpen}
         onMobileClose={() => setMobileSidebarOpen(false)}
       />

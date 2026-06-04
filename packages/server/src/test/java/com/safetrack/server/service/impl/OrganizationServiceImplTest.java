@@ -40,13 +40,19 @@ class OrganizationServiceImplTest {
         Organization savedOrg = Organization.builder().id(UUID.randomUUID()).name("My Org").slug("my-org").build();
 
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-        when(organizationRepository.save(any(Organization.class))).thenReturn(savedOrg);
+        when(organizationRepository.save(any(Organization.class))).thenAnswer(i -> {
+            Organization org = i.getArgument(0);
+            org.setId(UUID.randomUUID());
+            return org;
+        });
         when(organizationRepository.existsBySlug("my-org")).thenReturn(false);
         when(memberRepository.save(any(Member.class))).thenAnswer(i -> i.getArgument(0));
 
         Organization result = organizationService.createOrganization("My Org", userId);
 
         assertEquals("My Org", result.getName());
+        assertNotNull(result.getOwner());
+        assertEquals(userId, result.getOwner().getId());
         verify(organizationRepository).save(any(Organization.class));
         verify(memberRepository).save(any(Member.class));
     }
@@ -96,15 +102,96 @@ class OrganizationServiceImplTest {
     void generateSlug_shouldAppendSuffix_whenSlugExists() {
         UUID userId = UUID.randomUUID();
         User user = User.builder().id(userId).build();
-        Organization savedOrg = Organization.builder().id(UUID.randomUUID()).name("My Org").slug("my-org-1").build();
 
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
         when(organizationRepository.existsBySlug("my-org")).thenReturn(true);
         when(organizationRepository.existsBySlug("my-org-1")).thenReturn(false);
-        when(organizationRepository.save(any(Organization.class))).thenReturn(savedOrg);
+        when(organizationRepository.save(any(Organization.class))).thenAnswer(i -> {
+            Organization org = i.getArgument(0);
+            org.setId(UUID.randomUUID());
+            return org;
+        });
         when(memberRepository.save(any(Member.class))).thenAnswer(i -> i.getArgument(0));
 
         Organization result = organizationService.createOrganization("My Org", userId);
         assertEquals("my-org-1", result.getSlug());
+    }
+
+    @Test
+    void transferOwnership_shouldUpdateOwnerAndPromoteNewOwner() {
+        UUID orgId = UUID.randomUUID();
+        UUID currentOwnerId = UUID.randomUUID();
+        UUID newOwnerId = UUID.randomUUID();
+
+        User currentOwner = User.builder().id(currentOwnerId).build();
+        User newOwner = User.builder().id(newOwnerId).build();
+        Organization org = Organization.builder().id(orgId).owner(currentOwner).build();
+        Member existingMember = Member.builder().organization(org).user(newOwner).orgRole(Member.OrgRole.ORG_MEMBER).build();
+
+        when(organizationRepository.findById(orgId)).thenReturn(Optional.of(org));
+        when(userRepository.findById(newOwnerId)).thenReturn(Optional.of(newOwner));
+        when(memberRepository.findByOrganizationIdAndUserId(orgId, newOwnerId)).thenReturn(Optional.of(existingMember));
+        when(memberRepository.save(any(Member.class))).thenAnswer(i -> i.getArgument(0));
+        when(organizationRepository.save(any(Organization.class))).thenAnswer(i -> i.getArgument(0));
+
+        organizationService.transferOwnership(orgId, newOwnerId, currentOwnerId);
+
+        assertEquals(newOwnerId, org.getOwner().getId());
+        assertEquals(Member.OrgRole.ORG_ADMIN, existingMember.getOrgRole());
+        verify(memberRepository).save(existingMember);
+        verify(organizationRepository).save(org);
+    }
+
+    @Test
+    void transferOwnership_shouldCreateMember_whenNewOwnerNotInOrg() {
+        UUID orgId = UUID.randomUUID();
+        UUID currentOwnerId = UUID.randomUUID();
+        UUID newOwnerId = UUID.randomUUID();
+
+        User currentOwner = User.builder().id(currentOwnerId).build();
+        User newOwner = User.builder().id(newOwnerId).build();
+        Organization org = Organization.builder().id(orgId).owner(currentOwner).build();
+
+        when(organizationRepository.findById(orgId)).thenReturn(Optional.of(org));
+        when(userRepository.findById(newOwnerId)).thenReturn(Optional.of(newOwner));
+        when(memberRepository.findByOrganizationIdAndUserId(orgId, newOwnerId)).thenReturn(Optional.empty());
+        when(memberRepository.save(any(Member.class))).thenAnswer(i -> i.getArgument(0));
+        when(organizationRepository.save(any(Organization.class))).thenAnswer(i -> i.getArgument(0));
+
+        organizationService.transferOwnership(orgId, newOwnerId, currentOwnerId);
+
+        assertEquals(newOwnerId, org.getOwner().getId());
+        verify(memberRepository).save(argThat(m -> m.getOrgRole() == Member.OrgRole.ORG_ADMIN));
+        verify(organizationRepository).save(org);
+    }
+
+    @Test
+    void transferOwnership_shouldThrow_whenCallerIsNotOwner() {
+        UUID orgId = UUID.randomUUID();
+        UUID currentOwnerId = UUID.randomUUID();
+        UUID callerId = UUID.randomUUID();
+        UUID newOwnerId = UUID.randomUUID();
+
+        User currentOwner = User.builder().id(currentOwnerId).build();
+        Organization org = Organization.builder().id(orgId).owner(currentOwner).build();
+
+        when(organizationRepository.findById(orgId)).thenReturn(Optional.of(org));
+
+        assertThrows(IllegalStateException.class,
+                () -> organizationService.transferOwnership(orgId, newOwnerId, callerId));
+    }
+
+    @Test
+    void transferOwnership_shouldThrow_whenTransferringToSelf() {
+        UUID orgId = UUID.randomUUID();
+        UUID currentOwnerId = UUID.randomUUID();
+
+        User currentOwner = User.builder().id(currentOwnerId).build();
+        Organization org = Organization.builder().id(orgId).owner(currentOwner).build();
+
+        when(organizationRepository.findById(orgId)).thenReturn(Optional.of(org));
+
+        assertThrows(IllegalArgumentException.class,
+                () -> organizationService.transferOwnership(orgId, currentOwnerId, currentOwnerId));
     }
 }

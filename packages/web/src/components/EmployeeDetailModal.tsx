@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Bell } from 'lucide-react';
 import { StatusBadge } from './StatusBadge';
@@ -12,9 +14,10 @@ interface EmployeeDetailModalProps {
 }
 
 export function EmployeeDetailModal({ employee, open, onClose, isAdmin, onRemind }: EmployeeDetailModalProps) {
+  const { t } = useTranslation();
   if (!employee) return null;
 
-  return (
+  return createPortal(
     <AnimatePresence>
       {open && (
         <motion.div
@@ -51,7 +54,7 @@ export function EmployeeDetailModal({ employee, open, onClose, isAdmin, onRemind
                 </div>
                 <h3 className="text-xl font-semibold text-[#1A1A1A]">{employee.name}</h3>
                 <p className="text-sm text-[#8A8A8A]">
-                  {employee.role} · {employee.team}
+                  {t(`roles.${employee.role}`, { defaultValue: employee.role })} · {employee.team}
                 </p>
               </div>
 
@@ -103,6 +106,7 @@ export function EmployeeDetailModal({ employee, open, onClose, isAdmin, onRemind
           </motion.div>
         </motion.div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 }

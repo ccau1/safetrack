@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Mail, Upload, Download, Loader2, Trash2, Send, Users } from 'lucide-react';
 import { useInvitations } from '@/hooks/useInvitations';
@@ -13,6 +14,7 @@ interface InviteMembersModalProps {
 }
 
 export function InviteMembersModal({ orgId, open, onClose, addToast }: InviteMembersModalProps) {
+  const { t } = useTranslation();
   const { teams } = useTeams(orgId);
   const {
     invitations,
@@ -233,9 +235,9 @@ export function InviteMembersModal({ orgId, open, onClose, addToast }: InviteMem
                         onChange={(e) => setForm((f) => ({ ...f, orgRole: e.target.value }))}
                         className="w-full h-10 border border-[#E5E4E0] rounded-[10px] px-3 text-sm text-[#1A1A1A] bg-white focus:outline-none focus:border-[#4A5548] focus:ring-[0_0_0_3px_rgba(74,85,72,0.15)] transition-all duration-150"
                       >
-                        <option value="ORG_MEMBER">Member</option>
-                        <option value="SAFETY_OFFICER">Safety Officer</option>
-                        <option value="ORG_ADMIN">Admin</option>
+                        <option value="ORG_MEMBER">{t('roles.ORG_MEMBER')}</option>
+                        <option value="SAFETY_OFFICER">{t('roles.SAFETY_OFFICER')}</option>
+                        <option value="ORG_ADMIN">{t('roles.ORG_ADMIN')}</option>
                       </select>
                     </div>
                   </div>
@@ -417,7 +419,7 @@ export function InviteMembersModal({ orgId, open, onClose, addToast }: InviteMem
                     <div className="min-w-0">
                       <p className="text-sm font-medium text-[#1A1A1A] truncate">{inv.email}</p>
                       <p className="text-xs text-[#8A8A8A]">
-                        {inv.teamName || 'No team'} • {inv.orgRole} • Expires {new Date(inv.expiresAt).toLocaleDateString()}
+                        {inv.teamName || 'No team'} • {t(`roles.${inv.orgRole}`, { defaultValue: inv.orgRole })} • Expires {new Date(inv.expiresAt).toLocaleDateString()}
                       </p>
                     </div>
                     <div className="flex items-center gap-1 shrink-0">

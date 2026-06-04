@@ -7,6 +7,7 @@ import {
   Megaphone,
   Phone,
   ShieldCheck,
+  Siren,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/context/AuthContext';
@@ -24,6 +25,7 @@ export function MobileNav({ currentView, onNavigate }: MobileNavProps) {
   const navItems = useMemo(
     () => [
       { icon: LayoutDashboard, label: t('mobileNav.dashboard'), view: 'dashboard' as ViewName },
+      { icon: Siren, label: t('mobileNav.emergencyEvents') || 'Events', view: 'emergency-events' as ViewName },
       { icon: Shield, label: t('mobileNav.report'), view: 'report' as ViewName },
       { icon: Users, label: t('mobileNav.team'), view: 'team' as ViewName },
       { icon: Building, label: t('mobileNav.organization'), view: 'organization' as ViewName },
@@ -37,7 +39,7 @@ export function MobileNav({ currentView, onNavigate }: MobileNavProps) {
   const visibleItems = navItems.filter((item) => !item.adminOnly || isAdmin);
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 h-16 bg-white border-t border-[#E5E4E0] z-50 flex items-center justify-around lg:hidden">
+    <nav className="fixed bottom-0 left-0 right-0 h-16 bg-white border-t border-[#E5E4E0] z-50 flex items-center overflow-x-auto lg:hidden">
       {visibleItems.map((item) => {
         const isActive = currentView === item.view;
         const Icon = item.icon;
@@ -45,7 +47,7 @@ export function MobileNav({ currentView, onNavigate }: MobileNavProps) {
           <button
             key={item.label}
             onClick={() => onNavigate(item.view)}
-            className={`flex flex-col items-center gap-1 py-2 px-3 ${
+            className={`flex flex-col items-center gap-1 py-2 px-3 shrink-0 ${
               isActive ? 'text-[#4A5548]' : 'text-[#8A8A8A]'
             }`}
           >

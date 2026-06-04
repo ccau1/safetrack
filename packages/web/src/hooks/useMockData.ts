@@ -2,26 +2,26 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import type { Employee, EmployeeStatus, Severity, EmergencyEvent, StatusHistoryEntry } from '@/types';
 
 const INITIAL_EMPLOYEES: Employee[] = [
-  { id: 1, memberId: 'mock-1', name: 'Sarah Chen', role: 'Senior Engineer', team: 'Engineering', status: 'safe', location: 'Building A, Floor 3', lastUpdated: '2 min ago' },
-  { id: 2, memberId: 'mock-2', name: 'Marcus Johnson', role: 'Product Manager', team: 'Product', status: 'safe', location: 'Building A, Floor 2', lastUpdated: '5 min ago' },
-  { id: 3, memberId: 'mock-3', name: 'Emily Davis', role: 'UX Designer', team: 'Design', status: 'distress', location: 'Building B, Floor 1', lastUpdated: '8 min ago', severity: 'high', details: 'Stuck in elevator' },
-  { id: 4, memberId: 'mock-4', name: 'James Wilson', role: 'Frontend Dev', team: 'Engineering', status: 'safe', location: 'Remote', lastUpdated: '1 min ago' },
-  { id: 5, memberId: 'mock-5', name: 'Aisha Patel', role: 'Marketing Lead', team: 'Marketing', status: 'unknown', location: '-', lastUpdated: '-' },
-  { id: 6, memberId: 'mock-6', name: 'Robert Kim', role: 'DevOps Engineer', team: 'Engineering', status: 'safe', location: 'Building A, Floor 3', lastUpdated: '12 min ago' },
-  { id: 7, memberId: 'mock-7', name: 'Lisa Wong', role: 'HR Manager', team: 'HR', status: 'safe', location: 'Building A, Floor 1', lastUpdated: '3 min ago' },
-  { id: 8, memberId: 'mock-8', name: 'David Brown', role: 'Sales Rep', team: 'Sales', status: 'unknown', location: '-', lastUpdated: '-' },
-  { id: 9, memberId: 'mock-9', name: 'Nina Okafor', role: 'Data Analyst', team: 'Engineering', status: 'safe', location: 'Building A, Floor 3', lastUpdated: '7 min ago' },
-  { id: 10, memberId: 'mock-10', name: 'Tom Martinez', role: 'Operations Lead', team: 'Operations', status: 'distress', location: 'Building B, Floor 2', lastUpdated: '15 min ago', severity: 'medium', details: 'Sprained ankle, needs medical' },
-  { id: 11, memberId: 'mock-11', name: 'Yuki Tanaka', role: 'Backend Engineer', team: 'Engineering', status: 'safe', location: 'Remote', lastUpdated: '4 min ago' },
-  { id: 12, memberId: 'mock-12', name: 'Rachel Green', role: 'Content Writer', team: 'Marketing', status: 'unknown', location: '-', lastUpdated: '-' },
-  { id: 13, memberId: 'mock-13', name: 'Alex Thompson', role: 'QA Engineer', team: 'Engineering', status: 'safe', location: 'Building A, Floor 3', lastUpdated: '9 min ago' },
-  { id: 14, memberId: 'mock-14', name: 'Priya Sharma', role: 'Finance Analyst', team: 'Operations', status: 'safe', location: 'Building A, Floor 1', lastUpdated: '6 min ago' },
-  { id: 15, memberId: 'mock-15', name: 'Chris Lee', role: 'Designer', team: 'Design', status: 'unknown', location: '-', lastUpdated: '-' },
-  { id: 16, memberId: 'mock-16', name: 'Maria Garcia', role: 'Recruiter', team: 'HR', status: 'safe', location: 'Building A, Floor 1', lastUpdated: '11 min ago' },
-  { id: 17, memberId: 'mock-17', name: 'Sam Taylor', role: 'Sales Manager', team: 'Sales', status: 'safe', location: 'Building A, Floor 2', lastUpdated: '14 min ago' },
-  { id: 18, memberId: 'mock-18', name: 'John Smith', role: 'CTO', team: 'Engineering', status: 'safe', location: 'Building A, Floor 3', lastUpdated: '1 min ago' },
-  { id: 19, memberId: 'mock-19', name: 'Linda Park', role: 'Office Manager', team: 'Operations', status: 'unknown', location: '-', lastUpdated: '-' },
-  { id: 20, memberId: 'mock-20', name: "Kevin O'Brien", role: 'Support Engineer', team: 'Engineering', status: 'safe', location: 'Building B, Floor 1', lastUpdated: '10 min ago' },
+  { id: 1, memberId: 'mock-1', userId: 'user-1', name: 'Sarah Chen', role: 'Senior Engineer', team: 'Engineering', status: 'safe', location: 'Building A, Floor 3', lastUpdated: '2 min ago' },
+  { id: 2, memberId: 'mock-2', userId: 'user-2', name: 'Marcus Johnson', role: 'Product Manager', team: 'Product', status: 'safe', location: 'Building A, Floor 2', lastUpdated: '5 min ago' },
+  { id: 3, memberId: 'mock-3', userId: 'user-3', name: 'Emily Davis', role: 'UX Designer', team: 'Design', status: 'distress', location: 'Building B, Floor 1', lastUpdated: '8 min ago', severity: 'high', details: 'Stuck in elevator' },
+  { id: 4, memberId: 'mock-4', userId: 'user-4', name: 'James Wilson', role: 'Frontend Dev', team: 'Engineering', status: 'safe', location: 'Remote', lastUpdated: '1 min ago' },
+  { id: 5, memberId: 'mock-5', userId: 'user-5', name: 'Aisha Patel', role: 'Marketing Lead', team: 'Marketing', status: 'unknown', location: '-', lastUpdated: '-' },
+  { id: 6, memberId: 'mock-6', userId: 'user-6', name: 'Robert Kim', role: 'DevOps Engineer', team: 'Engineering', status: 'safe', location: 'Building A, Floor 3', lastUpdated: '12 min ago' },
+  { id: 7, memberId: 'mock-7', userId: 'user-7', name: 'Lisa Wong', role: 'HR Manager', team: 'HR', status: 'safe', location: 'Building A, Floor 1', lastUpdated: '3 min ago' },
+  { id: 8, memberId: 'mock-8', userId: 'user-8', name: 'David Brown', role: 'Sales Rep', team: 'Sales', status: 'unknown', location: '-', lastUpdated: '-' },
+  { id: 9, memberId: 'mock-9', userId: 'user-9', name: 'Nina Okafor', role: 'Data Analyst', team: 'Engineering', status: 'safe', location: 'Building A, Floor 3', lastUpdated: '7 min ago' },
+  { id: 10, memberId: 'mock-10', userId: 'user-10', name: 'Tom Martinez', role: 'Operations Lead', team: 'Operations', status: 'distress', location: 'Building B, Floor 2', lastUpdated: '15 min ago', severity: 'medium', details: 'Sprained ankle, needs medical' },
+  { id: 11, memberId: 'mock-11', userId: 'user-11', name: 'Yuki Tanaka', role: 'Backend Engineer', team: 'Engineering', status: 'safe', location: 'Remote', lastUpdated: '4 min ago' },
+  { id: 12, memberId: 'mock-12', userId: 'user-12', name: 'Rachel Green', role: 'Content Writer', team: 'Marketing', status: 'unknown', location: '-', lastUpdated: '-' },
+  { id: 13, memberId: 'mock-13', userId: 'user-13', name: 'Alex Thompson', role: 'QA Engineer', team: 'Engineering', status: 'safe', location: 'Building A, Floor 3', lastUpdated: '9 min ago' },
+  { id: 14, memberId: 'mock-14', userId: 'user-14', name: 'Priya Sharma', role: 'Finance Analyst', team: 'Operations', status: 'safe', location: 'Building A, Floor 1', lastUpdated: '6 min ago' },
+  { id: 15, memberId: 'mock-15', userId: 'user-15', name: 'Chris Lee', role: 'Designer', team: 'Design', status: 'unknown', location: '-', lastUpdated: '-' },
+  { id: 16, memberId: 'mock-16', userId: 'user-16', name: 'Maria Garcia', role: 'Recruiter', team: 'HR', status: 'safe', location: 'Building A, Floor 1', lastUpdated: '11 min ago' },
+  { id: 17, memberId: 'mock-17', userId: 'user-17', name: 'Sam Taylor', role: 'Sales Manager', team: 'Sales', status: 'safe', location: 'Building A, Floor 2', lastUpdated: '14 min ago' },
+  { id: 18, memberId: 'mock-18', userId: 'user-18', name: 'John Smith', role: 'CTO', team: 'Engineering', status: 'safe', location: 'Building A, Floor 3', lastUpdated: '1 min ago' },
+  { id: 19, memberId: 'mock-19', userId: 'user-19', name: 'Linda Park', role: 'Office Manager', team: 'Operations', status: 'unknown', location: '-', lastUpdated: '-' },
+  { id: 20, memberId: 'mock-20', userId: 'user-20', name: "Kevin O'Brien", role: 'Support Engineer', team: 'Engineering', status: 'safe', location: 'Building B, Floor 1', lastUpdated: '10 min ago' },
 ];
 
 const TEAMS = [
@@ -36,10 +36,13 @@ const TEAMS = [
 
 const EVENT: EmergencyEvent = {
   id: 1,
+  uuid: 'mock-event-uuid',
   name: 'Fire Drill',
   type: 'Drill',
   status: 'Active',
   started: '12 min ago',
+  startedAt: new Date(Date.now() - 12 * 60000).toISOString(),
+  resolvedAt: null,
 };
 
 const CURRENT_USER_ID = 4;

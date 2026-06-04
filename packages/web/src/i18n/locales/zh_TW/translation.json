@@ -9,13 +9,17 @@
     "team": "我的團隊",
     "organization": "組織",
     "contacts": "聯絡人",
+    "emergencyEvents": "緊急事件",
     "sendAlert": "發送警報",
     "teamManagement": "團隊管理",
+    "groupManagement": "分組管理",
     "permissions": "權限",
+    "orgSettings": "設定",
     "administration": "管理"
   },
   "mobileNav": {
     "dashboard": "儀表板",
+    "emergencyEvents": "事件",
     "report": "報告",
     "team": "團隊",
     "organization": "組織",
@@ -50,6 +54,11 @@
       "days_one": "{{count}}天前",
       "days_other": "{{count}}天前"
     }
+  },
+  "roles": {
+    "ORG_MEMBER": "成員",
+    "ORG_ADMIN": "管理員",
+    "SAFETY_OFFICER": "安全主任"
   },
   "auth": {
     "signIn": "登入",

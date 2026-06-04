@@ -9,8 +9,8 @@ import java.util.UUID;
 
 public interface NotificationService {
 
-    Notification createStatusReportNotification(UUID organizationId, UUID teamId, UUID eventId,
-                                                 UUID statusReportId, UUID actorMemberId);
+    Notification createStatusReportNotification(UUID organizationId, UUID teamId, UUID emergencyEventId,
+                                                 UUID memberEmergencyStatusReportId, UUID actorMemberId);
 
     Notification createReminderNotification(UUID organizationId, UUID teamId, UUID actorMemberId,
                                              UUID targetMemberId);

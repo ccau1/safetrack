@@ -21,6 +21,7 @@ interface AuthContextValue {
   hasAction: (action: string) => boolean;
   hasAnyAction: (actions: string[]) => boolean;
   isAdmin: boolean;
+  isOwner: boolean;
   organizations: OrganizationMembership[];
   selectedOrganization: OrganizationMembership | null;
   selectOrganization: (id: string | null) => void;
@@ -149,7 +150,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const hasAction = useCallback(
     (action: string) => {
       if (!user) return false;
-      return user.actions.includes('*') || user.actions.includes(action);
+      return user.actions.some((pattern: string) => {
+        if (pattern === '*') return true;
+        if (pattern === action) return true;
+        // Convert wildcard pattern to regex: safetrack:* → ^safetrack:.*$
+        const regex = new RegExp('^' + pattern.replace(/\./g, '\\.').replace(/\*/g, '.*') + '$');
+        return regex.test(action);
+      });
     },
     [user]
   );
@@ -164,6 +171,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 
   const isAdmin = selectedOrganization?.orgRole === 'ORG_ADMIN';
+  const isOwner = organizations.some((o) => o.isOwner);
 
   // Listen for logout events from API client (401 handler)
   useEffect(() => {
@@ -190,6 +198,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         hasAction,
         hasAnyAction,
         isAdmin,
+        isOwner,
         organizations,
         selectedOrganization,
         selectOrganization,

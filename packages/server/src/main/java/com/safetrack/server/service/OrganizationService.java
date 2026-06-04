@@ -11,4 +11,8 @@ public interface OrganizationService {
     Optional<Organization> findById(UUID id);
     Optional<Organization> findBySlug(String slug);
     List<Organization> findByUserId(UUID userId);
+    Optional<Organization> findByOwnerId(UUID userId);
+    void transferOwnership(UUID orgId, UUID newOwnerId, UUID currentOwnerId);
+    Organization updateOrganization(UUID orgId, String newName, UUID actorUserId);
+    void deleteOrganization(UUID orgId, UUID actorUserId);
 }

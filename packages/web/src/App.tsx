@@ -9,12 +9,16 @@ import { OrganizationPage } from '@/pages/OrganizationPage';
 import { SendAlertPage } from '@/pages/SendAlertPage';
 import { ContactsPage } from '@/pages/ContactsPage';
 import { TeamManagementPage } from '@/pages/TeamManagementPage';
+import { GroupManagementPage } from '@/pages/GroupManagementPage';
 import { PermissionsPage } from '@/pages/PermissionsPage';
+import { EmergencyEventDetailPage } from '@/pages/EmergencyEventDetailPage';
 import { LoginPage } from '@/pages/LoginPage';
 import { AcceptInvitePage } from '@/pages/AcceptInvitePage';
 import { NoOrganizationPage } from '@/pages/NoOrganizationPage';
+import { OrgSettingsPage } from '@/pages/OrgSettingsPage';
 import { useToast } from '@/hooks/useToast';
 import { useFilter } from '@/hooks/useFilter';
+import { EmergenciesPage } from '@/pages/EmergenciesPage';
 import { useDashboardData } from '@/hooks/useDashboardData';
 import type { ViewName } from '@/types';
 import './App.css';
@@ -40,7 +44,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 function MainApp() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { isAdmin, organizations } = useAuth();
+  const { isAdmin, isOwner, organizations } = useAuth();
   const { toasts, addToast, removeToast } = useToast();
   const { activeTeam, setTeam } = useFilter();
 
@@ -48,7 +52,7 @@ function MainApp() {
     const segment = path.split('/').filter(Boolean)[0];
     const validViews: ViewName[] = [
       'dashboard', 'report', 'team', 'organization',
-      'alert', 'contacts', 'team-management', 'permissions',
+      'alert', 'contacts', 'team-management', 'group-management', 'permissions', 'org-settings', 'emergency-events',
     ];
     return validViews.includes(segment as ViewName) ? (segment as ViewName) : 'dashboard';
   }, []);
@@ -63,16 +67,20 @@ function MainApp() {
     employees,
     teams,
     rawTeams,
+    groups,
     rawMembers,
     event,
+    events,
     stats,
     currentUser,
     currentUserId,
     isLoading,
     myMembership,
     activeEvent,
+    activeEventCount,
     organization,
     refetch,
+    createEvent,
   } = useDashboardData();
 
   const teamNames = teams.map((t) => t.name);
@@ -83,6 +91,7 @@ function MainApp() {
         currentView={currentView}
         onNavigate={handleNavigate}
         event={null}
+        activeEventCount={0}
         toasts={toasts}
         removeToast={removeToast}
       >
@@ -106,12 +115,15 @@ function MainApp() {
           <DashboardPage
             employees={employees}
             teams={teamNames}
+            availableTeams={rawTeams}
+            availableGroups={groups}
             stats={stats}
             event={event}
             activeTeam={activeTeam}
             onTeamFilter={setTeam}
             isAdmin={isAdmin}
             addToast={addToast}
+            createEvent={createEvent}
           />
         );
       case 'report':
@@ -166,23 +178,62 @@ function MainApp() {
         ) : (
           <Navigate to="/" replace />
         );
+      case 'group-management':
+        return isAdmin ? (
+          <GroupManagementPage
+            groups={groups}
+            members={rawMembers}
+            teams={rawTeams}
+            orgId={organization?.id || null}
+            addToast={addToast}
+            onMutated={refetch}
+          />
+        ) : (
+          <Navigate to="/" replace />
+        );
       case 'permissions':
         return isAdmin ? (
           <PermissionsPage orgId={organization?.id || null} addToast={addToast} />
         ) : (
           <Navigate to="/" replace />
         );
+      case 'emergency-events':
+        return (
+          <EmergenciesPage
+            events={events}
+            activeEventCount={activeEventCount}
+            addToast={addToast}
+            onMutated={refetch}
+          />
+        );
+      case 'org-settings':
+        return (
+          <OrgSettingsPage
+            employees={employees}
+            orgId={organization?.id || null}
+            orgName={organization?.name || null}
+            orgSlug={organization?.slug || null}
+            ownerId={organization?.ownerId || null}
+            isOwner={isOwner}
+            currentUserId={currentUserId}
+            addToast={addToast}
+            onMutated={refetch}
+          />
+        );
       default:
         return (
           <DashboardPage
             employees={employees}
             teams={teamNames}
+            availableTeams={rawTeams}
+            availableGroups={groups}
             stats={stats}
             event={event}
             activeTeam={activeTeam}
             onTeamFilter={setTeam}
             isAdmin={isAdmin}
             addToast={addToast}
+            createEvent={createEvent}
           />
         );
     }
@@ -193,6 +244,7 @@ function MainApp() {
       currentView={currentView}
       onNavigate={handleNavigate}
       event={event}
+      activeEventCount={activeEventCount}
       toasts={toasts}
       removeToast={removeToast}
     >
@@ -206,6 +258,14 @@ function App() {
     <Routes>
       <Route path="/login" element={<LoginPage />} />
       <Route path="/accept-invite" element={<AcceptInvitePage />} />
+      <Route
+        path="/emergency-events/:id"
+        element={
+          <ProtectedRoute>
+            <EmergencyEventDetailPage />
+          </ProtectedRoute>
+        }
+      />
       <Route
         path="/*"
         element={

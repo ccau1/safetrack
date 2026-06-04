@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Shield,
@@ -20,6 +21,7 @@ interface PermissionsPageProps {
 }
 
 export function PermissionsPage({ orgId, addToast }: PermissionsPageProps) {
+  const { t } = useTranslation();
   const [memberPermissions, setMemberPermissions] = useState<MemberPermission[]>([]);
   const [catalog, setCatalog] = useState<PermissionCatalogItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -197,7 +199,7 @@ export function PermissionsPage({ orgId, addToast }: PermissionsPageProps) {
                           {member.firstName} {member.lastName}
                         </p>
                         <p className="text-xs text-[#8A8A8A]">
-                          {member.email} · {member.orgRole}
+                          {member.email} · {t(`roles.${member.orgRole}`, { defaultValue: member.orgRole })}
                         </p>
                       </div>
                     </div>

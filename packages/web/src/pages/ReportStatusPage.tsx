@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ShieldCheck, AlertTriangle, HelpCircle } from 'lucide-react';
 import { DistressFormModal } from '@/components/DistressFormModal';
-import { useStatusReports } from '@/hooks/useStatusReports';
+import { useMemberEmergencyStatusReports } from '@/hooks/useMemberEmergencyStatusReports';
 import type { Employee, EmployeeStatus, StatusHistoryEntry } from '@/types';
 
 interface ReportStatusPageProps {
@@ -23,7 +23,7 @@ export function ReportStatusPage({
   const [safeLoading, setSafeLoading] = useState(false);
   const [distressModalOpen, setDistressModalOpen] = useState(false);
 
-  const { createReport, getMyHistory } = useStatusReports(eventId, memberId);
+  const { createReport, getMyHistory } = useMemberEmergencyStatusReports(eventId, memberId);
   const [statusHistory, setStatusHistory] = useState<StatusHistoryEntry[]>([]);
 
   useEffect(() => {

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 import type { Severity } from '@/types';
@@ -23,7 +24,7 @@ export function DistressFormModal({ open, onClose, onSubmit }: DistressFormModal
     onClose();
   };
 
-  return (
+  return createPortal(
     <AnimatePresence>
       {open && (
         <motion.div
@@ -141,6 +142,7 @@ export function DistressFormModal({ open, onClose, onSubmit }: DistressFormModal
           </motion.div>
         </motion.div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 }

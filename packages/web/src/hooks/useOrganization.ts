@@ -12,6 +12,7 @@ interface UseOrganizationResult {
 
 export function useOrganization(): UseOrganizationResult {
   const { selectedOrganization, selectOrganization } = useAuth();
+  const [organization, setOrganization] = useState<Organization | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
@@ -23,6 +24,7 @@ export function useOrganization(): UseOrganizationResult {
       const fetched = res.data;
       if (fetched.length === 0) {
         selectOrganization(null);
+        setOrganization(null);
         return;
       }
       const stillMember = selectedOrganization
@@ -30,6 +32,9 @@ export function useOrganization(): UseOrganizationResult {
         : null;
       if (!stillMember) {
         selectOrganization(fetched[0].id);
+        setOrganization(fetched[0]);
+      } else {
+        setOrganization(stillMember);
       }
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Failed to fetch organizations'));
@@ -42,10 +47,5 @@ export function useOrganization(): UseOrganizationResult {
     fetchOrgs();
   }, [fetchOrgs]);
 
-  return {
-    organization: selectedOrganization as unknown as Organization | null,
-    isLoading,
-    error,
-    refetch: fetchOrgs,
-  };
+  return { organization, isLoading, error, refetch: fetchOrgs };
 }

@@ -9,13 +9,17 @@
     "team": "My Team",
     "organization": "Organization",
     "contacts": "Contacts",
+    "emergencyEvents": "Emergencies",
     "sendAlert": "Send Alert",
     "teamManagement": "Team Management",
+    "groupManagement": "Group Management",
     "permissions": "Permissions",
+    "orgSettings": "Settings",
     "administration": "Administration"
   },
   "mobileNav": {
     "dashboard": "Dashboard",
+    "emergencyEvents": "Events",
     "report": "Report",
     "team": "Team",
     "organization": "Org",
@@ -50,6 +54,11 @@
       "days_one": "{{count}}d ago",
       "days_other": "{{count}}d ago"
     }
+  },
+  "roles": {
+    "ORG_MEMBER": "Member",
+    "ORG_ADMIN": "Admin",
+    "SAFETY_OFFICER": "Safety Officer"
   },
   "auth": {
     "signIn": "Sign In",

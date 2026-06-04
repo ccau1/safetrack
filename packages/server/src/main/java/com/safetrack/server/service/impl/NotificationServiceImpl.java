@@ -20,22 +20,22 @@ public class NotificationServiceImpl implements NotificationService {
     private final NotificationUserReadRepository notificationUserReadRepository;
     private final OrganizationRepository organizationRepository;
     private final TeamRepository teamRepository;
-    private final EventRepository eventRepository;
-    private final StatusReportRepository statusReportRepository;
+    private final EmergencyEventRepository emergencyEventRepository;
+    private final MemberEmergencyStatusReportRepository memberEmergencyStatusReportRepository;
     private final MemberRepository memberRepository;
     private final UserRepository userRepository;
 
     @Override
     @Transactional
-    public Notification createStatusReportNotification(UUID organizationId, UUID teamId, UUID eventId,
-                                                        UUID statusReportId, UUID actorMemberId) {
+    public Notification createStatusReportNotification(UUID organizationId, UUID teamId, UUID emergencyEventId,
+                                                        UUID memberEmergencyStatusReportId, UUID actorMemberId) {
         Organization org = organizationRepository.findById(organizationId)
                 .orElseThrow(() -> new IllegalArgumentException("Organization not found"));
 
-        Event event = eventRepository.findById(eventId)
+        EmergencyEvent event = emergencyEventRepository.findById(emergencyEventId)
                 .orElseThrow(() -> new IllegalArgumentException("Event not found"));
 
-        StatusReport report = statusReportRepository.findById(statusReportId)
+        MemberEmergencyStatusReport report = memberEmergencyStatusReportRepository.findById(memberEmergencyStatusReportId)
                 .orElseThrow(() -> new IllegalArgumentException("Status report not found"));
 
         Member actor = memberRepository.findById(actorMemberId)
@@ -55,8 +55,8 @@ public class NotificationServiceImpl implements NotificationService {
                 .message(actorName + " submitted a status report for " + event.getTitle())
                 .organization(org)
                 .team(team)
-                .event(event)
-                .statusReport(report)
+                .emergencyEvent(event)
+                .memberEmergencyStatusReport(report)
                 .actorMember(actor)
                 .build();
 

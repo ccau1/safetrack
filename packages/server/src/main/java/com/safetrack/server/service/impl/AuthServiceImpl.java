@@ -106,6 +106,7 @@ public class AuthServiceImpl implements AuthService {
         Organization org = Organization.builder()
                 .name(orgName)
                 .slug(slug)
+                .owner(savedUser)
                 .build();
 
         Organization savedOrg = organizationRepository.save(org);

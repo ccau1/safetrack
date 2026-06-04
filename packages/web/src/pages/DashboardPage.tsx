@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Users, ShieldCheck, AlertTriangle, HelpCircle, Eye } from 'lucide-react';
+import { useNavigate } from 'react-router';
+import { Users, ShieldCheck, AlertTriangle, HelpCircle, Eye, Plus } from 'lucide-react';
 import { api } from '@/lib/api';
 import { motion } from 'framer-motion';
 import { StatsCard } from '@/components/StatsCard';
@@ -7,33 +8,42 @@ import { PulseDot } from '@/components/PulseDot';
 import { FilterDropdown } from '@/components/FilterDropdown';
 import { StatusTable } from '@/components/StatusTable';
 import { EmployeeDetailModal } from '@/components/EmployeeDetailModal';
-import { EventDetailModal } from '@/components/EventDetailModal';
-import type { Employee, EmergencyEvent } from '@/types';
+import { EmergencyEventDetailModal } from '@/components/EmergencyEventDetailModal';
+import { CreateEmergencyEventModal } from '@/components/CreateEmergencyEventModal';
+import type { Employee, EmergencyEvent, EmergencyEventApi, TeamApi, MemberGroup } from '@/types';
 
 interface DashboardPageProps {
   employees: Employee[];
   teams: string[];
+  availableTeams: TeamApi[];
+  availableGroups: MemberGroup[];
   stats: { total: number; safe: number; distress: number; unknown: number };
   event: EmergencyEvent | null;
   activeTeam: string;
   onTeamFilter: (team: string) => void;
   isAdmin: boolean;
   addToast: (message: string, type: 'success' | 'error' | 'info') => void;
+  createEvent?: (title: string, description: string, type: EmergencyEventApi['type'], startedAt: string, targetTeamIds?: string[], targetGroupIds?: string[]) => Promise<void>;
 }
 
 export function DashboardPage({
   employees,
   teams,
+  availableTeams,
+  availableGroups,
   stats,
   event,
   activeTeam,
   onTeamFilter,
   isAdmin,
   addToast,
+  createEvent,
 }: DashboardPageProps) {
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [eventModalOpen, setEventModalOpen] = useState(false);
+  const [createModalOpen, setCreateModalOpen] = useState(false);
+  const navigate = useNavigate();
 
   const filteredEmployees = activeTeam === 'all'
     ? employees
@@ -57,7 +67,7 @@ export function DashboardPage({
   return (
     <div className="space-y-8">
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
         <StatsCard
           icon={Users}
           iconColor="#8A8A8A"
@@ -100,7 +110,7 @@ export function DashboardPage({
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.3 }}
-          className="bg-[#E8F0F2] border border-[#D0E0E4] rounded-[14px] px-5 py-4 flex items-center justify-between"
+          className="bg-[#E8F0F2] border border-[#D0E0E4] rounded-[14px] px-5 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
         >
           <div className="flex items-center gap-3">
             <PulseDot color="#C44536" size={10} />
@@ -111,9 +121,38 @@ export function DashboardPage({
               <div className="text-sm text-[#5C5C5C]">Started {event.started}</div>
             </div>
           </div>
-          <button onClick={() => setEventModalOpen(true)} className="flex items-center gap-2 text-sm font-semibold text-[#5B7B8A] bg-[#E8F0F2] border border-[#D0E0E4] rounded-[10px] px-3.5 py-1.5 hover:bg-[#D8E8EC] transition-colors duration-150">
-            <Eye size={16} />
-            View Details
+          <div className="flex items-center gap-2 flex-wrap">
+            <button
+              onClick={() => event.uuid && navigate(`/emergency-events/${event.uuid}`)}
+              className="flex items-center gap-2 text-sm font-semibold text-[#5B7B8A] bg-white border border-[#D0E0E4] rounded-[10px] px-3.5 py-1.5 hover:bg-[#F7F6F2] transition-colors duration-150"
+            >
+              <Eye size={16} />
+              Full Details
+            </button>
+            <button
+              onClick={() => setEventModalOpen(true)}
+              className="flex items-center gap-2 text-sm font-semibold text-[#5B7B8A] bg-[#E8F0F2] border border-[#D0E0E4] rounded-[10px] px-3.5 py-1.5 hover:bg-[#D8E8EC] transition-colors duration-150"
+            >
+              Quick View
+            </button>
+          </div>
+        </motion.div>
+      )}
+
+      {!event && isAdmin && (
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.3 }}
+          className="bg-white border border-[#E5E4E0] rounded-[14px] px-5 py-4 flex items-center justify-between"
+        >
+          <div className="text-sm text-[#5C5C5C]">No active emergency events</div>
+          <button
+            onClick={() => setCreateModalOpen(true)}
+            className="flex items-center gap-2 text-sm font-semibold text-white bg-[#C44536] rounded-[10px] px-4 py-2 hover:bg-[#A33A2E] transition-colors duration-150"
+          >
+            <Plus size={16} />
+            Create Event
           </button>
         </motion.div>
       )}
@@ -154,13 +193,27 @@ export function DashboardPage({
 
       {/* Event Detail Modal */}
       {event && (
-        <EventDetailModal
+        <EmergencyEventDetailModal
           open={eventModalOpen}
           onClose={() => setEventModalOpen(false)}
           event={event}
           stats={stats}
         />
       )}
+
+      {/* Create Event Modal */}
+      <CreateEmergencyEventModal
+        open={createModalOpen}
+        onClose={() => setCreateModalOpen(false)}
+        teams={availableTeams}
+        groups={availableGroups}
+        onCreate={async (title, description, type, startedAt, targetTeamIds, targetGroupIds) => {
+          if (createEvent) {
+            await createEvent(title, description, type, startedAt, targetTeamIds, targetGroupIds);
+            addToast('Emergency event created', 'success');
+          }
+        }}
+      />
     </div>
   );
 }

@@ -5,7 +5,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useNotifications } from '@/hooks/useNotifications';
 import type { EmergencyEvent, Notification } from '@/types';
 import { Logo } from './Logo';
-import { LanguageSwitcher } from './LanguageSwitcher';
+
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 
 interface HeaderProps {
@@ -102,9 +102,6 @@ export function Header({ event, onMenuToggle }: HeaderProps) {
           <Menu size={24} />
         </button>
         <Logo />
-        <span className="lg:hidden text-[11px] font-medium text-[#4A5548] bg-[#E8EDE7] rounded-full px-3 py-1 truncate max-w-[140px]">
-          {selectedOrganization?.name || t('common.noOrganization')}
-        </span>
         {event && (
           <span className="text-[11px] font-medium text-[#4A5548] bg-[#E8EDE7] rounded-full px-3 py-1">
             {event.name} — {event.started}
@@ -170,8 +167,6 @@ export function Header({ event, onMenuToggle }: HeaderProps) {
             </div>
           </PopoverContent>
         </Popover>
-
-        <LanguageSwitcher />
 
         <div className="w-9 h-9 rounded-full bg-[#E8EDE7] flex items-center justify-center text-sm font-semibold text-[#4A5548]">
           {initials}

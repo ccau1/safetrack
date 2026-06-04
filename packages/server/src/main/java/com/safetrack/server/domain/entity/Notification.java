@@ -41,12 +41,12 @@ public class Notification {
     private Team team;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "event_id")
-    private Event event;
+    @JoinColumn(name = "emergency_event_id")
+    private EmergencyEvent emergencyEvent;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "status_report_id")
-    private StatusReport statusReport;
+    @JoinColumn(name = "member_emergency_status_report_id")
+    private MemberEmergencyStatusReport memberEmergencyStatusReport;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "actor_member_id")

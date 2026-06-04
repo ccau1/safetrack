@@ -1,10 +1,11 @@
 package com.safetrack.server.controller;
 
 import com.safetrack.server.controller.dto.request.CreateOrganizationRequest;
+import com.safetrack.server.controller.dto.request.TransferOwnershipRequest;
+import com.safetrack.server.controller.dto.request.UpdateOrganizationRequest;
 import com.safetrack.server.controller.dto.response.OrganizationResponse;
 import com.safetrack.server.domain.entity.Organization;
 import com.safetrack.server.domain.entity.User;
-import com.safetrack.server.security.permission.RequireAction;
 import com.safetrack.server.service.OrganizationService;
 import com.safetrack.server.service.UserService;
 import jakarta.validation.Valid;
@@ -42,7 +43,6 @@ public class OrganizationController {
         return ResponseEntity.ok(toResponse(org));
     }
 
-    @RequireAction("safetrack:organization:update")
     @PostMapping
     public ResponseEntity<OrganizationResponse> createOrganization(
             @Valid @RequestBody CreateOrganizationRequest request,
@@ -50,6 +50,35 @@ public class OrganizationController {
         User user = getCurrentUser(userDetails);
         Organization org = organizationService.createOrganization(request.name(), user.getId());
         return ResponseEntity.ok(toResponse(org));
+    }
+
+    @PostMapping("/{id}/transfer-ownership")
+    public ResponseEntity<Void> transferOwnership(
+            @PathVariable UUID id,
+            @Valid @RequestBody TransferOwnershipRequest request,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        User user = getCurrentUser(userDetails);
+        organizationService.transferOwnership(id, request.newOwnerId(), user.getId());
+        return ResponseEntity.ok().build();
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<OrganizationResponse> updateOrganization(
+            @PathVariable UUID id,
+            @Valid @RequestBody UpdateOrganizationRequest request,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        User user = getCurrentUser(userDetails);
+        Organization org = organizationService.updateOrganization(id, request.name(), user.getId());
+        return ResponseEntity.ok(toResponse(org));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteOrganization(
+            @PathVariable UUID id,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        User user = getCurrentUser(userDetails);
+        organizationService.deleteOrganization(id, user.getId());
+        return ResponseEntity.noContent().build();
     }
 
     private User getCurrentUser(UserDetails userDetails) {
@@ -62,7 +91,8 @@ public class OrganizationController {
                 org.getId(),
                 org.getName(),
                 org.getSlug(),
-                org.getCreatedAt()
+                org.getCreatedAt(),
+                org.getOwner() != null ? org.getOwner().getId() : null
         );
     }
 }

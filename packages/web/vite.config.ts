@@ -6,7 +6,7 @@ import { inspectAttr } from 'kimi-plugin-inspect-react'
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: './',
+  base: '/',
   plugins: [
     inspectAttr(),
     react(),
@@ -19,8 +19,8 @@ export default defineConfig({
         theme_color: '#4A5548',
         background_color: '#F7F6F2',
         display: 'standalone',
-        scope: './',
-        start_url: './',
+        scope: '/',
+        start_url: '/',
         icons: [
           {
             src: 'favicon.svg',

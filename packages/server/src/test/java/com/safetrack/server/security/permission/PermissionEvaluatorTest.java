@@ -151,7 +151,7 @@ class PermissionEvaluatorTest {
         when(memberRepository.findByUserIdAndOrganizationId(user.getId(), orgId))
                 .thenReturn(Optional.of(member));
 
-        assertTrue(permissionEvaluator.evaluate(user, "safetrack:alert:read", orgId));
+        assertTrue(permissionEvaluator.evaluate(user, "safetrack:event:read", orgId));
         assertTrue(permissionEvaluator.evaluate(user, "safetrack:organization:delete", orgId));
     }
 
@@ -159,7 +159,7 @@ class PermissionEvaluatorTest {
     void evaluate_safetyOfficer_shouldHaveManagerPermissionsWithinOrg() {
         RolePolicyLoader.Statement managerStmt = new RolePolicyLoader.Statement();
         ReflectionTestUtils.setField(managerStmt, "effect", RolePolicyLoader.Effect.Allow);
-        ReflectionTestUtils.setField(managerStmt, "actions", List.of("safetrack:alert:read", "safetrack:alert:send"));
+        ReflectionTestUtils.setField(managerStmt, "actions", List.of("safetrack:event:read", "safetrack:event:manage"));
 
         when(policyLoader.getStatements(Role.RoleName.USER)).thenReturn(List.of());
         when(policyLoader.getStatements(Role.RoleName.MANAGER)).thenReturn(List.of(managerStmt));
@@ -171,8 +171,8 @@ class PermissionEvaluatorTest {
         when(memberRepository.findByUserIdAndOrganizationId(user.getId(), orgId))
                 .thenReturn(Optional.of(member));
 
-        assertTrue(permissionEvaluator.evaluate(user, "safetrack:alert:read", orgId));
-        assertTrue(permissionEvaluator.evaluate(user, "safetrack:alert:send", orgId));
+        assertTrue(permissionEvaluator.evaluate(user, "safetrack:event:read", orgId));
+        assertTrue(permissionEvaluator.evaluate(user, "safetrack:event:manage", orgId));
     }
 
     @Test
@@ -199,7 +199,7 @@ class PermissionEvaluatorTest {
         when(memberRepository.findByUserIdAndOrganizationId(user.getId(), orgId))
                 .thenReturn(Optional.empty());
 
-        assertFalse(permissionEvaluator.evaluate(user, "safetrack:alert:read", orgId));
+        assertFalse(permissionEvaluator.evaluate(user, "safetrack:event:read", orgId));
     }
 
     @Test

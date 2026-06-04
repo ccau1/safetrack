@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, useSearchParams } from 'react-router';
 import { Loader2, Mail, CheckCircle, Lock, User } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
@@ -6,6 +7,7 @@ import { useValidateInviteToken, useAcceptInvite } from '@/hooks/useInvitations'
 import { Logo } from '@/components/Logo';
 
 export function AcceptInvitePage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const token = searchParams.get('token');
@@ -120,7 +122,7 @@ export function AcceptInvitePage() {
             {data.teamName ? (
               <> on team <strong className="text-[#1A1A1A]">{data.teamName}</strong></>
             ) : null}{' '}
-            as <strong className="text-[#1A1A1A]">{data.orgRole}</strong>.
+            as <strong className="text-[#1A1A1A]">{t(`roles.${data.orgRole}`, { defaultValue: data.orgRole })}</strong>.
           </p>
 
           {acceptError && (

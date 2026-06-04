@@ -25,7 +25,9 @@ public interface UserMapper {
                         m.getOrganization().getId(),
                         m.getOrganization().getName(),
                         m.getOrganization().getSlug(),
-                        m.getOrgRole().name()
+                        m.getOrgRole().name(),
+                        m.getOrganization().getOwner() != null && m.getOrganization().getOwner().getId().equals(user.getId()),
+                        m.getOrganization().getOwner() != null ? m.getOrganization().getOwner().getId() : null
                 ))
                 .toList();
 

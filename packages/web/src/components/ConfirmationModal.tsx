@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AlertTriangle, X } from 'lucide-react';
 
@@ -12,7 +13,7 @@ interface ConfirmationModalProps {
 }
 
 export function ConfirmationModal({ open, onClose, onConfirm, title, message, confirmText, recipientCount }: ConfirmationModalProps) {
-  return (
+  return createPortal(
     <AnimatePresence>
       {open && (
         <motion.div
@@ -72,6 +73,7 @@ export function ConfirmationModal({ open, onClose, onConfirm, title, message, co
           </motion.div>
         </motion.div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 }

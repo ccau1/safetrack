@@ -9,7 +9,7 @@ Policies:
             - "safetrack:status:report"
             - "safetrack:status:readOwn"
             - "safetrack:employee:readOwn"
-            - "safetrack:alert:read"
+            - "safetrack:event:read"
           Resource: "*"
 
   - PolicyName: ManagerPolicy
@@ -21,8 +21,8 @@ Policies:
             - "safetrack:team:read"
             - "safetrack:employee:read"
             - "safetrack:status:read"
-            - "safetrack:alert:send"
-            - "safetrack:alert:read"
+            - "safetrack:event:manage"
+            - "safetrack:event:read"
           Resource: "*"
         - Sid: ManagerNoDelete
           Effect: Deny

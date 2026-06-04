@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Bell } from 'lucide-react';
 import { StatusBadge } from './StatusBadge';
 import type { Employee } from '@/types';
@@ -23,6 +24,7 @@ export function StatusTable({
   selectedIds = [],
   onToggleSelect,
 }: StatusTableProps) {
+  const { t } = useTranslation();
   if (employees.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16">
@@ -112,7 +114,7 @@ export function StatusTable({
                   </div>
                   <div>
                     <div className="text-sm font-medium text-[#1A1A1A]">{emp.name}</div>
-                    <div className="text-xs text-[#8A8A8A]">{emp.role}</div>
+                    <div className="text-xs text-[#8A8A8A]">{t(`roles.${emp.role}`, { defaultValue: emp.role })}</div>
                   </div>
                 </div>
               </td>
