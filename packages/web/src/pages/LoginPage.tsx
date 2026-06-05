@@ -228,8 +228,9 @@ export function LoginPage() {
             <div className="mt-4 grid grid-cols-2 gap-3">
               <button
                 type="button"
+                disabled
                 onClick={() => handleSsoLogin('google')}
-                className="flex items-center justify-center gap-2 h-9 border border-[#E5E4E0] rounded-[10px] text-sm font-medium text-[#1A1A1A] hover:bg-[#F7F6F2] transition-colors duration-150"
+                className="flex items-center justify-center gap-2 h-9 border border-[#E5E4E0] rounded-[10px] text-sm font-medium text-[#1A1A1A] hover:bg-[#F7F6F2] transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <svg viewBox="0 0 24 24" width="16" height="16" xmlns="http://www.w3.org/2000/svg">
                   <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4" />
@@ -241,8 +242,9 @@ export function LoginPage() {
               </button>
               <button
                 type="button"
+                disabled
                 onClick={() => handleSsoLogin('azure')}
-                className="flex items-center justify-center gap-2 h-9 border border-[#E5E4E0] rounded-[10px] text-sm font-medium text-[#1A1A1A] hover:bg-[#F7F6F2] transition-colors duration-150"
+                className="flex items-center justify-center gap-2 h-9 border border-[#E5E4E0] rounded-[10px] text-sm font-medium text-[#1A1A1A] hover:bg-[#F7F6F2] transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <svg viewBox="0 0 23 23" width="16" height="16" xmlns="http://www.w3.org/2000/svg">
                   <path fill="#f3f3f3" d="M0 0h23v23H0z" />

@@ -68,7 +68,7 @@ jobs:
           cat > deploy/.env <<EOF
           DOMAIN_STAGING=safetrack.staging.tribalorigin.com
           INVITE_BASE_URL=https://safetrack.staging.tribalorigin.com
-          $(printf '%s\n' "${{ secrets.ENV_FILE }}" | grep -vi '^[[:space:]]*APP_IMAGE=')
+          $(printf '%s\n' "${{ secrets.ENV_FILE }}" | grep -viE '^[[:space:]]*(APP_IMAGE|DOMAIN_|INVITE_BASE_URL)=')
           EOF
 
       - name: Prepare Traefik config
@@ -122,10 +122,23 @@ jobs:
             # Ensure Traefik is running with latest config on standard ports
             mkdir -p /opt/traefik/letsencrypt
             cd /opt/traefik
+
+            # Clear stale ACME state to force fresh Let's Encrypt registration
+            if [ -f /opt/traefik/letsencrypt/acme.json ]; then
+              echo "Removing stale acme.json to force fresh Let's Encrypt registration"
+              mv /opt/traefik/letsencrypt/acme.json /opt/traefik/letsencrypt/acme.json.bak.$(date +%s)
+            fi
+
             docker compose down || true
             docker compose up -d
             echo "Traefik status:"
             docker ps --filter name=traefik --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+
+            echo "Traefik logs:"
+            docker logs traefik --tail 50 || true
+
+            echo "Traefik TLS certificates:"
+            docker exec traefik wget -qO- http://localhost:8080/api/tls/certificates 2>/dev/null || echo "Unable to query Traefik API"
 
             # Deploy app
             cd /opt/safetrack-staging
@@ -153,9 +166,9 @@ jobs:
           HEALTH_URL="https://safetrack.staging.tribalorigin.com"
           echo "Testing staging site: $HEALTH_URL"
           echo "Waiting for containers to start..."
-          for i in {1..12}; do
+          for i in {1..24}; do
             sleep 5
-            echo "Attempt $i/12: curl -fsSL --max-time 10 $HEALTH_URL"
+            echo "Attempt $i/24: curl -fsSL --max-time 10 $HEALTH_URL"
             HTTP_CODE=$(curl -fsSL --max-time 10 -w "%{http_code}" \
               -H "User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36" \
               -H "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8" \
@@ -167,7 +180,7 @@ jobs:
             fi
             echo "Attempt $i/12 failed (HTTP ${HTTP_CODE:-no response}), retrying..."
           done
-          echo "Staging health check failed after 60 seconds: $HEALTH_URL"
+          echo "Staging health check failed after 120 seconds: $HEALTH_URL"
           echo "--- Last response body ---"
           cat /tmp/health_response.html 2>/dev/null || echo "(no response body captured)"
           echo "--- End response body ---"
