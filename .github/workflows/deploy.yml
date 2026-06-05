@@ -91,6 +91,9 @@ jobs:
             set -e
             cd /opt/safetrack-staging
 
+            # Ensure shared postgres from infra repo is on the staging network
+            docker network connect staging postgres 2>/dev/null || true
+
             # Authenticate to GHCR so the server can pull private images
             echo "${{ secrets.GH_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
