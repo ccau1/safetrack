@@ -100,7 +100,7 @@ jobs:
             # Set image reference and pull latest staging image
             export APP_IMAGE="${{ env.IMAGE_BASE }}:staging"
             docker compose -f docker-compose.staging.yml pull
-            docker compose -f docker-compose.staging.yml up -d
+            docker compose -f docker-compose.staging.yml up -d --remove-orphans
 
             # Verify container status
             echo "Container status:"
