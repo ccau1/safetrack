@@ -1,5 +1,5 @@
 # =============================================================================
-# SafeTrack Staging — Traefik + Let's Encrypt
+# SafeTrack Staging
 # =============================================================================
 version: "3.9"
 
@@ -18,7 +18,31 @@ services:
     networks:
       - staging
     restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: safetrack-postgres-staging
+    environment:
+      POSTGRES_DB: safetrack
+      POSTGRES_USER: safetrack
+      POSTGRES_PASSWORD: safetrack
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - staging
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U safetrack -d safetrack"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
 networks:
   staging:
     external: true
+
+volumes:
+  postgres_data:
