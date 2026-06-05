@@ -19,6 +19,9 @@ if [ ! -f /etc/nginx/conf.d/default.conf ] || [ -w /etc/nginx/conf.d/default.con
   envsubst '${WEB_PORT} ${API_PORT}' < /etc/nginx/nginx.conf.template > /etc/nginx/conf.d/default.conf
 fi
 
+# Remove Debian/Ubuntu default site so our config is the default server
+rm -f /etc/nginx/sites-enabled/default
+
 # Validate nginx configuration
 nginx -t
 

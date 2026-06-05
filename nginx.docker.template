@@ -1,6 +1,6 @@
 server {
-    listen ${WEB_PORT};
-    server_name localhost;
+    listen ${WEB_PORT} default_server;
+    server_name _;
     root /usr/share/nginx/html;
     index index.html;
 
