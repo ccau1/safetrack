@@ -34,6 +34,10 @@ public class Member {
     @JoinColumn(name = "team_id")
     private Team team;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "supervisor_member_id")
+    private Member supervisor;
+
     @Column(name = "org_role", nullable = false, length = 50)
     @Enumerated(EnumType.STRING)
     @Builder.Default

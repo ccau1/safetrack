@@ -223,7 +223,7 @@
     "title": "緊急聯絡人",
     "subtitle": "保持您的聯絡資訊為最新，以便我們在緊急情況下與您或您的緊急聯絡人取得聯繫。",
     "sections": {
-      "personalContact": "個人聯絡方式",
+      "myContactPoints": "我的聯絡方式",
       "nextOfKin": "緊急聯絡人"
     },
     "fields": {
@@ -244,10 +244,34 @@
       "nextOfKinPhone": "+1 555 234 5678",
       "nextOfKinEmail": "jane@example.com"
     },
+    "type": "類型",
+    "value": "值",
+    "label": "標籤",
+    "labelPlaceholder": "例如：主要",
+    "verified": "已驗證",
+    "unverified": "未驗證",
+    "primary": "主要",
+    "verify": "驗證",
+    "resendVerification": "重新發送",
+    "deleteConfirm": "確定要刪除此聯絡方式嗎？",
+    "noContactPoints": "尚未新增聯絡方式。",
+    "types": {
+      "EMAIL": "電子郵件",
+      "PHONE": "電話",
+      "SMS": "簡訊",
+      "WHATSAPP": "WhatsApp"
+    },
     "button": "儲存聯絡人",
     "toast": {
       "updated": "緊急聯絡人更新成功",
-      "failed": "更新緊急聯絡人失敗"
+      "failed": "更新緊急聯絡人失敗",
+      "added": "聯絡方式已新增",
+      "addFailed": "新增聯絡方式失敗",
+      "deleted": "聯絡方式已刪除",
+      "deleteFailed": "刪除聯絡方式失敗",
+      "verificationSent": "驗證碼已發送",
+      "verified": "聯絡方式已驗證",
+      "verificationFailed": "發送驗證失敗"
     }
   },
   "myTeam": {

@@ -6,6 +6,7 @@ import com.safetrack.server.domain.entity.Member;
 import com.safetrack.server.domain.entity.Organization;
 import com.safetrack.server.domain.entity.Role;
 import com.safetrack.server.domain.entity.User;
+import com.safetrack.server.domain.repository.ContactPointRepository;
 import com.safetrack.server.domain.repository.MemberRepository;
 import com.safetrack.server.domain.repository.OrganizationRepository;
 import com.safetrack.server.domain.repository.RoleRepository;
@@ -38,6 +39,8 @@ class AuthServiceImplTest {
     private OrganizationRepository organizationRepository;
     @Mock
     private MemberRepository memberRepository;
+    @Mock
+    private ContactPointRepository contactPointRepository;
     @Mock
     private PasswordEncoder passwordEncoder;
 

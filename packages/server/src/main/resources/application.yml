@@ -56,6 +56,26 @@ app:
     expiry-hours: 24
     base-url: ${INVITE_BASE_URL:${WEB_BASE_URL:http://localhost:3010}}
 
+  alert:
+    reply-phone-number: ${TWILIO_PHONE_NUMBER:}
+    voice-script-templates:
+      default: "This is a SafeTrack emergency alert. {{message}}. Press 1 if you are safe. Press 2 if you need help. Press 3 if you are on your way."
+      short: "SafeTrack alert: {{message}}. Press 1 for safe, 2 for help, 3 for en route."
+      urgent: "Urgent SafeTrack alert. {{message}}. Please press 1 if you are safe, 2 if you need immediate help, or 3 if you are on your way."
+    whatsapp-message-templates:
+      default: "🚨 SafeTrack Alert: {{message}}\n\nReply with a number:\n1️⃣ = SAFE\n2️⃣ = NEEDS HELP\n3️⃣ = EN ROUTE"
+      minimal: "SafeTrack: {{message}}. Reply 1=SAFE 2=HELP 3=EN_ROUTE"
+      emergency_contact: "[EMERGENCY] SafeTrack alert regarding {{message}}. Please reply 1=SAFE 2=HELP."
+
+twilio:
+  account-sid: ${TWILIO_ACCOUNT_SID:}
+  auth-token: ${TWILIO_AUTH_TOKEN:}
+  phone-number: ${TWILIO_PHONE_NUMBER:}
+  whatsapp-sandbox-enabled: ${TWILIO_WHATSAPP_SANDBOX_ENABLED:false}
+  whatsapp-sandbox-number: ${TWILIO_WHATSAPP_SANDBOX_NUMBER:+14155238886}
+  whatsapp-phone-number: ${TWILIO_WHATSAPP_PHONE_NUMBER:}
+  voice-callback-url: ${APP_TWILIO_VOICE_CALLBACK_URL:}
+
 management:
   health:
     mail:

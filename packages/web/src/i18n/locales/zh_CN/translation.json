@@ -223,7 +223,7 @@
     "title": "紧急联系人",
     "subtitle": "保持您的联系信息为最新，以便我们在紧急情况下与您或您的紧急联系人取得联系。",
     "sections": {
-      "personalContact": "个人联系方式",
+      "myContactPoints": "我的联系方式",
       "nextOfKin": "紧急联系人"
     },
     "fields": {
@@ -244,10 +244,34 @@
       "nextOfKinPhone": "+1 555 234 5678",
       "nextOfKinEmail": "jane@example.com"
     },
+    "type": "类型",
+    "value": "值",
+    "label": "标签",
+    "labelPlaceholder": "例如：主要",
+    "verified": "已验证",
+    "unverified": "未验证",
+    "primary": "主要",
+    "verify": "验证",
+    "resendVerification": "重新发送",
+    "deleteConfirm": "确定要删除此联系方式吗？",
+    "noContactPoints": "尚未添加联系方式。",
+    "types": {
+      "EMAIL": "电子邮件",
+      "PHONE": "电话",
+      "SMS": "短信",
+      "WHATSAPP": "WhatsApp"
+    },
     "button": "保存联系人",
     "toast": {
       "updated": "紧急联系人更新成功",
-      "failed": "更新紧急联系人失败"
+      "failed": "更新紧急联系人失败",
+      "added": "联系方式已添加",
+      "addFailed": "添加联系方式失败",
+      "deleted": "联系方式已删除",
+      "deleteFailed": "删除联系方式失败",
+      "verificationSent": "验证码已发送",
+      "verified": "联系方式已验证",
+      "verificationFailed": "发送验证失败"
     }
   },
   "myTeam": {

@@ -1,5 +1,6 @@
 package com.safetrack.server.controller;
 
+import com.safetrack.server.controller.dto.request.UpdateMemberSupervisorRequest;
 import com.safetrack.server.controller.dto.request.UpdateMemberTeamRequest;
 import com.safetrack.server.controller.dto.response.MemberResponse;
 import com.safetrack.server.domain.entity.Member;
@@ -88,6 +89,25 @@ public class MemberController {
                 .orElseThrow(() -> new IllegalArgumentException("Not a member of this organization"));
     }
 
+    @PatchMapping("/api/members/{id}/supervisor")
+    public ResponseEntity<MemberResponse> updateMemberSupervisor(
+            @PathVariable UUID id,
+            @Valid @RequestBody UpdateMemberSupervisorRequest request,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        User user = userService.findByEmail(userDetails.getUsername())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Member target = memberService.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Member not found"));
+
+        Member currentMember = memberRepository.findByOrganizationIdAndUserId(
+                target.getOrganization().getId(), user.getId()
+        ).orElseThrow(() -> new IllegalArgumentException("Not a member of this organization"));
+
+        Member updated = memberService.updateSupervisor(id, request.supervisorMemberId());
+        return ResponseEntity.ok(toResponse(updated));
+    }
+
     private MemberResponse toResponse(Member member) {
         return new MemberResponse(
                 member.getId(),
@@ -98,6 +118,10 @@ public class MemberController {
                 member.getTeam() != null ? member.getTeam().getId() : null,
                 member.getTeam() != null ? member.getTeam().getName() : null,
                 member.getOrgRole().name(),
+                member.getSupervisor() != null ? member.getSupervisor().getId() : null,
+                member.getSupervisor() != null
+                        ? member.getSupervisor().getUser().getFirstName() + " " + member.getSupervisor().getUser().getLastName()
+                        : null,
                 member.getCreatedAt()
         );
     }

@@ -223,7 +223,7 @@
     "title": "Emergency Contacts",
     "subtitle": "Keep your contact information up to date so we can reach you or your next of kin in an emergency.",
     "sections": {
-      "personalContact": "Personal Contact",
+      "myContactPoints": "My Contact Points",
       "nextOfKin": "Next of Kin"
     },
     "fields": {
@@ -244,10 +244,34 @@
       "nextOfKinPhone": "+1 555 234 5678",
       "nextOfKinEmail": "jane@example.com"
     },
+    "type": "Type",
+    "value": "Value",
+    "label": "Label",
+    "labelPlaceholder": "e.g. Primary",
+    "verified": "Verified",
+    "unverified": "Unverified",
+    "primary": "Primary",
+    "verify": "Verify",
+    "resendVerification": "Resend",
+    "deleteConfirm": "Are you sure you want to delete this contact point?",
+    "noContactPoints": "No contact points added yet.",
+    "types": {
+      "EMAIL": "Email",
+      "PHONE": "Phone",
+      "SMS": "SMS",
+      "WHATSAPP": "WhatsApp"
+    },
     "button": "Save Contacts",
     "toast": {
       "updated": "Emergency contacts updated successfully",
-      "failed": "Failed to update emergency contacts"
+      "failed": "Failed to update emergency contacts",
+      "added": "Contact point added",
+      "addFailed": "Failed to add contact point",
+      "deleted": "Contact point deleted",
+      "deleteFailed": "Failed to delete contact point",
+      "verificationSent": "Verification code sent",
+      "verified": "Contact point verified",
+      "verificationFailed": "Failed to send verification"
     }
   },
   "myTeam": {

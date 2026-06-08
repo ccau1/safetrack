@@ -38,6 +38,14 @@ services:
       SMTP_USER: ${SMTP_USER:-}
       SMTP_PASS: ${SMTP_PASS:-}
       INVITE_BASE_URL: ${INVITE_BASE_URL:-http://localhost:3010}
+      # Twilio config (optional — leave blank to log SMS/Voice/WhatsApp to console)
+      TWILIO_ACCOUNT_SID: ${TWILIO_ACCOUNT_SID:-}
+      TWILIO_AUTH_TOKEN: ${TWILIO_AUTH_TOKEN:-}
+      TWILIO_PHONE_NUMBER: ${TWILIO_PHONE_NUMBER:-}
+      TWILIO_WHATSAPP_SANDBOX_ENABLED: ${TWILIO_WHATSAPP_SANDBOX_ENABLED:-false}
+      TWILIO_WHATSAPP_SANDBOX_NUMBER: ${TWILIO_WHATSAPP_SANDBOX_NUMBER:-}
+      TWILIO_WHATSAPP_PHONE_NUMBER: ${TWILIO_WHATSAPP_PHONE_NUMBER:-}
+      APP_TWILIO_VOICE_CALLBACK_URL: ${APP_TWILIO_VOICE_CALLBACK_URL:-}
     depends_on:
       postgres:
         condition: service_healthy

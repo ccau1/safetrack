@@ -12,5 +12,6 @@ public interface MemberService {
     Optional<Member> findByOrganizationIdAndUserId(UUID organizationId, UUID userId);
     Optional<Member> findById(UUID id);
     Member updateTeam(UUID memberId, UUID teamId);
+    Member updateSupervisor(UUID memberId, UUID supervisorMemberId);
     void sendReminder(UUID actorMemberId, UUID targetMemberId);
 }

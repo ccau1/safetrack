@@ -1,9 +1,11 @@
 package com.safetrack.server.service.impl;
 
+import com.safetrack.server.domain.entity.ContactPoint;
 import com.safetrack.server.domain.entity.Member;
 import com.safetrack.server.domain.entity.Organization;
 import com.safetrack.server.domain.entity.Role;
 import com.safetrack.server.domain.entity.User;
+import com.safetrack.server.domain.repository.ContactPointRepository;
 import com.safetrack.server.domain.repository.MemberRepository;
 import com.safetrack.server.domain.repository.OrganizationRepository;
 import com.safetrack.server.domain.repository.RoleRepository;
@@ -26,6 +28,7 @@ public class UserServiceImpl implements UserService {
     private final RoleRepository roleRepository;
     private final OrganizationRepository organizationRepository;
     private final MemberRepository memberRepository;
+    private final ContactPointRepository contactPointRepository;
 
     @Override
     public Optional<User> findByEmail(String email) {
@@ -84,6 +87,19 @@ public class UserServiceImpl implements UserService {
                             .build();
 
                     User savedUser = userRepository.save(newUser);
+
+                    ContactPoint loginEmail = ContactPoint.builder()
+                            .user(savedUser)
+                            .type(ContactPoint.ContactPointType.EMAIL)
+                            .value(savedUser.getEmail().toLowerCase().trim())
+                            .label("Login")
+                            .category(ContactPoint.ContactPointCategory.SELF)
+                            .isPrimary(true)
+                            .verifiedAt(java.time.Instant.now())
+                            .build();
+                    contactPointRepository.save(loginEmail);
+                    savedUser.setEmailVerifiedAt(java.time.Instant.now());
+                    userRepository.save(savedUser);
 
                     // Create default organization for SSO user
                     String orgName = firstName + "'s Organization";

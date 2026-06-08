@@ -7,7 +7,9 @@ import java.util.UUID;
 
 public interface UserContactService {
     Optional<UserContact> findByUserId(UUID userId);
+
     UserContact save(UserContact userContact);
+
     UserContact createOrUpdate(UUID userId, String email, String phoneNumber,
                                String alternatePhoneNumber, String nextOfKinName,
                                String nextOfKinRelationship, String nextOfKinPhone,

@@ -21,6 +21,9 @@ public class EmailServiceImpl implements EmailService {
     @Value("${app.invitation.base-url:http://localhost:3010}")
     private String baseUrl;
 
+    @Value("${app.verification.base-url:${app.invitation.base-url:http://localhost:3010}}")
+    private String verificationBaseUrl;
+
     @Value("${spring.mail.host:}")
     private String mailHost;
 
@@ -47,6 +50,92 @@ public class EmailServiceImpl implements EmailService {
         } catch (MessagingException e) {
             log.error("Failed to send invitation email to {}", to, e);
         }
+    }
+
+    @Async("taskExecutor")
+    @Override
+    public void sendVerificationEmail(String to, String codeOrLink, boolean isLink) {
+        String subject = "Verify your contact on SafeTrack";
+        String html;
+
+        if (isLink) {
+            String verifyUrl = verificationBaseUrl + "/verify-contact?token=" + codeOrLink;
+            html = buildVerificationLinkEmail(verifyUrl);
+            if (mailHost == null || mailHost.isBlank()) {
+                log.info("[DEV] Verification email would be sent to: {} | Link: {}", to, verifyUrl);
+                return;
+            }
+        } else {
+            html = buildVerificationCodeEmail(codeOrLink);
+            if (mailHost == null || mailHost.isBlank()) {
+                log.info("[DEV] Verification email would be sent to: {} | Code: {}", to, codeOrLink);
+                return;
+            }
+        }
+
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            helper.setTo(to);
+            helper.setSubject(subject);
+            helper.setText(html, true);
+            mailSender.send(message);
+            log.debug("Verification email sent to {}", to);
+        } catch (MessagingException e) {
+            log.error("Failed to send verification email to {}", to, e);
+        }
+    }
+
+    private String buildVerificationLinkEmail(String verifyUrl) {
+        return """
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="UTF-8">
+                    <title>SafeTrack Verification</title>
+                </head>
+                <body style="font-family: Arial, sans-serif; background-color: #F7F6F2; padding: 40px;">
+                    <div style="max-width: 480px; margin: 0 auto; background: #ffffff; border: 1px solid #E5E4E0; border-radius: 14px; padding: 32px;">
+                        <h2 style="color: #1A1A1A; font-size: 20px; margin-bottom: 8px;">Verify your contact</h2>
+                        <p style="color: #8A8A8A; font-size: 14px; line-height: 1.5; margin-bottom: 24px;">
+                            Please confirm this contact by clicking the button below.
+                        </p>
+                        <a href="%s" style="display: inline-block; padding: 12px 24px; background-color: #4A5548; color: #ffffff; text-decoration: none; border-radius: 10px; font-size: 14px; font-weight: 600;">
+                            Verify Contact
+                        </a>
+                        <p style="color: #8A8A8A; font-size: 12px; margin-top: 24px;">
+                            This link expires in 24 hours. If you didn't request this, you can safely ignore it.
+                        </p>
+                    </div>
+                </body>
+                </html>
+                """.formatted(verifyUrl);
+    }
+
+    private String buildVerificationCodeEmail(String code) {
+        return """
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="UTF-8">
+                    <title>SafeTrack Verification</title>
+                </head>
+                <body style="font-family: Arial, sans-serif; background-color: #F7F6F2; padding: 40px;">
+                    <div style="max-width: 480px; margin: 0 auto; background: #ffffff; border: 1px solid #E5E4E0; border-radius: 14px; padding: 32px;">
+                        <h2 style="color: #1A1A1A; font-size: 20px; margin-bottom: 8px;">Verify your contact</h2>
+                        <p style="color: #8A8A8A; font-size: 14px; line-height: 1.5; margin-bottom: 24px;">
+                            Use the code below to verify your contact on SafeTrack.
+                        </p>
+                        <div style="padding: 16px; background-color: #F7F6F2; border-radius: 10px; text-align: center; font-size: 28px; font-weight: 700; letter-spacing: 4px; color: #1A1A1A;">
+                            %s
+                        </div>
+                        <p style="color: #8A8A8A; font-size: 12px; margin-top: 24px;">
+                            This code expires in 15 minutes. If you didn't request this, you can safely ignore it.
+                        </p>
+                    </div>
+                </body>
+                </html>
+                """.formatted(code);
     }
 
     private String buildHtmlEmail(String organizationName, String inviteUrl) {

@@ -1,7 +1,9 @@
 package com.safetrack.server.service.impl;
 
+import com.safetrack.server.domain.entity.ContactPoint;
 import com.safetrack.server.domain.entity.User;
 import com.safetrack.server.domain.entity.UserContact;
+import com.safetrack.server.domain.repository.ContactPointRepository;
 import com.safetrack.server.domain.repository.UserContactRepository;
 import com.safetrack.server.domain.repository.UserRepository;
 import org.junit.jupiter.api.Test;
@@ -10,6 +12,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Collections;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -22,6 +25,8 @@ class UserContactServiceImplTest {
 
     @Mock
     private UserContactRepository userContactRepository;
+    @Mock
+    private ContactPointRepository contactPointRepository;
     @Mock
     private UserRepository userRepository;
 
@@ -54,32 +59,33 @@ class UserContactServiceImplTest {
 
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
         when(userContactRepository.findByUserId(userId)).thenReturn(Optional.empty());
+        when(contactPointRepository.findByUserIdAndType(any(), any())).thenReturn(Collections.emptyList());
+        when(contactPointRepository.save(any(ContactPoint.class))).thenAnswer(i -> i.getArgument(0));
         when(userContactRepository.save(any(UserContact.class))).thenAnswer(i -> i.getArgument(0));
 
         UserContact result = userContactService.createOrUpdate(userId, "email@test.com", "123", "456", "Kin", "Spouse", "789", "kin@test.com");
 
-        assertEquals("email@test.com", result.getEmail());
-        assertEquals("123", result.getPhoneNumber());
-        assertEquals("456", result.getAlternatePhoneNumber());
         assertEquals("Kin", result.getNextOfKinName());
         assertEquals("Spouse", result.getNextOfKinRelationship());
-        assertEquals("789", result.getNextOfKinPhone());
-        assertEquals("kin@test.com", result.getNextOfKinEmail());
+        verify(contactPointRepository, times(5)).save(any(ContactPoint.class));
     }
 
     @Test
     void createOrUpdate_shouldUpdateExistingContact() {
         UUID userId = UUID.randomUUID();
         User user = User.builder().id(userId).build();
-        UserContact existing = UserContact.builder().id(UUID.randomUUID()).user(user).email("old@example.com").build();
+        UserContact existing = UserContact.builder().id(UUID.randomUUID()).user(user).build();
 
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
         when(userContactRepository.findByUserId(userId)).thenReturn(Optional.of(existing));
+        when(contactPointRepository.findByUserIdAndType(any(), any())).thenReturn(Collections.emptyList());
+        when(contactPointRepository.save(any(ContactPoint.class))).thenAnswer(i -> i.getArgument(0));
         when(userContactRepository.save(any(UserContact.class))).thenAnswer(i -> i.getArgument(0));
 
         UserContact result = userContactService.createOrUpdate(userId, "new@example.com", null, null, null, null, null, null);
 
-        assertEquals("new@example.com", result.getEmail());
+        assertNotNull(result);
+        verify(contactPointRepository, times(1)).save(any(ContactPoint.class));
     }
 
     @Test

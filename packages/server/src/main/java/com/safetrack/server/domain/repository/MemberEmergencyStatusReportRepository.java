@@ -13,4 +13,5 @@ public interface MemberEmergencyStatusReportRepository extends JpaRepository<Mem
     List<MemberEmergencyStatusReport> findByEmergencyEventIdOrderByCreatedAtDesc(UUID emergencyEventId);
     List<MemberEmergencyStatusReport> findByEmergencyEventIdAndMemberIdInOrderByCreatedAtDesc(UUID emergencyEventId, Collection<UUID> memberIds);
     List<MemberEmergencyStatusReport> findByMemberIdOrderByCreatedAtDesc(UUID memberId);
+    List<MemberEmergencyStatusReport> findByEmergencyEventIdAndMemberIdOrderByCreatedAtDesc(UUID emergencyEventId, UUID memberId);
 }

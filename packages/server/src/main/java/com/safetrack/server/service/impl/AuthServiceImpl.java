@@ -2,11 +2,13 @@ package com.safetrack.server.service.impl;
 
 import com.safetrack.server.controller.dto.request.LoginRequest;
 import com.safetrack.server.controller.dto.request.RegisterRequest;
+import com.safetrack.server.domain.entity.ContactPoint;
 import com.safetrack.server.domain.entity.Member;
 import com.safetrack.server.domain.entity.Organization;
 import com.safetrack.server.domain.entity.Role;
 import com.safetrack.server.domain.entity.User;
 import com.safetrack.server.domain.entity.UserOrgInvitation;
+import com.safetrack.server.domain.repository.ContactPointRepository;
 import com.safetrack.server.domain.repository.MemberRepository;
 import com.safetrack.server.domain.repository.OrganizationRepository;
 import com.safetrack.server.domain.repository.RoleRepository;
@@ -32,6 +34,7 @@ public class AuthServiceImpl implements AuthService {
     private final OrganizationRepository organizationRepository;
     private final MemberRepository memberRepository;
     private final UserOrgInvitationRepository invitationRepository;
+    private final ContactPointRepository contactPointRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Override
@@ -90,6 +93,16 @@ public class AuthServiceImpl implements AuthService {
                 .build();
 
         User savedUser = userRepository.save(user);
+
+        ContactPoint loginEmail = ContactPoint.builder()
+                .user(savedUser)
+                .type(ContactPoint.ContactPointType.EMAIL)
+                .value(savedUser.getEmail().toLowerCase().trim())
+                .label("Login")
+                .category(ContactPoint.ContactPointCategory.SELF)
+                .isPrimary(true)
+                .build();
+        contactPointRepository.save(loginEmail);
 
         if (invitation != null) {
             // When registering via invite, do NOT create a default organization.

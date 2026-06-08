@@ -12,5 +12,7 @@ public record MemberResponse(
     UUID teamId,
     String teamName,
     String orgRole,
+    UUID supervisorId,
+    String supervisorName,
     Instant createdAt
 ) {}

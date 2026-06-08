@@ -6,6 +6,7 @@ import com.safetrack.server.controller.dto.response.InvitationValidationResponse
 import com.safetrack.server.domain.entity.*;
 import com.safetrack.server.domain.repository.*;
 import com.safetrack.server.service.EmailService;
+import com.safetrack.server.service.UserContactService;
 import com.safetrack.server.service.UserOrgInvitationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -41,6 +42,7 @@ public class UserOrgInvitationServiceImpl implements UserOrgInvitationService {
     private final TeamRepository teamRepository;
     private final UserRepository userRepository;
     private final UserContactRepository userContactRepository;
+    private final UserContactService userContactService;
     private final RoleRepository roleRepository;
     private final EmailService emailService;
     private final PasswordEncoder passwordEncoder;
@@ -282,17 +284,16 @@ public class UserOrgInvitationServiceImpl implements UserOrgInvitationService {
 
         // Create UserContact from invitation data if user doesn't have one
         if (user.getContact() == null && hasContactData(invitation)) {
-            UserContact contact = UserContact.builder()
-                    .user(user)
-                    .email(invitation.getEmail())
-                    .phoneNumber(invitation.getPhoneNumber())
-                    .alternatePhoneNumber(invitation.getAlternatePhoneNumber())
-                    .nextOfKinName(invitation.getNextOfKinName())
-                    .nextOfKinRelationship(invitation.getNextOfKinRelationship())
-                    .nextOfKinPhone(invitation.getNextOfKinPhone())
-                    .nextOfKinEmail(invitation.getNextOfKinEmail())
-                    .build();
-            userContactRepository.save(contact);
+            UserContact contact = userContactService.createOrUpdate(
+                    user.getId(),
+                    invitation.getEmail(),
+                    invitation.getPhoneNumber(),
+                    invitation.getAlternatePhoneNumber(),
+                    invitation.getNextOfKinName(),
+                    invitation.getNextOfKinRelationship(),
+                    invitation.getNextOfKinPhone(),
+                    invitation.getNextOfKinEmail()
+            );
             user.setContact(contact);
         }
 

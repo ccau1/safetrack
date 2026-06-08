@@ -1,0 +1,1 @@
+ALTER TYPE challenge_method ADD VALUE 'WHATSAPP_CODE';

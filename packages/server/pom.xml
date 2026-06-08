@@ -124,6 +124,13 @@
             <artifactId>spring-boot-starter-mail</artifactId>
         </dependency>
 
+        <!-- SMS (Twilio) -->
+        <dependency>
+            <groupId>com.twilio.sdk</groupId>
+            <artifactId>twilio</artifactId>
+            <version>10.1.5</version>
+        </dependency>
+
         <!-- CSV -->
         <dependency>
             <groupId>org.apache.commons</groupId>

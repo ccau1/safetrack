@@ -68,6 +68,29 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     @Transactional
+    public Member updateSupervisor(UUID memberId, UUID supervisorMemberId) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new IllegalArgumentException("Member not found"));
+
+        if (supervisorMemberId != null) {
+            Member supervisor = memberRepository.findById(supervisorMemberId)
+                    .orElseThrow(() -> new IllegalArgumentException("Supervisor member not found"));
+            if (!supervisor.getOrganization().getId().equals(member.getOrganization().getId())) {
+                throw new IllegalArgumentException("Supervisor must be in the same organization");
+            }
+            if (supervisor.getId().equals(member.getId())) {
+                throw new IllegalArgumentException("Member cannot be their own supervisor");
+            }
+            member.setSupervisor(supervisor);
+        } else {
+            member.setSupervisor(null);
+        }
+
+        return memberRepository.save(member);
+    }
+
+    @Override
+    @Transactional
     public void sendReminder(UUID actorMemberId, UUID targetMemberId) {
         Member actor = memberRepository.findById(actorMemberId)
                 .orElseThrow(() -> new IllegalArgumentException("Actor member not found"));

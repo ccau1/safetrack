@@ -26,26 +26,19 @@ public class UserContact {
     @JoinColumn(name = "user_id", nullable = false, unique = true)
     private User user;
 
-    @Column(length = 255)
-    private String email;
-
-    @Column(name = "phone_number", length = 50)
-    private String phoneNumber;
-
-    @Column(name = "alternate_phone_number", length = 50)
-    private String alternatePhoneNumber;
-
     @Column(name = "next_of_kin_name", length = 100)
     private String nextOfKinName;
 
     @Column(name = "next_of_kin_relationship", length = 50)
     private String nextOfKinRelationship;
 
-    @Column(name = "next_of_kin_phone", length = 50)
-    private String nextOfKinPhone;
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "next_of_kin_phone_contact_point_id")
+    private ContactPoint nextOfKinPhoneContactPoint;
 
-    @Column(name = "next_of_kin_email", length = 255)
-    private String nextOfKinEmail;
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "next_of_kin_email_contact_point_id")
+    private ContactPoint nextOfKinEmailContactPoint;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)

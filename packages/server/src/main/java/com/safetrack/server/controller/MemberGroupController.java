@@ -118,6 +118,10 @@ public class MemberGroupController {
                 member.getTeam() != null ? member.getTeam().getId() : null,
                 member.getTeam() != null ? member.getTeam().getName() : null,
                 member.getOrgRole().name(),
+                member.getSupervisor() != null ? member.getSupervisor().getId() : null,
+                member.getSupervisor() != null
+                        ? member.getSupervisor().getUser().getFirstName() + " " + member.getSupervisor().getUser().getLastName()
+                        : null,
                 member.getCreatedAt()
         );
     }

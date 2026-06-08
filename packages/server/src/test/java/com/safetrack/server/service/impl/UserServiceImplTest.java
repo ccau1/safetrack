@@ -1,9 +1,11 @@
 package com.safetrack.server.service.impl;
 
+import com.safetrack.server.domain.entity.ContactPoint;
 import com.safetrack.server.domain.entity.Member;
 import com.safetrack.server.domain.entity.Organization;
 import com.safetrack.server.domain.entity.Role;
 import com.safetrack.server.domain.entity.User;
+import com.safetrack.server.domain.repository.ContactPointRepository;
 import com.safetrack.server.domain.repository.MemberRepository;
 import com.safetrack.server.domain.repository.OrganizationRepository;
 import com.safetrack.server.domain.repository.RoleRepository;
@@ -33,6 +35,8 @@ class UserServiceImplTest {
     private OrganizationRepository organizationRepository;
     @Mock
     private MemberRepository memberRepository;
+    @Mock
+    private ContactPointRepository contactPointRepository;
 
     @InjectMocks
     private UserServiceImpl userService;
@@ -110,9 +114,10 @@ class UserServiceImplTest {
 
         Optional<User> result = userService.findOrCreateSsoUser("new@example.com", "John", "Doe", "google", "456");
         assertTrue(result.isPresent());
-        verify(userRepository).save(any(User.class));
+        verify(userRepository, times(2)).save(any(User.class));
         verify(organizationRepository).save(any(Organization.class));
         verify(memberRepository).save(any(Member.class));
+        verify(contactPointRepository).save(any(ContactPoint.class));
     }
 
     @Test

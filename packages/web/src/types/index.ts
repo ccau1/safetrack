@@ -186,18 +186,44 @@ export interface Notification {
   read: boolean;
 }
 
+export type ContactPointType = 'EMAIL' | 'PHONE' | 'SMS' | 'WHATSAPP';
+export type ContactPointCategory = 'SELF' | 'EMERGENCY_CONTACT';
+
+export interface ContactPoint {
+  id: string;
+  userId: string;
+  type: ContactPointType;
+  value: string;
+  label: string | null;
+  category: ContactPointCategory;
+  verifiedAt: string | null;
+  isPrimary: boolean;
+  createdAt: string;
+}
+
+export interface CreateContactPointRequest {
+  type: ContactPointType;
+  value: string;
+  label?: string;
+  category?: ContactPointCategory;
+}
+
 export interface UserContact {
   id: string;
   userId: string;
-  email: string | null;
-  phoneNumber: string | null;
-  alternatePhoneNumber: string | null;
   nextOfKinName: string | null;
   nextOfKinRelationship: string | null;
-  nextOfKinPhone: string | null;
-  nextOfKinEmail: string | null;
+  nextOfKinPhone: ContactPoint | null;
+  nextOfKinEmail: ContactPoint | null;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface UpdateUserContactRequest {
+  nextOfKinName?: string | null;
+  nextOfKinRelationship?: string | null;
+  nextOfKinPhone?: string | null;
+  nextOfKinEmail?: string | null;
 }
 
 export interface RegisterRequest {

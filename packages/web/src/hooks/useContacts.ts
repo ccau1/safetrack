@@ -1,13 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
 import { api } from '@/lib/api';
-import type { UserContact } from '@/types';
+import type { UserContact, UpdateUserContactRequest } from '@/types';
 
 interface UseContactsResult {
   contact: UserContact | null;
   isLoading: boolean;
   error: Error | null;
   refetch: () => void;
-  updateContact: (data: Partial<Omit<UserContact, 'id' | 'userId' | 'createdAt' | 'updatedAt'>>) => Promise<void>;
+  updateContact: (data: UpdateUserContactRequest) => Promise<void>;
 }
 
 export function useContacts(): UseContactsResult {
@@ -34,7 +34,7 @@ export function useContacts(): UseContactsResult {
   }, []);
 
   const updateContact = useCallback(
-    async (data: Partial<Omit<UserContact, 'id' | 'userId' | 'createdAt' | 'updatedAt'>>) => {
+    async (data: UpdateUserContactRequest) => {
       const res = await api.put<UserContact>('/api/users/me/contacts', data);
       setContact(res.data);
     },
