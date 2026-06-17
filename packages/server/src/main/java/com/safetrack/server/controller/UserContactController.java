@@ -83,6 +83,7 @@ public class UserContactController {
                 point.getCategory(),
                 point.getVerifiedAt(),
                 Boolean.TRUE.equals(point.getIsPrimary()),
+                point.getPriority(),
                 point.getCreatedAt()
         );
     }

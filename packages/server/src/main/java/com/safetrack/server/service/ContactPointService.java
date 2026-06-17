@@ -20,5 +20,7 @@ public interface ContactPointService {
 
     void deleteContactPoint(UUID userId, UUID contactPointId);
 
+    void reorderContactPoints(UUID userId, List<UUID> orderedContactPointIds);
+
     long countVerifiedByUserIdAndType(UUID userId, ContactPoint.ContactPointType type);
 }

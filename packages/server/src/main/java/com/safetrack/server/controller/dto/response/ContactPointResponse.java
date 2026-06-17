@@ -14,5 +14,6 @@ public record ContactPointResponse(
     ContactPoint.ContactPointCategory category,
     Instant verifiedAt,
     boolean isPrimary,
+    int priority,
     Instant createdAt
 ) {}

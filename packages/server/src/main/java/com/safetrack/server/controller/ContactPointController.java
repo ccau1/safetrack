@@ -2,6 +2,7 @@ package com.safetrack.server.controller;
 
 import com.safetrack.server.controller.dto.request.CreateContactPointRequest;
 import com.safetrack.server.controller.dto.request.InitiateVerificationRequest;
+import com.safetrack.server.controller.dto.request.ReorderContactPointsRequest;
 import com.safetrack.server.controller.dto.response.ContactPointResponse;
 import com.safetrack.server.domain.entity.ContactPoint;
 import com.safetrack.server.domain.entity.User;
@@ -48,6 +49,15 @@ public class ContactPointController {
                 request.category()
         );
         return ResponseEntity.ok(toResponse(point));
+    }
+
+    @PostMapping("/api/users/me/contact-points/reorder")
+    public ResponseEntity<Void> reorderContactPoints(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @Valid @RequestBody ReorderContactPointsRequest request) {
+        User user = getUser(userDetails);
+        contactPointService.reorderContactPoints(user.getId(), request.contactPointIds());
+        return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/api/users/me/contact-points/{id}")
@@ -98,6 +108,7 @@ public class ContactPointController {
                 point.getCategory(),
                 point.getVerifiedAt(),
                 Boolean.TRUE.equals(point.getIsPrimary()),
+                point.getPriority(),
                 point.getCreatedAt()
         );
     }

@@ -12,6 +12,7 @@ interface UseContactPointsResult {
   verifyContactPoint: (id: string) => Promise<void>;
   resendVerification: (id: string) => Promise<void>;
   confirmVerification: (id: string, code: string) => Promise<ContactPoint>;
+  reorderContactPoints: (orderedIds: string[]) => Promise<void>;
 }
 
 function getDefaultMethod(type: ContactPoint['type']): string {
@@ -80,6 +81,20 @@ export function useContactPoints(): UseContactPointsResult {
     return res.data;
   }, []);
 
+  const reorderContactPoints = useCallback(async (orderedIds: string[]) => {
+    await api.post<void>('/api/users/me/contact-points/reorder', {
+      contactPointIds: orderedIds,
+    });
+    // Optimistically reorder local state to match
+    setContactPoints((prev) => {
+      const map = new Map(prev.map((cp) => [cp.id, cp]));
+      return orderedIds
+        .map((id) => map.get(id))
+        .filter((cp): cp is ContactPoint => cp !== undefined)
+        .map((cp, index) => ({ ...cp, priority: index }));
+    });
+  }, []);
+
   useEffect(() => {
     fetchContactPoints();
   }, [fetchContactPoints]);
@@ -94,5 +109,6 @@ export function useContactPoints(): UseContactPointsResult {
     verifyContactPoint,
     resendVerification,
     confirmVerification,
+    reorderContactPoints,
   };
 }

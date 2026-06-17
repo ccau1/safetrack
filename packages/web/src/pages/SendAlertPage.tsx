@@ -8,12 +8,13 @@ import type { Employee } from '@/types';
 
 interface SendAlertPageProps {
   employees: Employee[];
+  currentUserId?: number;
   addToast: (message: string, type: 'success' | 'error' | 'info') => void;
 }
 
 type AlertTab = 'all' | 'team' | 'specific';
 
-export function SendAlertPage({ employees, addToast }: SendAlertPageProps) {
+export function SendAlertPage({ employees, currentUserId, addToast }: SendAlertPageProps) {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<AlertTab>('all');
   const [message, setMessage] = useState('');
@@ -21,6 +22,17 @@ export function SendAlertPage({ employees, addToast }: SendAlertPageProps) {
   const [confirmOpen, setConfirmOpen] = useState(false);
 
   const unknownEmployees = employees.filter((e) => e.status === 'unknown');
+  const specificEmployees = useMemo(() => {
+    // Show all employees in the Specific tab so the sender can include themselves.
+    // Pin the current user to the top of the list so they're easy to find.
+    return [...employees].sort((a, b) => {
+      const aIsMe = a.id === currentUserId ? 1 : 0;
+      const bIsMe = b.id === currentUserId ? 1 : 0;
+      if (aIsMe !== bIsMe) return bIsMe - aIsMe;
+      return a.name.localeCompare(b.name);
+    });
+  }, [employees, currentUserId]);
+
   const teams = useMemo(() => {
     const teamMap = new Map<string, number>();
     unknownEmployees.forEach((e) => {
@@ -75,6 +87,11 @@ export function SendAlertPage({ employees, addToast }: SendAlertPageProps) {
     { key: 'team' as AlertTab, label: t('sendAlert.tabs.team') },
     { key: 'specific' as AlertTab, label: t('sendAlert.tabs.specific') },
   ];
+
+  const confirmationMessageKey =
+    activeTab === 'specific'
+      ? ('sendAlert.confirmation.messageSpecific' as const)
+      : ('sendAlert.confirmation.message' as const);
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -173,7 +190,7 @@ export function SendAlertPage({ employees, addToast }: SendAlertPageProps) {
               {t('sendAlert.counts.selectIndividual')}
             </p>
             <StatusTable
-              employees={unknownEmployees}
+              employees={specificEmployees}
               updatedRowId={null}
               onRowClick={() => {}}
               showCheckboxes
@@ -239,7 +256,7 @@ export function SendAlertPage({ employees, addToast }: SendAlertPageProps) {
         onClose={() => setConfirmOpen(false)}
         onConfirm={handleConfirmSend}
         title={t('sendAlert.confirmation.title')}
-        message={t('sendAlert.confirmation.message', { count: recipientCount })}
+        message={t(confirmationMessageKey, { count: recipientCount })}
         confirmText={t('sendAlert.confirmation.confirmText', { count: recipientCount })}
       />
     </div>

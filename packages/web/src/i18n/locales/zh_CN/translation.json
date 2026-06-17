@@ -10,6 +10,7 @@
     "organization": "组织",
     "contacts": "联系人",
     "emergencyEvents": "紧急事件",
+    "analytics": "分析",
     "sendAlert": "发送警报",
     "teamManagement": "团队管理",
     "groupManagement": "分组管理",
@@ -20,6 +21,7 @@
   "mobileNav": {
     "dashboard": "仪表盘",
     "emergencyEvents": "事件",
+    "analytics": "分析",
     "report": "报告",
     "team": "团队",
     "organization": "组织",
@@ -38,6 +40,7 @@
     "signOut": "退出登录",
     "guest": "访客",
     "cancel": "取消",
+    "clear": "清除",
     "save": "保存",
     "delete": "删除",
     "edit": "编辑",
@@ -253,6 +256,11 @@
     "primary": "主要",
     "verify": "验证",
     "resendVerification": "重新发送",
+    "moveUp": "上移",
+    "moveDown": "下移",
+    "escalationTitle": "联系顺序",
+    "escalationInfo": "紧急情况下，我们将按以下顺序尝试联系您。使用箭头调整您的优先联系顺序。当有紧急联系方式（短信、电话、WhatsApp）可用时，电子邮件不能设为首选。",
+    "firstTry": "首先尝试",
     "deleteConfirm": "确定要删除此联系方式吗？",
     "noContactPoints": "尚未添加联系方式。",
     "types": {
@@ -271,7 +279,8 @@
       "deleteFailed": "删除联系方式失败",
       "verificationSent": "验证码已发送",
       "verified": "联系方式已验证",
-      "verificationFailed": "发送验证失败"
+      "verificationFailed": "发送验证失败",
+      "reorderFailed": "更新顺序失败。当有紧急联系方式可用时，电子邮件不能设为首选。"
     }
   },
   "myTeam": {
@@ -313,7 +322,7 @@
       "specific": "指定人员"
     },
     "counts": {
-      "selectIndividual": "选择要通知的个别员工",
+      "selectIndividual": "选择要通知的个别员工（包含所有状态）",
       "notUpdated_one": "名员工尚未更新状态",
       "notUpdated_other": "名员工尚未更新状态"
     },
@@ -338,7 +347,9 @@
       "confirmText_one": "向 {{count}} 名员工发送",
       "confirmText_other": "向 {{count}} 名员工发送",
       "message_one": "您即将向 {{count}} 名尚未更新状态的员工发送警报。此操作无法撤销。",
-      "message_other": "您即将向 {{count}} 名尚未更新状态的员工发送警报。此操作无法撤销。"
+      "message_other": "您即将向 {{count}} 名尚未更新状态的员工发送警报。此操作无法撤销。",
+      "messageSpecific_one": "您即将向 {{count}} 名选定的员工发送警报。此操作无法撤销。",
+      "messageSpecific_other": "您即将向 {{count}} 名选定的员工发送警报。此操作无法撤销。"
     },
     "sendButton_one": "向 {{count}} 名员工发送警报",
     "sendButton_other": "向 {{count}} 名员工发送警报"
@@ -491,6 +502,9 @@
       "safe": "安全",
       "needHelp": "需要帮助",
       "notUpdated": "未更新"
+    },
+    "teams": {
+      "title": "团队"
     },
     "members": {
       "title": "追踪成员",
@@ -730,5 +744,81 @@
   },
   "confirmationModal": {
     "cancel": "取消"
+  },
+  "analytics": {
+    "title": "分析",
+    "subtitle": "事件统计与团队表现洞察",
+    "refresh": "刷新",
+    "clearFilters": "清除筛选",
+    "filters": {
+      "title": "筛选条件",
+      "teams": "团队",
+      "members": "成员",
+      "events": "事件",
+      "dateRange": "日期范围",
+      "allTeams": "所有团队",
+      "allMembers": "所有成员",
+      "allEvents": "所有事件"
+    },
+    "status": {
+      "safe": "安全",
+      "needsHelp": "需要帮助",
+      "missing": "失踪",
+      "enRoute": "途中",
+      "notUpdated": "未更新"
+    },
+    "summary": {
+      "totalEvents": "事件总数",
+      "totalMembers": "成员总数",
+      "safe": "安全",
+      "needsHelp": "需要帮助"
+    },
+    "charts": {
+      "responseRateTrend": "响应率趋势",
+      "responseRateTrendDesc": "团队参与率随时间变化（类似可用性）",
+      "latencyTrend": "延迟百分位",
+      "latencyTrendDesc": "P50、P90、P99 响应时间随事件变化"
+    },
+    "sla": {
+      "responseRate": "响应率",
+      "uptimeEquivalent": "等效可用性",
+      "avgLatency": "平均延迟",
+      "slaCompliance": "SLA 合规",
+      "distressRate": "困境率",
+      "membersNeedingHelp": "需要帮助的成员",
+      "events": "事件",
+      "leaderboard": "团队 SLA 排行榜",
+      "leaderboardDesc": "按响应率和延迟排名"
+    },
+    "eventsBreakdown": "事件明细",
+    "eventsBreakdownDesc": "每个事件的详细统计",
+    "table": {
+      "event": "事件",
+      "type": "类型",
+      "total": "总数",
+      "safe": "安全",
+      "needsHelp": "需要帮助",
+      "missing": "失踪",
+      "enRoute": "途中",
+      "notUpdated": "未更新",
+      "responseRate": "响应率",
+      "team": "团队",
+      "member": "成员"
+    },
+    "responseTime": {
+      "title": "团队响应时间",
+      "desc": "从事件开始到团队首次报告的时间",
+      "avgResponse": "平均响应"
+    },
+    "teamCards": {
+      "title": "团队表现",
+      "responded": "已响应"
+    },
+    "distressToSafe": {
+      "title": "从困境到安全",
+      "desc": "报告困境后转为安全的成员",
+      "duration": "转为安全用时"
+    },
+    "noData": "没有符合当前筛选条件的事件。"
   }
 }

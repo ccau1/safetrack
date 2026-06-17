@@ -11,6 +11,7 @@ import {
   ShieldCheck,
   Cog,
   Siren,
+  BarChart3,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/context/AuthContext';
@@ -208,6 +209,7 @@ export function Sidebar({ currentView, onNavigate, activeEventCount = 0, mobileO
     () => [
       { icon: LayoutDashboard, label: t('navigation.dashboard'), view: 'dashboard' as ViewName },
       { icon: Siren, label: t('navigation.emergencyEvents'), view: 'emergency-events' as ViewName },
+      { icon: BarChart3, label: t('navigation.analytics'), view: 'analytics' as ViewName },
       { icon: Shield, label: t('navigation.report'), view: 'report' as ViewName },
       { icon: Users, label: t('navigation.team'), view: 'team' as ViewName },
       { icon: Building, label: t('navigation.organization'), view: 'organization' as ViewName },

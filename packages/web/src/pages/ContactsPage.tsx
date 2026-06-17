@@ -13,6 +13,10 @@ import {
   ShieldCheck,
   ShieldAlert,
   X,
+  ChevronUp,
+  ChevronDown,
+  Info,
+  ArrowDown,
 } from 'lucide-react';
 import { useContacts } from '@/hooks/useContacts';
 import { useContactPoints } from '@/hooks/useContactPoints';
@@ -41,6 +45,7 @@ export function ContactsPage({ addToast }: ContactsPageProps) {
     verifyContactPoint,
     resendVerification,
     confirmVerification,
+    reorderContactPoints,
   } = useContactPoints();
 
   const [saving, setSaving] = useState(false);
@@ -142,6 +147,14 @@ export function ContactsPage({ addToast }: ContactsPageProps) {
     }
   };
 
+  const handleReorder = async (newOrder: typeof selfContactPoints) => {
+    try {
+      await reorderContactPoints(newOrder.map((c) => c.id));
+    } catch {
+      addToast(t('contacts.toast.reorderFailed'), 'error');
+    }
+  };
+
   const handleSubmitNextOfKin = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
@@ -195,127 +208,199 @@ export function ContactsPage({ addToast }: ContactsPageProps) {
         transition={{ duration: 0.4, delay: 0.1 }}
         className="bg-white border border-[#E5E4E0] rounded-[14px] p-6 mb-6"
       >
-        <h3 className="text-sm font-semibold text-[#1A1A1A] mb-4 flex items-center gap-2">
+        <h3 className="text-sm font-semibold text-[#1A1A1A] mb-2 flex items-center gap-2">
           <Mail size={16} className="text-[#4A5548]" />
           {t('contacts.sections.myContactPoints')}
         </h3>
+
+        {selfContactPoints.length > 0 && (
+          <div className="mb-4 p-3 bg-[#F0F4EF] border border-[#D4E0D1] rounded-[10px] flex items-start gap-2.5">
+            <Info size={16} className="text-[#4A5548] mt-0.5 shrink-0" />
+            <div className="text-xs text-[#4A5548] leading-relaxed">
+              <p className="font-medium">{t('contacts.escalationTitle')}</p>
+              <p className="mt-0.5 opacity-90">{t('contacts.escalationInfo')}</p>
+            </div>
+          </div>
+        )}
 
         {selfContactPoints.length === 0 ? (
           <p className="text-sm text-[#8A8A8A] mb-4">
             {t('contacts.noContactPoints')}
           </p>
         ) : (
-          <div className="space-y-3 mb-4">
-            {selfContactPoints.map((cp) => {
+          <div className="space-y-0 mb-4">
+            {selfContactPoints.map((cp, index) => {
               const isVerifying = verifyingId === cp.id;
+              const isFirst = index === 0;
+              const isLast = index === selfContactPoints.length - 1;
               return (
-                <div
-                  key={cp.id}
-                  className="flex items-start justify-between p-3 bg-[#F7F6F2] border border-[#E5E4E0] rounded-[10px]"
-                >
-                  <div className="flex items-start gap-3 min-w-0">
-                    <div className="mt-0.5 shrink-0">
-                      {cp.type === 'EMAIL' ? (
-                        <Mail size={18} className="text-[#4A5548]" />
-                      ) : (
-                        <Phone size={18} className="text-[#4A5548]" />
-                      )}
-                    </div>
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-sm font-medium text-[#1A1A1A] truncate">
-                          {cp.value}
-                        </span>
-                        <span
-                          className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${typeColors[cp.type]}`}
-                        >
-                          {t(`contacts.types.${cp.type}`)}
-                        </span>
-                        {cp.isPrimary && (
-                          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200">
-                            {t('contacts.primary')}
-                          </span>
-                        )}
+                <div key={cp.id} className="relative">
+                  {/* Connector line between steps */}
+                  {!isLast && (
+                    <div className="absolute left-[18px] top-[44px] w-px h-[calc(100%-20px)] border-l-2 border-dashed border-[#D4E0D1] z-0" />
+                  )}
+                  <div className="flex items-start gap-3">
+                    {/* Step indicator */}
+                    <div className="relative z-10 shrink-0 flex flex-col items-center pt-1.5">
+                      <div
+                        className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold shadow-sm ${
+                          isFirst
+                            ? 'bg-[#4A5548] text-white ring-2 ring-[#4A5548]/20'
+                            : 'bg-white text-[#4A5548] border-2 border-[#D4E0D1]'
+                        }`}
+                      >
+                        {index + 1}
                       </div>
-                      <div className="flex items-center gap-2 mt-1">
-                        {cp.label && (
-                          <span className="text-xs text-[#8A8A8A]">
-                            {cp.label}
-                          </span>
-                        )}
-                        {cp.verifiedAt ? (
-                          <span className="flex items-center gap-1 text-xs text-green-700">
-                            <ShieldCheck size={12} />
-                            {t('contacts.verified')}
-                          </span>
-                        ) : (
-                          <span className="flex items-center gap-1 text-xs text-[#C44536]">
-                            <ShieldAlert size={12} />
-                            {t('contacts.unverified')}
-                          </span>
-                        )}
-                      </div>
-                      {isVerifying && (
-                        <div className="flex items-center gap-2 mt-2">
-                          <input
-                            type="text"
-                            inputMode="numeric"
-                            maxLength={6}
-                            value={verificationCode}
-                            onChange={(e) =>
-                              setVerificationCode(
-                                e.target.value.replace(/\D/g, '')
-                              )
-                            }
-                            placeholder="000000"
-                            className="w-24 h-8 bg-white border border-[#E5E4E0] rounded-[8px] px-2 text-sm text-[#1A1A1A] placeholder:text-[#8A8A8A] focus:outline-none focus:border-[#4A5548] focus:ring-[0_0_0_2px_rgba(74,85,72,0.15)] transition-all duration-150 text-center tracking-widest"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => handleConfirmVerification(cp.id)}
-                            disabled={verificationCode.length !== 6}
-                            className="h-8 px-3 text-xs font-medium text-white bg-[#4A5548] rounded-[8px] hover:bg-[#3D463B] transition-colors duration-150 disabled:opacity-50"
-                          >
-                            {t('common.confirm')}
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleResend(cp.id)}
-                            className="h-8 px-3 text-xs font-medium text-[#5C5C5C] bg-white border border-[#E5E4E0] rounded-[8px] hover:bg-[#F7F6F2] transition-colors duration-150"
-                          >
-                            {t('contacts.resendVerification')}
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setVerifyingId(null);
-                              setVerificationCode('');
-                            }}
-                            className="w-8 h-8 flex items-center justify-center text-[#8A8A8A] hover:text-[#1A1A1A] transition-colors"
-                          >
-                            <X size={14} />
-                          </button>
+                      {!isLast && (
+                        <div className="mt-1 text-[#D4E0D1]">
+                          <ArrowDown size={12} />
                         </div>
                       )}
                     </div>
-                  </div>
-                  <div className="flex items-center gap-1 ml-2 shrink-0">
-                    {!cp.verifiedAt && !isVerifying && (
-                      <button
-                        type="button"
-                        onClick={() => handleVerify(cp.id)}
-                        className="h-8 px-3 text-xs font-medium text-[#4A5548] bg-white border border-[#4A5548] rounded-[8px] hover:bg-[#4A5548] hover:text-white transition-colors duration-150"
-                      >
-                        {t('contacts.verify')}
-                      </button>
-                    )}
-                    <button
-                      type="button"
-                      onClick={() => setDeleteId(cp.id)}
-                      className="w-8 h-8 flex items-center justify-center text-[#8A8A8A] hover:text-[#C44536] transition-colors duration-150"
-                    >
-                      <Trash2 size={16} />
-                    </button>
+
+                    {/* Card */}
+                    <div className="flex-1 min-w-0 pb-4">
+                      {isFirst && (
+                        <div className="mb-1.5 flex items-center gap-1.5">
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-[#4A5548]">
+                            {t('contacts.firstTry')}
+                          </span>
+                          <span className="w-8 h-px bg-[#D4E0D1]" />
+                        </div>
+                      )}
+                      <div className="flex items-start justify-between p-3 bg-[#F7F6F2] border border-[#E5E4E0] rounded-[10px]">
+                        <div className="flex items-start gap-3 min-w-0">
+                          <div className="mt-0.5 shrink-0">
+                            {cp.type === 'EMAIL' ? (
+                              <Mail size={18} className="text-[#4A5548]" />
+                            ) : (
+                              <Phone size={18} className="text-[#4A5548]" />
+                            )}
+                          </div>
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="text-sm font-medium text-[#1A1A1A] truncate">
+                                {cp.value}
+                              </span>
+                              <span
+                                className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${typeColors[cp.type]}`}
+                              >
+                                {t(`contacts.types.${cp.type}`)}
+                              </span>
+                              {cp.isPrimary && (
+                                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200">
+                                  {t('contacts.primary')}
+                                </span>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-2 mt-1">
+                              {cp.label && (
+                                <span className="text-xs text-[#8A8A8A]">
+                                  {cp.label}
+                                </span>
+                              )}
+                              {cp.verifiedAt ? (
+                                <span className="flex items-center gap-1 text-xs text-green-700">
+                                  <ShieldCheck size={12} />
+                                  {t('contacts.verified')}
+                                </span>
+                              ) : (
+                                <span className="flex items-center gap-1 text-xs text-[#C44536]">
+                                  <ShieldAlert size={12} />
+                                  {t('contacts.unverified')}
+                                </span>
+                              )}
+                            </div>
+                            {isVerifying && (
+                              <div className="flex items-center gap-2 mt-2">
+                                <input
+                                  type="text"
+                                  inputMode="numeric"
+                                  maxLength={6}
+                                  value={verificationCode}
+                                  onChange={(e) =>
+                                    setVerificationCode(
+                                      e.target.value.replace(/\D/g, '')
+                                    )
+                                  }
+                                  placeholder="000000"
+                                  className="w-24 h-8 bg-white border border-[#E5E4E0] rounded-[8px] px-2 text-sm text-[#1A1A1A] placeholder:text-[#8A8A8A] focus:outline-none focus:border-[#4A5548] focus:ring-[0_0_0_2px_rgba(74,85,72,0.15)] transition-all duration-150 text-center tracking-widest"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => handleConfirmVerification(cp.id)}
+                                  disabled={verificationCode.length !== 6}
+                                  className="h-8 px-3 text-xs font-medium text-white bg-[#4A5548] rounded-[8px] hover:bg-[#3D463B] transition-colors duration-150 disabled:opacity-50"
+                                >
+                                  {t('common.confirm')}
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleResend(cp.id)}
+                                  className="h-8 px-3 text-xs font-medium text-[#5C5C5C] bg-white border border-[#E5E4E0] rounded-[8px] hover:bg-[#F7F6F2] transition-colors duration-150"
+                                >
+                                  {t('contacts.resendVerification')}
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setVerifyingId(null);
+                                    setVerificationCode('');
+                                  }}
+                                  className="w-8 h-8 flex items-center justify-center text-[#8A8A8A] hover:text-[#1A1A1A] transition-colors"
+                                >
+                                  <X size={14} />
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1 ml-2 shrink-0">
+                          <button
+                            type="button"
+                            disabled={index === 0 || (cp.type === 'EMAIL' && index === 1 && selfContactPoints.some((p) => p.type !== 'EMAIL'))}
+                            onClick={() => {
+                              const newOrder = [...selfContactPoints];
+                              [newOrder[index], newOrder[index - 1]] = [newOrder[index - 1], newOrder[index]];
+                              handleReorder(newOrder);
+                            }}
+                            className="w-8 h-8 flex items-center justify-center text-[#8A8A8A] hover:text-[#4A5548] transition-colors duration-150 disabled:opacity-30"
+                            title={t('contacts.moveUp')}
+                          >
+                            <ChevronUp size={16} />
+                          </button>
+                          <button
+                            type="button"
+                            disabled={index === selfContactPoints.length - 1}
+                            onClick={() => {
+                              const newOrder = [...selfContactPoints];
+                              [newOrder[index], newOrder[index + 1]] = [newOrder[index + 1], newOrder[index]];
+                              handleReorder(newOrder);
+                            }}
+                            className="w-8 h-8 flex items-center justify-center text-[#8A8A8A] hover:text-[#4A5548] transition-colors duration-150 disabled:opacity-30"
+                            title={t('contacts.moveDown')}
+                          >
+                            <ChevronDown size={16} />
+                          </button>
+                          {!cp.verifiedAt && !isVerifying && (
+                            <button
+                              type="button"
+                              onClick={() => handleVerify(cp.id)}
+                              className="h-8 px-3 text-xs font-medium text-[#4A5548] bg-white border border-[#4A5548] rounded-[8px] hover:bg-[#4A5548] hover:text-white transition-colors duration-150"
+                            >
+                              {t('contacts.verify')}
+                            </button>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => setDeleteId(cp.id)}
+                            className="w-8 h-8 flex items-center justify-center text-[#8A8A8A] hover:text-[#C44536] transition-colors duration-150"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               );

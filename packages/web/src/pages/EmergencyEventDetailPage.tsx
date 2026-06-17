@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useParams, useNavigate } from 'react-router';
+import { useState, useEffect, useRef, useMemo } from 'react';
+import { useParams, useNavigate, useSearchParams } from 'react-router';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import {
@@ -28,6 +28,8 @@ import {
   FileText,
   Pencil,
   Loader2,
+  Filter,
+  Building2,
 } from 'lucide-react';
 import { useEmergencyEvent } from '@/hooks/useEmergencyEvent';
 import { useEmergencyEventUpdates } from '@/hooks/useEmergencyEventUpdates';
@@ -42,7 +44,8 @@ import { useMyMembership } from '@/hooks/useMyMembership';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { ToastContainer } from '@/components/ToastContainer';
 import { useToast } from '@/hooks/useToast';
-import type { EmergencyEventUpdateApi, ScopedMember, MemberEmergencyStatusReportApi, Severity } from '@/types';
+import { StatusFilterDropdown } from '@/components/StatusFilterDropdown';
+import type { EmergencyEventUpdateApi, ScopedMember, MemberEmergencyStatusReportApi, Severity, EmployeeStatus } from '@/types';
 
 const TYPE_ICONS: Record<string, typeof Flame> = {
   EMERGENCY: AlertTriangle,
@@ -103,17 +106,33 @@ export function EmergencyEventDetailPage() {
   const [updateText, setUpdateText] = useState('');
   const [updateType, setUpdateType] = useState<EmergencyEventUpdateApi['type']>('PROGRESSING');
   const [updateLoading, setUpdateLoading] = useState(false);
-  const [memberSearch, setMemberSearch] = useState('');
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  type FilterKey = 'all' | 'safe' | 'distress' | 'unknown';
+
+  const parseStatusesFromUrl = (value: string | null): Set<FilterKey> => {
+    if (!value || value === 'all') return new Set(['all', 'safe', 'distress', 'unknown']);
+    const parts = value.split(',').filter((s): s is FilterKey =>
+      ['safe', 'distress', 'unknown'].includes(s)
+    );
+    if (parts.length === 0 || parts.length === 3) return new Set(['all', 'safe', 'distress', 'unknown']);
+    return new Set(parts);
+  };
+
+  const [activeFilters, setActiveFilters] = useState<Set<FilterKey>>(() =>
+    parseStatusesFromUrl(searchParams.get('statuses'))
+  );
+  const [activeTeam, setActiveTeam] = useState<string>(() =>
+    searchParams.get('team') || 'all'
+  );
+  const [memberSearch, setMemberSearch] = useState<string>(() =>
+    searchParams.get('q') || ''
+  );
   const [expandedMemberId, setExpandedMemberId] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState('');
   const [editDescription, setEditDescription] = useState('');
   const [editLoading, setEditLoading] = useState(false);
-
-  type FilterKey = 'all' | 'safe' | 'distress' | 'unknown';
-  const [activeFilters, setActiveFilters] = useState<Set<FilterKey>>(
-    new Set(['all', 'safe', 'distress', 'unknown'])
-  );
 
   const toggleFilter = (key: FilterKey) => {
     setActiveFilters((prev) => {
@@ -141,6 +160,38 @@ export function EmergencyEventDetailPage() {
     }
     return false;
   };
+
+  // Sync filters to URL query params
+  const prevFilterRef = useRef({
+    activeFilters: new Set<FilterKey>(['all', 'safe', 'distress', 'unknown']),
+    activeTeam: 'all',
+    memberSearch: '',
+  });
+
+  useEffect(() => {
+    const statusList = Array.from(activeFilters).filter((k) => k !== 'all');
+    const prevStatusList = Array.from(prevFilterRef.current.activeFilters).filter((k) => k !== 'all');
+
+    const statusesChanged = statusList.join(',') !== prevStatusList.join(',');
+    const teamChanged = activeTeam !== prevFilterRef.current.activeTeam;
+    const searchChanged = memberSearch !== prevFilterRef.current.memberSearch;
+
+    if (!statusesChanged && !teamChanged && !searchChanged) return;
+
+    const params = new URLSearchParams();
+    if (statusList.length > 0 && statusList.length < 3) {
+      params.set('statuses', statusList.join(','));
+    }
+    if (activeTeam !== 'all') {
+      params.set('team', activeTeam);
+    }
+    if (memberSearch.trim()) {
+      params.set('q', memberSearch.trim());
+    }
+
+    setSearchParams(params, { replace: true });
+    prevFilterRef.current = { activeFilters, activeTeam, memberSearch };
+  }, [activeFilters, activeTeam, memberSearch, setSearchParams]);
 
   const handleResolve = async (comment: string) => {
     if (!id) return;
@@ -236,9 +287,48 @@ export function EmergencyEventDetailPage() {
   const distress = scopedMembers.filter((m) => m.latestStatus === 'NEEDS_HELP').length;
   const unknown = scopedMembers.filter((m) => !m.latestStatus || m.latestStatus === 'MISSING' || m.latestStatus === 'EN_ROUTE').length;
 
+  const statusCounts = {
+    safe: scopedMembers.filter((m) => m.latestStatus === 'SAFE').length,
+    distress: scopedMembers.filter((m) => m.latestStatus === 'NEEDS_HELP').length,
+    unknown: scopedMembers.filter((m) => !m.latestStatus || m.latestStatus === 'MISSING' || m.latestStatus === 'EN_ROUTE').length,
+  };
+
+  const selectedStatuses: EmployeeStatus[] = [];
+  if (activeFilters.has('safe')) selectedStatuses.push('safe');
+  if (activeFilters.has('distress')) selectedStatuses.push('distress');
+  if (activeFilters.has('unknown')) selectedStatuses.push('unknown');
+
+  const handleStatusFilterChange = (selected: EmployeeStatus[]) => {
+    if (selected.length === 0) {
+      setActiveFilters(new Set([]));
+    } else if (selected.length === 3) {
+      setActiveFilters(new Set(['all', 'safe', 'distress', 'unknown']));
+    } else {
+      setActiveFilters(new Set(selected as FilterKey[]));
+    }
+  };
+
+  const teamStats = useMemo(() => {
+    const map = new Map<string, { name: string; total: number; safe: number; distress: number; unknown: number }>();
+    for (const m of scopedMembers) {
+      const name = m.teamName || t('emergencyEventDetail.members.unassigned');
+      const entry = map.get(name) || { name, total: 0, safe: 0, distress: 0, unknown: 0 };
+      entry.total++;
+      if (m.latestStatus === 'SAFE') entry.safe++;
+      else if (m.latestStatus === 'NEEDS_HELP') entry.distress++;
+      else entry.unknown++;
+      map.set(name, entry);
+    }
+    return Array.from(map.values());
+  }, [scopedMembers, t]);
+
+  const teams = teamStats.map((t) => t.name);
+
   const filteredMembers = scopedMembers.filter((m) => {
     const matchesSearch = !memberSearch.trim() || m.name.toLowerCase().includes(memberSearch.toLowerCase());
-    return matchesSearch && matchesFilter(m);
+    const memberTeam = m.teamName || t('emergencyEventDetail.members.unassigned');
+    const matchesTeam = activeTeam === 'all' || memberTeam === activeTeam;
+    return matchesSearch && matchesFilter(m) && matchesTeam;
   });
 
   const eventReports = allReports.filter((r) => {
@@ -551,6 +641,29 @@ export function EmergencyEventDetailPage() {
         />
       </motion.div>
 
+      {/* Team Summary Cards */}
+      {teamStats.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.12 }}
+          className="space-y-3"
+        >
+          <h3 className="text-sm font-medium text-[#5C5C5C]">{t('emergencyEventDetail.teams.title')}</h3>
+          <div className="flex sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-3 overflow-x-auto pb-1 -mx-4 px-4 sm:mx-0 sm:px-0 snap-x snap-mandatory scrollbar-none">
+            {teamStats.map((team) => (
+              <div key={team.name} className="snap-start shrink-0 w-[260px] sm:w-auto">
+                <TeamCard
+                  team={team}
+                  active={activeTeam === team.name}
+                  onClick={() => setActiveTeam(activeTeam === team.name ? 'all' : team.name)}
+                />
+              </div>
+            ))}
+          </div>
+        </motion.div>
+      )}
+
       {/* Members List */}
       <motion.div
         initial={{ opacity: 0, y: 8 }}
@@ -558,22 +671,47 @@ export function EmergencyEventDetailPage() {
         transition={{ duration: 0.3, delay: 0.15 }}
         className="bg-white border border-[#E5E4E0] rounded-[14px] overflow-hidden"
       >
-        <div className="px-6 py-4 border-b border-[#E5E4E0] flex items-center justify-between">
+        <div className="px-6 py-4 border-b border-[#E5E4E0] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <h2 className="text-lg font-semibold text-[#1A1A1A]">{t('emergencyEventDetail.members.title')}</h2>
             <p className="text-sm text-[#8A8A8A]">
               {t('emergencyEventDetail.members.subtitle', { reported: safe + distress, total: totalScoped })}
             </p>
           </div>
-          <div className="relative w-56">
-            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8A8A8A]" />
-            <input
-              type="text"
-              value={memberSearch}
-              onChange={(e) => setMemberSearch(e.target.value)}
-              placeholder={t('emergencyEventDetail.members.searchPlaceholder')}
-              className="w-full h-9 pl-9 pr-3 bg-[#F7F6F2] border border-[#E5E4E0] rounded-[10px] text-sm text-[#1A1A1A] placeholder:text-[#8A8A8A] focus:outline-none focus:border-[#4A5548] focus:ring-[0_0_0_3px_rgba(74,85,72,0.15)] transition-all duration-150"
+          <div className="flex items-center gap-2">
+            <StatusFilterDropdown
+              selected={selectedStatuses}
+              onChange={handleStatusFilterChange}
+              counts={statusCounts}
             />
+            <TeamFilterDropdown
+              teams={teams}
+              activeTeam={activeTeam}
+              onSelect={setActiveTeam}
+            />
+            <div className="relative w-44">
+              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8A8A8A]" />
+              <input
+                type="text"
+                value={memberSearch}
+                onChange={(e) => setMemberSearch(e.target.value)}
+                placeholder={t('emergencyEventDetail.members.searchPlaceholder')}
+                className="w-full h-9 pl-9 pr-3 bg-[#F7F6F2] border border-[#E5E4E0] rounded-[10px] text-sm text-[#1A1A1A] placeholder:text-[#8A8A8A] focus:outline-none focus:border-[#4A5548] focus:ring-[0_0_0_3px_rgba(74,85,72,0.15)] transition-all duration-150"
+              />
+            </div>
+            {(activeTeam !== 'all' || memberSearch.trim() || !activeFilters.has('all')) && (
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveFilters(new Set(['all', 'safe', 'distress', 'unknown']));
+                  setActiveTeam('all');
+                  setMemberSearch('');
+                }}
+                className="text-xs font-medium text-[#5B7B8A] hover:text-[#4A5548] transition-colors whitespace-nowrap"
+              >
+                {t('common.clear')}
+              </button>
+            )}
           </div>
         </div>
 
@@ -892,6 +1030,109 @@ function StatCard({
   );
 }
 
+function TeamCard({
+  team,
+  active,
+  onClick,
+}: {
+  team: { name: string; total: number; safe: number; distress: number; unknown: number };
+  active: boolean;
+  onClick: () => void;
+}) {
+  const { t } = useTranslation();
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`rounded-[14px] border p-4 text-left w-full transition-all ${
+        active
+          ? 'border-[#4A5548] bg-[#F7F6F2] shadow-sm'
+          : 'border-[#E5E4E0] bg-white hover:border-[#D0D0CC] hover:bg-[#FAFAF8]'
+      }`}
+    >
+      <div className="flex items-center gap-2 mb-3">
+        <Building2 size={16} className="text-[#5B7B8A]" />
+        <span className="text-sm font-semibold text-[#1A1A1A] truncate">{team.name}</span>
+        <span className="ml-auto text-xs font-medium text-[#8A8A8A] bg-[#F7F6F2] border border-[#E5E4E0] rounded-full px-2 py-0.5">
+          {team.total}
+        </span>
+      </div>
+      <div className="grid grid-cols-3 gap-2">
+        <div className="text-center">
+          <p className="text-lg font-bold text-[#4A7C59]">{team.safe}</p>
+          <p className="text-[10px] font-medium text-[#8A8A8A] uppercase tracking-wider">{t('emergencyEventDetail.stats.safe')}</p>
+        </div>
+        <div className="text-center">
+          <p className="text-lg font-bold text-[#C44536]">{team.distress}</p>
+          <p className="text-[10px] font-medium text-[#8A8A8A] uppercase tracking-wider">{t('emergencyEventDetail.stats.needHelp')}</p>
+        </div>
+        <div className="text-center">
+          <p className="text-lg font-bold text-[#8A8A8A]">{team.unknown}</p>
+          <p className="text-[10px] font-medium text-[#8A8A8A] uppercase tracking-wider">{t('emergencyEventDetail.stats.notUpdated')}</p>
+        </div>
+      </div>
+    </button>
+  );
+}
 
+function TeamFilterDropdown({
+  teams,
+  activeTeam,
+  onSelect,
+}: {
+  teams: string[];
+  activeTeam: string;
+  onSelect: (team: string) => void;
+}) {
+  const { t } = useTranslation();
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
 
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
 
+  const allTeams = ['all', ...teams];
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        className="flex items-center gap-2 text-sm text-[#5C5C5C] border border-[#E5E4E0] rounded-[10px] px-3 py-1.5 bg-transparent hover:bg-[#FAFAF8] transition-all duration-150"
+      >
+        <Filter size={16} />
+        <span className="max-w-[100px] truncate">
+          {activeTeam === 'all' ? t('table.filterByTeam') : activeTeam}
+        </span>
+      </button>
+
+      {open && (
+        <div className="absolute top-full right-0 mt-1 bg-white border border-[#E5E4E0] rounded-[10px] shadow-[0_4px_20px_rgba(0,0,0,0.08)] min-w-[180px] py-1 z-50 max-h-[280px] overflow-y-auto">
+          {allTeams.map((team) => (
+            <button
+              key={team}
+              type="button"
+              onClick={() => {
+                onSelect(team);
+                setOpen(false);
+              }}
+              className={`w-full text-left px-3 py-2 text-sm hover:bg-[#F7F6F2] transition-colors duration-100 flex items-center justify-between ${
+                activeTeam === team ? 'text-[#4A5548] font-medium' : 'text-[#5C5C5C]'
+              }`}
+            >
+              {team === 'all' ? t('table.allTeams') : team}
+              {activeTeam === team && <CheckCircle2 size={14} className="text-[#4A5548]" />}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}

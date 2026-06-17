@@ -101,6 +101,7 @@ public class AuthServiceImpl implements AuthService {
                 .label("Login")
                 .category(ContactPoint.ContactPointCategory.SELF)
                 .isPrimary(true)
+                .priority(1000)
                 .build();
         contactPointRepository.save(loginEmail);
 

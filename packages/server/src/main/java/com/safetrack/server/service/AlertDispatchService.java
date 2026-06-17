@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
@@ -36,14 +37,44 @@ public class AlertDispatchService {
         EscalationRule rule = escalationRuleRepository.findByUserIdAndIsDefaultTrue(member.getUser().getId())
                 .orElse(null);
 
+        List<ContactPoint> verifiedPoints = contactPointRepository.findByUserIdOrderByPriorityAsc(member.getUser().getId())
+                .stream()
+                .filter(ContactPoint::isVerified)
+                .toList();
+
+        List<ContactPoint> urgentPoints = urgentOnly(verifiedPoints);
+        boolean hasUrgentChannels = !urgentPoints.isEmpty();
+
         if (rule == null || rule.getSteps().isEmpty()) {
-            // No custom rule — dispatch to all verified contact points directly
-            dispatchToAllVerifiedContactPoints(event, member, alertMessage);
+            // No custom rule — dispatch to urgent verified contact points first.
+            // Only fall back to email if no urgent channels exist.
+            if (hasUrgentChannels) {
+                dispatchToContactPoints(event, member, urgentPoints, alertMessage);
+            } else {
+                dispatchToAllVerifiedContactPoints(event, member, alertMessage);
+            }
             return;
         }
 
         // Start with step 0 (first step)
         EscalationRuleStep firstStep = rule.getSteps().get(0);
+
+        // Emergency policy: email should never be the first choice.
+        // If the first step is email and the member has urgent channels, skip it.
+        if (hasUrgentChannels && isEmailStep(firstStep)) {
+            EscalationRuleStep nextStep = findFirstNonEmailStep(rule.getSteps());
+            if (nextStep != null) {
+                log.info("Skipping email-first escalation step for member {} — using next non-email step {}",
+                        member.getId(), nextStep.getId());
+                executeStep(event, member, nextStep, alertMessage);
+            } else {
+                log.info("Skipping email-first escalation step for member {} — falling back to urgent contact points",
+                        member.getId());
+                dispatchToContactPoints(event, member, urgentPoints, alertMessage);
+            }
+            return;
+        }
+
         executeStep(event, member, firstStep, alertMessage);
     }
 
@@ -144,7 +175,7 @@ public class AlertDispatchService {
     }
 
     private void dispatchToAllVerifiedContactPoints(EmergencyEvent event, Member member, String alertMessage) {
-        List<ContactPoint> contactPoints = contactPointRepository.findByUserId(member.getUser().getId());
+        List<ContactPoint> contactPoints = contactPointRepository.findByUserIdOrderByPriorityAsc(member.getUser().getId());
         for (ContactPoint cp : contactPoints) {
             if (!cp.isVerified()) {
                 continue;
@@ -156,6 +187,41 @@ public class AlertDispatchService {
             };
             sendAndRecord(event, member, null, cp, cp.getType(), cp.getValue(), message);
         }
+    }
+
+    private void dispatchToContactPoints(EmergencyEvent event, Member member, List<ContactPoint> contactPoints, String alertMessage) {
+        for (ContactPoint cp : contactPoints) {
+            if (!cp.isVerified()) {
+                continue;
+            }
+            String message = switch (cp.getType()) {
+                case WHATSAPP -> alertDefinitions.getWhatsAppMessage("default", alertMessage);
+                case PHONE -> alertDefinitions.getVoiceScript("default", alertMessage);
+                default -> alertDefinitions.formatMessage(cp.getType().name(), alertMessage);
+            };
+            sendAndRecord(event, member, null, cp, cp.getType(), cp.getValue(), message);
+        }
+    }
+
+    private List<ContactPoint> urgentOnly(List<ContactPoint> points) {
+        return points.stream()
+                .filter(cp -> cp.getType() != ContactPoint.ContactPointType.EMAIL)
+                .sorted(Comparator.comparingInt(ContactPoint::getPriority))
+                .toList();
+    }
+
+    private boolean isEmailStep(EscalationRuleStep step) {
+        return step.getActionType() == EscalationRuleStep.ActionType.CONTACT_POINT
+                && step.getContactPointType() == ContactPoint.ContactPointType.EMAIL;
+    }
+
+    private EscalationRuleStep findFirstNonEmailStep(List<EscalationRuleStep> steps) {
+        for (EscalationRuleStep step : steps) {
+            if (!isEmailStep(step)) {
+                return step;
+            }
+        }
+        return null;
     }
 
     private void notifySupervisor(EmergencyEvent event, Member member, String message) {

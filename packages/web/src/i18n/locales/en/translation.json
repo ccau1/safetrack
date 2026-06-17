@@ -10,6 +10,7 @@
     "organization": "Organization",
     "contacts": "Contacts",
     "emergencyEvents": "Emergencies",
+    "analytics": "Analytics",
     "sendAlert": "Send Alert",
     "teamManagement": "Team Management",
     "groupManagement": "Group Management",
@@ -38,6 +39,7 @@
     "signOut": "Sign Out",
     "guest": "Guest",
     "cancel": "Cancel",
+    "clear": "Clear",
     "save": "Save",
     "delete": "Delete",
     "edit": "Edit",
@@ -253,6 +255,11 @@
     "primary": "Primary",
     "verify": "Verify",
     "resendVerification": "Resend",
+    "moveUp": "Move up",
+    "moveDown": "Move down",
+    "escalationTitle": "Escalation order",
+    "escalationInfo": "During an emergency, we'll try to reach you in the order shown below. Use the arrows to rearrange your preferred contact sequence. Email cannot be set as the first method when urgent channels (SMS, Phone, WhatsApp) are available.",
+    "firstTry": "First we try",
     "deleteConfirm": "Are you sure you want to delete this contact point?",
     "noContactPoints": "No contact points added yet.",
     "types": {
@@ -271,7 +278,8 @@
       "deleteFailed": "Failed to delete contact point",
       "verificationSent": "Verification code sent",
       "verified": "Contact point verified",
-      "verificationFailed": "Failed to send verification"
+      "verificationFailed": "Failed to send verification",
+      "reorderFailed": "Failed to update order. Email cannot be set as the first contact method when urgent channels are available."
     }
   },
   "myTeam": {
@@ -313,7 +321,7 @@
       "specific": "Specific People"
     },
     "counts": {
-      "selectIndividual": "Select individual employees to notify",
+      "selectIndividual": "Select individual employees to notify (includes all statuses)",
       "notUpdated_one": "employee has not updated their status",
       "notUpdated_other": "employees have not updated their status"
     },
@@ -338,7 +346,9 @@
       "confirmText_one": "Send to {{count}} Employee",
       "confirmText_other": "Send to {{count}} Employees",
       "message_one": "You are about to send an alert to {{count}} employee who has not updated their status. This action cannot be undone.",
-      "message_other": "You are about to send an alert to {{count}} employees who have not updated their status. This action cannot be undone."
+      "message_other": "You are about to send an alert to {{count}} employees who have not updated their status. This action cannot be undone.",
+      "messageSpecific_one": "You are about to send an alert to {{count}} selected employee. This action cannot be undone.",
+      "messageSpecific_other": "You are about to send an alert to {{count}} selected employees. This action cannot be undone."
     },
     "sendButton_one": "Send Alert to {{count}} Employee",
     "sendButton_other": "Send Alert to {{count}} Employees"
@@ -491,6 +501,9 @@
       "safe": "Safe",
       "needHelp": "Need Help",
       "notUpdated": "Not Updated"
+    },
+    "teams": {
+      "title": "Teams"
     },
     "members": {
       "title": "Tracked Members",
@@ -730,5 +743,81 @@
   },
   "confirmationModal": {
     "cancel": "Cancel"
+  },
+  "analytics": {
+    "title": "Analytics",
+    "subtitle": "Event statistics and team performance insights",
+    "refresh": "Refresh",
+    "clearFilters": "Clear Filters",
+    "filters": {
+      "title": "Filters",
+      "teams": "Teams",
+      "members": "Members",
+      "events": "Events",
+      "dateRange": "Date Range",
+      "allTeams": "All Teams",
+      "allMembers": "All Members",
+      "allEvents": "All Events"
+    },
+    "status": {
+      "safe": "Safe",
+      "needsHelp": "Needs Help",
+      "missing": "Missing",
+      "enRoute": "En Route",
+      "notUpdated": "Not Updated"
+    },
+    "summary": {
+      "totalEvents": "Total Events",
+      "totalMembers": "Total Members",
+      "safe": "Safe",
+      "needsHelp": "Needs Help"
+    },
+    "charts": {
+      "responseRateTrend": "Response Rate Trend",
+      "responseRateTrendDesc": "Team participation rate over time (like uptime)",
+      "latencyTrend": "Latency Percentiles",
+      "latencyTrendDesc": "P50, P90, P99 response times over events"
+    },
+    "sla": {
+      "responseRate": "Response Rate",
+      "uptimeEquivalent": "uptime equivalent",
+      "avgLatency": "Avg Latency",
+      "slaCompliance": "SLA Compliance",
+      "distressRate": "Distress Rate",
+      "membersNeedingHelp": "members needing help",
+      "events": "events",
+      "leaderboard": "Team SLA Leaderboard",
+      "leaderboardDesc": "Ranked by response rate and latency"
+    },
+    "eventsBreakdown": "Events Breakdown",
+    "eventsBreakdownDesc": "Detailed stats for each event",
+    "table": {
+      "event": "Event",
+      "type": "Type",
+      "total": "Total",
+      "safe": "Safe",
+      "needsHelp": "Needs Help",
+      "missing": "Missing",
+      "enRoute": "En Route",
+      "notUpdated": "Not Updated",
+      "responseRate": "Response Rate",
+      "team": "Team",
+      "member": "Member"
+    },
+    "responseTime": {
+      "title": "Team Response Times",
+      "desc": "Time from event start to first team report",
+      "avgResponse": "Avg Response"
+    },
+    "teamCards": {
+      "title": "Team Performance",
+      "responded": "responded"
+    },
+    "distressToSafe": {
+      "title": "Distress to Safe",
+      "desc": "Members who reported distress and later became safe",
+      "duration": "Time to Safe"
+    },
+    "noData": "No events match your current filters."
   }
 }

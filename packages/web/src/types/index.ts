@@ -39,7 +39,7 @@ export interface StatusHistoryEntry {
   note?: string;
 }
 
-export type ViewName = 'dashboard' | 'report' | 'team' | 'organization' | 'alert' | 'contacts' | 'team-management' | 'group-management' | 'permissions' | 'org-settings' | 'emergency-events';
+export type ViewName = 'dashboard' | 'report' | 'team' | 'organization' | 'alert' | 'contacts' | 'team-management' | 'group-management' | 'permissions' | 'org-settings' | 'emergency-events' | 'analytics';
 
 export interface ToastAction {
   label: string;
@@ -198,6 +198,7 @@ export interface ContactPoint {
   category: ContactPointCategory;
   verifiedAt: string | null;
   isPrimary: boolean;
+  priority: number;
   createdAt: string;
 }
 
@@ -206,6 +207,10 @@ export interface CreateContactPointRequest {
   value: string;
   label?: string;
   category?: ContactPointCategory;
+}
+
+export interface ReorderContactPointsRequest {
+  contactPointIds: string[];
 }
 
 export interface UserContact {

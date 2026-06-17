@@ -49,6 +49,10 @@ public class ContactPoint {
     @Builder.Default
     private Boolean isPrimary = false;
 
+    @Column(nullable = false)
+    @Builder.Default
+    private Integer priority = 0;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;

@@ -16,6 +16,7 @@ import { LoginPage } from '@/pages/LoginPage';
 import { AcceptInvitePage } from '@/pages/AcceptInvitePage';
 import { NoOrganizationPage } from '@/pages/NoOrganizationPage';
 import { OrgSettingsPage } from '@/pages/OrgSettingsPage';
+import { AnalyticsPage } from '@/pages/AnalyticsPage';
 import { useToast } from '@/hooks/useToast';
 import { useFilter } from '@/hooks/useFilter';
 import { EmergenciesPage } from '@/pages/EmergenciesPage';
@@ -52,7 +53,7 @@ function MainApp() {
     const segment = path.split('/').filter(Boolean)[0];
     const validViews: ViewName[] = [
       'dashboard', 'report', 'team', 'organization',
-      'alert', 'contacts', 'team-management', 'group-management', 'permissions', 'org-settings', 'emergency-events',
+      'alert', 'contacts', 'team-management', 'group-management', 'permissions', 'org-settings', 'emergency-events', 'analytics',
     ];
     return validViews.includes(segment as ViewName) ? (segment as ViewName) : 'dashboard';
   }, []);
@@ -159,7 +160,7 @@ function MainApp() {
         );
       case 'alert':
         return isAdmin ? (
-          <SendAlertPage employees={employees} addToast={addToast} />
+          <SendAlertPage employees={employees} currentUserId={currentUserId} addToast={addToast} />
         ) : (
           <Navigate to="/" replace />
         );
@@ -218,6 +219,15 @@ function MainApp() {
             currentUserId={currentUserId}
             addToast={addToast}
             onMutated={refetch}
+          />
+        );
+      case 'analytics':
+        return (
+          <AnalyticsPage
+            orgId={organization?.id || null}
+            teams={rawTeams}
+            members={rawMembers}
+            events={events}
           />
         );
       default:

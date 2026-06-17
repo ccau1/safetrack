@@ -11,9 +11,13 @@ import java.util.UUID;
 @Repository
 public interface ContactPointRepository extends JpaRepository<ContactPoint, UUID> {
 
+    List<ContactPoint> findByUserIdOrderByPriorityAsc(UUID userId);
+
     List<ContactPoint> findByUserId(UUID userId);
 
     List<ContactPoint> findByUserIdAndType(UUID userId, ContactPoint.ContactPointType type);
+
+    Optional<ContactPoint> findTopByUserIdOrderByPriorityDesc(UUID userId);
 
     List<ContactPoint> findByUserIdAndTypeAndVerifiedAtIsNotNull(UUID userId, ContactPoint.ContactPointType type);
 

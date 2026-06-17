@@ -95,6 +95,7 @@ public class UserServiceImpl implements UserService {
                             .label("Login")
                             .category(ContactPoint.ContactPointCategory.SELF)
                             .isPrimary(true)
+                            .priority(1000)
                             .verifiedAt(java.time.Instant.now())
                             .build();
                     contactPointRepository.save(loginEmail);

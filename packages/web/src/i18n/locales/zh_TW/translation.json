@@ -10,6 +10,7 @@
     "organization": "組織",
     "contacts": "聯絡人",
     "emergencyEvents": "緊急事件",
+    "analytics": "分析",
     "sendAlert": "發送警報",
     "teamManagement": "團隊管理",
     "groupManagement": "分組管理",
@@ -20,6 +21,7 @@
   "mobileNav": {
     "dashboard": "儀表板",
     "emergencyEvents": "事件",
+    "analytics": "分析",
     "report": "報告",
     "team": "團隊",
     "organization": "組織",
@@ -38,6 +40,7 @@
     "signOut": "登出",
     "guest": "訪客",
     "cancel": "取消",
+    "clear": "清除",
     "save": "儲存",
     "delete": "刪除",
     "edit": "編輯",
@@ -253,6 +256,11 @@
     "primary": "主要",
     "verify": "驗證",
     "resendVerification": "重新發送",
+    "moveUp": "上移",
+    "moveDown": "下移",
+    "escalationTitle": "聯絡順序",
+    "escalationInfo": "緊急情況下，我們將按以下順序嘗試聯絡您。使用箭頭調整您的優先聯絡順序。當有緊急聯絡方式（簡訊、電話、WhatsApp）可用時，電子郵件不能設為首選。",
+    "firstTry": "首先嘗試",
     "deleteConfirm": "確定要刪除此聯絡方式嗎？",
     "noContactPoints": "尚未新增聯絡方式。",
     "types": {
@@ -271,7 +279,8 @@
       "deleteFailed": "刪除聯絡方式失敗",
       "verificationSent": "驗證碼已發送",
       "verified": "聯絡方式已驗證",
-      "verificationFailed": "發送驗證失敗"
+      "verificationFailed": "發送驗證失敗",
+      "reorderFailed": "更新順序失敗。當有緊急聯絡方式可用時，電子郵件不能設為首選。"
     }
   },
   "myTeam": {
@@ -313,7 +322,7 @@
       "specific": "指定人員"
     },
     "counts": {
-      "selectIndividual": "選擇要通知的個別員工",
+      "selectIndividual": "選擇要通知的個別員工（包含所有狀態）",
       "notUpdated_one": "名員工尚未更新狀態",
       "notUpdated_other": "名員工尚未更新狀態"
     },
@@ -338,7 +347,9 @@
       "confirmText_one": "向 {{count}} 名員工發送",
       "confirmText_other": "向 {{count}} 名員工發送",
       "message_one": "您即將向 {{count}} 名尚未更新狀態的員工發送警報。此操作無法撤銷。",
-      "message_other": "您即將向 {{count}} 名尚未更新狀態的員工發送警報。此操作無法撤銷。"
+      "message_other": "您即將向 {{count}} 名尚未更新狀態的員工發送警報。此操作無法撤銷。",
+      "messageSpecific_one": "您即將向 {{count}} 名選定的員工發送警報。此操作無法撤銷。",
+      "messageSpecific_other": "您即將向 {{count}} 名選定的員工發送警報。此操作無法撤銷。"
     },
     "sendButton_one": "向 {{count}} 名員工發送警報",
     "sendButton_other": "向 {{count}} 名員工發送警報"
@@ -491,6 +502,9 @@
       "safe": "安全",
       "needHelp": "需要協助",
       "notUpdated": "未更新"
+    },
+    "teams": {
+      "title": "團隊"
     },
     "members": {
       "title": "追蹤成員",
@@ -730,5 +744,81 @@
   },
   "confirmationModal": {
     "cancel": "取消"
+  },
+  "analytics": {
+    "title": "分析",
+    "subtitle": "事件統計與團隊表現洞察",
+    "refresh": "刷新",
+    "clearFilters": "清除篩選",
+    "filters": {
+      "title": "篩選條件",
+      "teams": "團隊",
+      "members": "成員",
+      "events": "事件",
+      "dateRange": "日期範圍",
+      "allTeams": "所有團隊",
+      "allMembers": "所有成員",
+      "allEvents": "所有事件"
+    },
+    "status": {
+      "safe": "安全",
+      "needsHelp": "需要幫助",
+      "missing": "失蹤",
+      "enRoute": "途中",
+      "notUpdated": "未更新"
+    },
+    "summary": {
+      "totalEvents": "事件總數",
+      "totalMembers": "成員總數",
+      "safe": "安全",
+      "needsHelp": "需要幫助"
+    },
+    "charts": {
+      "responseRateTrend": "響應率趨勢",
+      "responseRateTrendDesc": "團隊參與率隨時間變化（類似可用性）",
+      "latencyTrend": "延遲百分位",
+      "latencyTrendDesc": "P50、P90、P99 響應時間隨事件變化"
+    },
+    "sla": {
+      "responseRate": "響應率",
+      "uptimeEquivalent": "等效可用性",
+      "avgLatency": "平均延遲",
+      "slaCompliance": "SLA 合規",
+      "distressRate": "困境率",
+      "membersNeedingHelp": "需要幫助的成員",
+      "events": "事件",
+      "leaderboard": "團隊 SLA 排行榜",
+      "leaderboardDesc": "按響應率和延遲排名"
+    },
+    "eventsBreakdown": "事件明細",
+    "eventsBreakdownDesc": "每個事件的詳細統計",
+    "table": {
+      "event": "事件",
+      "type": "類型",
+      "total": "總數",
+      "safe": "安全",
+      "needsHelp": "需要幫助",
+      "missing": "失蹤",
+      "enRoute": "途中",
+      "notUpdated": "未更新",
+      "responseRate": "響應率",
+      "team": "團隊",
+      "member": "成員"
+    },
+    "responseTime": {
+      "title": "團隊響應時間",
+      "desc": "從事件開始到團隊首次報告的時間",
+      "avgResponse": "平均響應"
+    },
+    "teamCards": {
+      "title": "團隊表現",
+      "responded": "已響應"
+    },
+    "distressToSafe": {
+      "title": "從困境到安全",
+      "desc": "報告困境後轉為安全的成員",
+      "duration": "轉為安全用時"
+    },
+    "noData": "沒有符合當前篩選條件的事件。"
   }
 }

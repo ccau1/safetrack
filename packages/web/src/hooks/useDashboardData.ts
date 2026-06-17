@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import i18n from '@/i18n';
 import { useOrganization } from './useOrganization';
 import { useMembers } from './useMembers';
 import { useTeams } from './useTeams';
@@ -168,5 +169,13 @@ function hashId(uuid: string): number {
 }
 
 function formatStartedAt(iso: string): string {
-  return iso;
+  const date = new Date(iso);
+  const locale = i18n.language || 'en';
+  return new Intl.DateTimeFormat(locale, {
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: locale.startsWith('en'),
+  }).format(date);
 }
