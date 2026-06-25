@@ -68,7 +68,7 @@ jobs:
           cat > deploy/.env <<EOF
           DOMAIN_STAGING=safetrack.staging.tribalorigin.com
           INVITE_BASE_URL=https://safetrack.staging.tribalorigin.com
-          $(printf '%s\n' "${{ secrets.ENV_FILE }}" | grep -viE '^[[:space:]]*(APP_IMAGE|DOMAIN_|INVITE_BASE_URL)=')
+          $(printf '%s\n' "${{ secrets.ENV_FILE }}" | perl -CSD -pe 's/\R/\n/g' | grep -viE '^[[:space:]]*(APP_IMAGE|DOMAIN_|INVITE_BASE_URL)=')
           EOF
 
       - name: Copy compose & nginx to staging server
@@ -150,7 +150,7 @@ jobs:
           cat > deploy/.env <<EOF
           DOMAIN_PROD=safetrack.tribalorigin.com
           INVITE_BASE_URL=https://safetrack.tribalorigin.com
-          $(printf '%s\n' "${{ secrets.ENV_FILE }}" | grep -viE '^[[:space:]]*(APP_IMAGE|DOMAIN_|INVITE_BASE_URL)=')
+          $(printf '%s\n' "${{ secrets.ENV_FILE }}" | perl -CSD -pe 's/\R/\n/g' | grep -viE '^[[:space:]]*(APP_IMAGE|DOMAIN_|INVITE_BASE_URL)=')
           EOF
 
       - name: Copy compose & nginx to prod server

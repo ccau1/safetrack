@@ -68,7 +68,7 @@ jobs:
           cat > deploy/.env <<EOF
           DOMAIN_DEV=safetrack.dev.tribalorigin.com
           INVITE_BASE_URL=https://safetrack.dev.tribalorigin.com
-          $(printf '%s\n' "${{ secrets.ENV_FILE }}")
+          $(printf '%s\n' "${{ secrets.ENV_FILE }}" | perl -CSD -pe 's/\R/\n/g')
           EOF
 
       - name: Copy compose & nginx to dev server
