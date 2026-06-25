@@ -1,5 +1,6 @@
 package com.safetrack.server.service.impl;
 
+import com.safetrack.server.controller.dto.request.ChangePasswordRequest;
 import com.safetrack.server.controller.dto.request.LoginRequest;
 import com.safetrack.server.controller.dto.request.RegisterRequest;
 import com.safetrack.server.domain.entity.ContactPoint;
@@ -23,6 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Service
@@ -164,6 +166,27 @@ public class AuthServiceImpl implements AuthService {
         }
 
         return user;
+    }
+
+    @Override
+    public void changePassword(UUID userId, ChangePasswordRequest request) {
+        if (!request.newPassword().equals(request.confirmPassword())) {
+            throw new IllegalArgumentException("New password and confirmation do not match");
+        }
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        if (user.getPasswordHash() == null) {
+            throw new BadCredentialsException("Please use SSO login for this account");
+        }
+
+        if (!passwordEncoder.matches(request.currentPassword(), user.getPasswordHash())) {
+            throw new BadCredentialsException("Current password is incorrect");
+        }
+
+        user.setPasswordHash(passwordEncoder.encode(request.newPassword()));
+        userRepository.save(user);
     }
 
     private void randomAuthFailureDelay() {
