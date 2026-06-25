@@ -62,6 +62,8 @@ interface ApiOptions {
   skipRetry?: boolean;
   skipOfflineQueue?: boolean;
   retries?: number;
+  /** If true, a 401 response will not trigger token refresh (used for auth endpoints). */
+  skipAuthRetry?: boolean;
 }
 
 export interface ApiResponse<T = unknown> {
@@ -158,6 +160,23 @@ export async function apiRequest<T = unknown>(
 
       // Handle 401 Unauthorized
       if (response.status === 401) {
+        if (options.skipAuthRetry) {
+          // Auth endpoints (login/register) return 401 for invalid credentials,
+          // not session expiry. Surface the backend message directly.
+          const text = await response.text();
+          let data: unknown;
+          try {
+            data = JSON.parse(text);
+          } catch {
+            data = text;
+          }
+          const errData = data && typeof data === 'object' ? (data as Record<string, unknown>) : null;
+          const message = errData?.message
+            ? String(errData.message)
+            : 'Authentication failed';
+          throw new ApiError(message, response.status, data);
+        }
+
         if (isRefreshing) {
           // Wait for refresh to complete and retry
           const refreshed = await new Promise<boolean>((resolve) => {

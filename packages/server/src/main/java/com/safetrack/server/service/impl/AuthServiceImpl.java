@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Set;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Service
 @RequiredArgsConstructor
@@ -140,21 +141,39 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public User login(LoginRequest request) {
         User user = userRepository.findByEmail(request.email())
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+                .orElse(null);
+
+        if (user == null) {
+            randomAuthFailureDelay();
+            throw new UsernameNotFoundException("User not found");
+        }
 
         if (user.getPasswordHash() == null) {
+            randomAuthFailureDelay();
             throw new BadCredentialsException("Please use SSO login for this account");
         }
 
         if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {
+            randomAuthFailureDelay();
             throw new BadCredentialsException("Invalid credentials");
         }
 
         if (!Boolean.TRUE.equals(user.getIsActive())) {
+            randomAuthFailureDelay();
             throw new BadCredentialsException("Account is deactivated");
         }
 
         return user;
+    }
+
+    private void randomAuthFailureDelay() {
+        // Deter brute-force attempts and normalize failure timing.
+        int delayMs = ThreadLocalRandom.current().nextInt(300, 800);
+        try {
+            Thread.sleep(delayMs);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
     }
 
     private String generateSlug(String orgName) {

@@ -3,8 +3,27 @@ import { useNavigate, useSearchParams } from 'react-router';
 import { Loader2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/context/AuthContext';
+import { ApiError } from '@/lib/api';
 import type { LoginRequest, RegisterRequest } from '@/types';
 import { Logo } from '@/components/Logo';
+
+function getAuthErrorMessage(err: unknown, t: (key: string) => string): string {
+  if (err instanceof ApiError) {
+    if (err.code === 'AUTH_INVALID_CREDENTIALS') {
+      if (err.reason === 'Account is deactivated') {
+        return t('auth.accountDeactivated');
+      }
+      if (err.reason === 'Please use SSO login for this account') {
+        return t('auth.ssoOnlyAccount');
+      }
+      return t('auth.invalidCredentials');
+    }
+    if (err.code === 'AUTH_UNAUTHORIZED') {
+      return t('auth.invalidCredentials');
+    }
+  }
+  return t('auth.authFailed');
+}
 
 function setPostAuthRedirectCookie(url: string) {
   document.cookie = `post_auth_redirect=${encodeURIComponent(url)}; path=/; max-age=300; SameSite=Lax`;
@@ -78,8 +97,7 @@ export function LoginPage() {
         navigate('/', { replace: true });
       }
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Authentication failed';
-      setError(message);
+      setError(getAuthErrorMessage(err, t));
     }
   };
 

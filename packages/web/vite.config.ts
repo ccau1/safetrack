@@ -46,7 +46,7 @@ export default defineConfig(({ mode }) => ({
         target: process.env.VITE_API_PROXY || 'http://localhost:8485',
         changeOrigin: true,
       },
-      '/login': {
+      '/login/': {
         target: process.env.VITE_API_PROXY || 'http://localhost:8485',
         changeOrigin: true,
       },

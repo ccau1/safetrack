@@ -101,7 +101,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = useCallback(async (credentials: LoginRequest) => {
     setIsLoading(true);
     try {
-      const res = await api.post<AuthResponse>('/api/auth/login', credentials);
+      const res = await api.post<AuthResponse>('/api/auth/login', credentials, { skipAuthRetry: true });
       const authUser = authResponseToUser(res.data);
       localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(authUser));
       setUser(authUser);
@@ -113,7 +113,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const register = useCallback(async (data: RegisterRequest) => {
     setIsLoading(true);
     try {
-      const res = await api.post<AuthResponse>('/api/auth/register', data);
+      const res = await api.post<AuthResponse>('/api/auth/register', data, { skipAuthRetry: true });
       const authUser = authResponseToUser(res.data);
       localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(authUser));
       setUser(authUser);
