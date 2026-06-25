@@ -39,7 +39,7 @@ export interface StatusHistoryEntry {
   note?: string;
 }
 
-export type ViewName = 'dashboard' | 'report' | 'team' | 'organization' | 'alert' | 'contacts' | 'team-management' | 'group-management' | 'permissions' | 'org-settings' | 'emergency-events' | 'analytics';
+export type ViewName = 'dashboard' | 'report' | 'team' | 'organization' | 'alert' | 'contacts' | 'team-management' | 'group-management' | 'permissions' | 'org-settings' | 'emergency-events' | 'analytics' | 'settings';
 
 export interface ToastAction {
   label: string;
@@ -243,6 +243,12 @@ export interface RegisterRequest {
 export interface LoginRequest {
   email: string;
   password: string;
+}
+
+export interface ChangePasswordRequest {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
 }
 
 export type PermissionEffect = 'Allow' | 'Deny';

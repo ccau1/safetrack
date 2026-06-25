@@ -15,7 +15,8 @@
     "teamManagement": "团队管理",
     "groupManagement": "分组管理",
     "permissions": "权限",
-    "orgSettings": "设置",
+    "orgSettings": "组织设置",
+    "settings": "设置",
     "administration": "管理"
   },
   "mobileNav": {
@@ -551,6 +552,26 @@
     "share": {
       "button": "分享",
       "copied": "链接已复制到剪贴板"
+    }
+  },
+  "settings": {
+    "title": "设置",
+    "subtitle": "管理你的账户偏好",
+    "tabs": {
+      "password": "密码"
+    },
+    "password": {
+      "title": "修改密码",
+      "subtitle": "更新你用于登录的密码。",
+      "currentPassword": "当前密码",
+      "newPassword": "新密码",
+      "confirmPassword": "确认新密码",
+      "submit": "更新密码",
+      "success": "密码更新成功。",
+      "errorGeneric": "更新密码失败，请重试。",
+      "errorCurrentPassword": "当前密码不正确。",
+      "errorMinLength": "新密码至少需要 8 个字符。",
+      "errorMismatch": "新密码与确认密码不一致。"
     }
   },
   "orgSettings": {

@@ -214,6 +214,7 @@ export function Sidebar({ currentView, onNavigate, activeEventCount = 0, mobileO
       { icon: Users, label: t('navigation.team'), view: 'team' as ViewName },
       { icon: Building, label: t('navigation.organization'), view: 'organization' as ViewName },
       { icon: Phone, label: t('navigation.contacts'), view: 'contacts' as ViewName },
+      { icon: Settings, label: t('navigation.settings'), view: 'settings' as ViewName },
     ],
     [t]
   );

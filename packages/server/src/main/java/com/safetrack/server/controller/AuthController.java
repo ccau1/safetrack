@@ -1,5 +1,6 @@
 package com.safetrack.server.controller;
 
+import com.safetrack.server.controller.dto.request.ChangePasswordRequest;
 import com.safetrack.server.controller.dto.request.LoginRequest;
 import com.safetrack.server.controller.dto.request.RegisterRequest;
 import com.safetrack.server.controller.dto.response.AuthResponse;
@@ -117,6 +118,15 @@ public class AuthController {
         User user = userService.findByEmail(userDetails.getUsername())
                 .orElseThrow(() -> new RuntimeException("User not found"));
         return ResponseEntity.ok(userMapper.toResponse(user));
+    }
+
+    @PostMapping("/change-password")
+    public ResponseEntity<Void> changePassword(@Valid @RequestBody ChangePasswordRequest request,
+                                                @AuthenticationPrincipal UserDetails userDetails) {
+        User user = userService.findByEmail(userDetails.getUsername())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        authService.changePassword(user.getId(), request);
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/me/full")

@@ -15,7 +15,8 @@
     "teamManagement": "團隊管理",
     "groupManagement": "分組管理",
     "permissions": "權限",
-    "orgSettings": "設定",
+    "orgSettings": "組織設定",
+    "settings": "設定",
     "administration": "管理"
   },
   "mobileNav": {
@@ -551,6 +552,26 @@
     "share": {
       "button": "分享",
       "copied": "連結已複製到剪貼簿"
+    }
+  },
+  "settings": {
+    "title": "設定",
+    "subtitle": "管理你的帳戶偏好",
+    "tabs": {
+      "password": "密碼"
+    },
+    "password": {
+      "title": "修改密碼",
+      "subtitle": "更新你用於登入的密碼。",
+      "currentPassword": "目前密碼",
+      "newPassword": "新密碼",
+      "confirmPassword": "確認新密碼",
+      "submit": "更新密碼",
+      "success": "密碼更新成功。",
+      "errorGeneric": "更新密碼失敗，請再試一次。",
+      "errorCurrentPassword": "目前密碼不正確。",
+      "errorMinLength": "新密碼至少需要 8 個字元。",
+      "errorMismatch": "新密碼與確認密碼不一致。"
     }
   },
   "orgSettings": {

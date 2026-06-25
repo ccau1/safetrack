@@ -15,7 +15,8 @@
     "teamManagement": "Team Management",
     "groupManagement": "Group Management",
     "permissions": "Permissions",
-    "orgSettings": "Settings",
+    "orgSettings": "Organization Settings",
+    "settings": "Settings",
     "administration": "Administration"
   },
   "mobileNav": {
@@ -132,6 +133,26 @@
     "or": "or",
     "google": "Google",
     "microsoft": "Microsoft"
+  },
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Manage your account preferences",
+    "tabs": {
+      "password": "Password"
+    },
+    "password": {
+      "title": "Change password",
+      "subtitle": "Update the password you use to sign in.",
+      "currentPassword": "Current password",
+      "newPassword": "New password",
+      "confirmPassword": "Confirm new password",
+      "submit": "Update password",
+      "success": "Password updated successfully.",
+      "errorGeneric": "Failed to update password. Please try again.",
+      "errorCurrentPassword": "Current password is incorrect.",
+      "errorMinLength": "New password must be at least 8 characters.",
+      "errorMismatch": "New password and confirmation do not match."
+    }
   },
   "dashboard": {
     "stats": {

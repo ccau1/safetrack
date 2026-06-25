@@ -16,6 +16,7 @@ import { LoginPage } from '@/pages/LoginPage';
 import { AcceptInvitePage } from '@/pages/AcceptInvitePage';
 import { NoOrganizationPage } from '@/pages/NoOrganizationPage';
 import { OrgSettingsPage } from '@/pages/OrgSettingsPage';
+import { SettingsPage } from '@/pages/SettingsPage';
 import { AnalyticsPage } from '@/pages/AnalyticsPage';
 import { useToast } from '@/hooks/useToast';
 import { useFilter } from '@/hooks/useFilter';
@@ -53,7 +54,7 @@ function MainApp() {
     const segment = path.split('/').filter(Boolean)[0];
     const validViews: ViewName[] = [
       'dashboard', 'report', 'team', 'organization',
-      'alert', 'contacts', 'team-management', 'group-management', 'permissions', 'org-settings', 'emergency-events', 'analytics',
+      'alert', 'contacts', 'team-management', 'group-management', 'permissions', 'org-settings', 'emergency-events', 'analytics', 'settings',
     ];
     return validViews.includes(segment as ViewName) ? (segment as ViewName) : 'dashboard';
   }, []);
@@ -230,6 +231,8 @@ function MainApp() {
             events={events}
           />
         );
+      case 'settings':
+        return <SettingsPage addToast={addToast} />;
       default:
         return (
           <DashboardPage
