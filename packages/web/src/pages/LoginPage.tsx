@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router';
+import { Link, useNavigate, useSearchParams } from 'react-router';
 import { Loader2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/context/AuthContext';
@@ -217,6 +217,12 @@ export function LoginPage() {
                 className="w-full h-10 border border-[#E5E4E0] rounded-[10px] px-3 text-sm text-[#1A1A1A] placeholder:text-[#8A8A8A] focus:outline-none focus:border-[#4A5548] focus:ring-[0_0_0_3px_rgba(74,85,72,0.15)] transition-all duration-150"
                 placeholder="••••••••"
               />
+              <Link
+                to="/forgot-password"
+                className="inline-block mt-1.5 text-xs text-[#5B7B8A] hover:text-[#4A5548] transition-colors"
+              >
+                {t('auth.forgotPassword.link')}
+              </Link>
             </div>
 
             <button

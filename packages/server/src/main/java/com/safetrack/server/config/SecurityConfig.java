@@ -50,7 +50,7 @@ public class SecurityConfig {
                 .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
             )
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/health", "/api/auth/login", "/api/auth/register", "/api/auth/refresh", "/api/invitations/validate", "/api/invitations/accept", "/api/contact-points/verify/confirm", "/api/webhooks/**", "/oauth2/**", "/login/**").permitAll()
+                .requestMatchers("/health", "/api/auth/login", "/api/auth/register", "/api/auth/refresh", "/api/auth/forgot-password", "/api/auth/reset-password", "/api/invitations/validate", "/api/invitations/accept", "/api/contact-points/verify/confirm", "/api/webhooks/**", "/oauth2/**", "/login/**").permitAll()
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .requestMatchers("/actuator/**").permitAll()
                 .anyRequest().authenticated()

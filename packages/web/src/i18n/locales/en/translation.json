@@ -132,7 +132,24 @@
     "dontHaveAccount": "Don't have an account? Create one",
     "or": "or",
     "google": "Google",
-    "microsoft": "Microsoft"
+    "microsoft": "Microsoft",
+    "forgotPassword": {
+      "link": "Forgot password?",
+      "title": "Reset your password",
+      "subtitle": "Enter your email and we'll send you a link to reset your password.",
+      "submit": "Send reset link",
+      "emailSent": "If this account exists, a password reset link has been sent to your email.",
+      "errorGeneric": "Failed to send reset link. Please try again.",
+      "backToSignIn": "Back to sign in"
+    },
+    "resetPassword": {
+      "title": "Set new password",
+      "subtitle": "Enter your new password below.",
+      "submit": "Set password",
+      "success": "Your password has been updated. Signing you in...",
+      "invalidToken": "This reset link is invalid or has expired.",
+      "errorGeneric": "Failed to reset password. Please try again."
+    }
   },
   "settings": {
     "title": "Settings",

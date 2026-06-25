@@ -18,6 +18,7 @@ interface AuthContextValue {
   register: (data: RegisterRequest) => Promise<void>;
   logout: () => Promise<void>;
   reloadUser: () => Promise<void>;
+  setAuthenticatedUser: (res: AuthResponse) => void;
   hasAction: (action: string) => boolean;
   hasAnyAction: (actions: string[]) => boolean;
   isAdmin: boolean;
@@ -147,6 +148,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  const setAuthenticatedUser = useCallback((res: AuthResponse) => {
+    const authUser = authResponseToUser(res);
+    localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(authUser));
+    setUser(authUser);
+  }, []);
+
   const hasAction = useCallback(
     (action: string) => {
       if (!user) return false;
@@ -195,6 +202,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         register,
         logout,
         reloadUser,
+        setAuthenticatedUser,
         hasAction,
         hasAnyAction,
         isAdmin,

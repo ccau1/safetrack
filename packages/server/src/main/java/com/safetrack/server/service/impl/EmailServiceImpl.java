@@ -24,6 +24,9 @@ public class EmailServiceImpl implements EmailService {
     @Value("${app.verification.base-url:${app.invitation.base-url:http://localhost:3010}}")
     private String verificationBaseUrl;
 
+    @Value("${app.password-reset.base-url:${app.invitation.base-url:http://localhost:3010}}")
+    private String passwordResetBaseUrl;
+
     @Value("${spring.mail.host:}")
     private String mailHost;
 
@@ -136,6 +139,57 @@ public class EmailServiceImpl implements EmailService {
                 </body>
                 </html>
                 """.formatted(code);
+    }
+
+    @Async("taskExecutor")
+    @Override
+    public void sendPasswordResetEmail(String to, String token) {
+        String resetUrl = passwordResetBaseUrl + "/reset-password?token=" + token;
+        String subject = "Reset your SafeTrack password";
+        String html = buildPasswordResetEmail(resetUrl);
+
+        if (mailHost == null || mailHost.isBlank()) {
+            log.info("[DEV] Password reset email would be sent to: {} | Link: {}", to, resetUrl);
+            return;
+        }
+
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            helper.setTo(to);
+            helper.setSubject(subject);
+            helper.setText(html, true);
+            mailSender.send(message);
+            log.debug("Password reset email sent to {}", to);
+        } catch (MessagingException e) {
+            log.error("Failed to send password reset email to {}", to, e);
+        }
+    }
+
+    private String buildPasswordResetEmail(String resetUrl) {
+        return """
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="UTF-8">
+                    <title>Reset your SafeTrack password</title>
+                </head>
+                <body style="font-family: Arial, sans-serif; background-color: #F7F6F2; padding: 40px;">
+                    <div style="max-width: 480px; margin: 0 auto; background: #ffffff; border: 1px solid #E5E4E0; border-radius: 14px; padding: 32px;">
+                        <h2 style="color: #1A1A1A; font-size: 20px; margin-bottom: 8px;">Reset your password</h2>
+                        <p style="color: #8A8A8A; font-size: 14px; line-height: 1.5; margin-bottom: 24px;">
+                            We received a request to reset your SafeTrack password. Click the button below to set a new password.
+                        </p>
+                        <a href="%s" style="display: inline-block; padding: 12px 24px; background-color: #4A5548; color: #ffffff; text-decoration: none; border-radius: 10px; font-size: 14px; font-weight: 600;">
+                            Reset Password
+                        </a>
+                        <p style="color: #8A8A8A; font-size: 12px; margin-top: 24px;">
+                            This link expires in 2 hours. If you didn't request this, you can safely ignore it.
+                        </p>
+                    </div>
+                </body>
+                </html>
+                """.formatted(resetUrl);
     }
 
     private String buildHtmlEmail(String organizationName, String inviteUrl) {

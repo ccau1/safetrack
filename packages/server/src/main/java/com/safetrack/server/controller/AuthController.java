@@ -1,9 +1,12 @@
 package com.safetrack.server.controller;
 
 import com.safetrack.server.controller.dto.request.ChangePasswordRequest;
+import com.safetrack.server.controller.dto.request.ForgotPasswordRequest;
 import com.safetrack.server.controller.dto.request.LoginRequest;
 import com.safetrack.server.controller.dto.request.RegisterRequest;
+import com.safetrack.server.controller.dto.request.ResetPasswordRequest;
 import com.safetrack.server.controller.dto.response.AuthResponse;
+import com.safetrack.server.controller.dto.response.ForgotPasswordResponse;
 import com.safetrack.server.controller.dto.response.UserResponse;
 import com.safetrack.server.domain.entity.Member;
 import com.safetrack.server.domain.entity.User;
@@ -13,6 +16,7 @@ import com.safetrack.server.security.CookieUtil;
 import com.safetrack.server.security.JwtService;
 import com.safetrack.server.security.permission.PermissionEvaluator;
 import com.safetrack.server.service.AuthService;
+import com.safetrack.server.service.PasswordResetService;
 import com.safetrack.server.service.RefreshTokenService;
 import com.safetrack.server.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -42,6 +46,7 @@ public class AuthController {
     private final PermissionEvaluator permissionEvaluator;
     private final RefreshTokenService refreshTokenService;
     private final CookieUtil cookieUtil;
+    private final PasswordResetService passwordResetService;
 
     @Value("${app.jwt.expiration-ms:900000}")
     private long jwtExpirationMs;
@@ -118,6 +123,39 @@ public class AuthController {
         User user = userService.findByEmail(userDetails.getUsername())
                 .orElseThrow(() -> new RuntimeException("User not found"));
         return ResponseEntity.ok(userMapper.toResponse(user));
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<ForgotPasswordResponse> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+        var result = passwordResetService.requestReset(request.email());
+        if (result == PasswordResetService.PasswordResetResult.SSO_ONLY) {
+            return ResponseEntity.ok(new ForgotPasswordResponse("SSO_ONLY",
+                    "This account uses SSO. Please sign in with Google or Microsoft."));
+        }
+        return ResponseEntity.ok(new ForgotPasswordResponse("EMAIL_SENT",
+                "If this account exists, a password reset link has been sent to your email."));
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<AuthResponse> resetPassword(@Valid @RequestBody ResetPasswordRequest request,
+                                                       HttpServletResponse response) {
+        if (!request.newPassword().equals(request.confirmPassword())) {
+            throw new IllegalArgumentException("New password and confirmation do not match");
+        }
+
+        User user = passwordResetService.validateToken(request.token());
+        passwordResetService.resetPassword(request.token(), request.newPassword());
+
+        // Issue fresh auth cookies and return user info, just like login.
+        Member member = findMemberForUser(user);
+        UUID orgId = member != null ? member.getOrganization().getId() : null;
+        var actions = permissionEvaluator.computeAllowedActions(user, orgId).stream().toList();
+        String accessToken = jwtService.generateToken(user, orgId, actions);
+        String refreshToken = refreshTokenService.createRefreshToken(user.getId());
+        setAuthCookies(response, accessToken, refreshToken);
+
+        List<Member> members = memberRepository.findByUserId(user.getId());
+        return ResponseEntity.ok(userMapper.toAuthResponse(user, members, actions));
     }
 
     @PostMapping("/change-password")

@@ -133,7 +133,24 @@
     "dontHaveAccount": "没有账户？创建一个",
     "or": "或",
     "google": "谷歌",
-    "microsoft": "微软"
+    "microsoft": "微软",
+    "forgotPassword": {
+      "link": "忘记密码？",
+      "title": "重置密码",
+      "subtitle": "输入你的邮箱，我们会发送重置密码的链接。",
+      "submit": "发送重置链接",
+      "emailSent": "如果该账户存在，重置密码链接已发送至你的邮箱。",
+      "errorGeneric": "发送重置链接失败，请重试。",
+      "backToSignIn": "返回登录"
+    },
+    "resetPassword": {
+      "title": "设置新密码",
+      "subtitle": "在下方输入你的新密码。",
+      "submit": "设置密码",
+      "success": "密码已更新，正在登录...",
+      "invalidToken": "该重置链接无效或已过期。",
+      "errorGeneric": "重置密码失败，请重试。"
+    }
   },
   "dashboard": {
     "stats": {

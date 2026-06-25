@@ -133,7 +133,24 @@
     "dontHaveAccount": "沒有帳戶？建立一個",
     "or": "或",
     "google": "Google",
-    "microsoft": "Microsoft"
+    "microsoft": "Microsoft",
+    "forgotPassword": {
+      "link": "忘記密碼？",
+      "title": "重設密碼",
+      "subtitle": "輸入你的電子郵件，我們會發送重設密碼的連結。",
+      "submit": "發送重設連結",
+      "emailSent": "如果該帳戶存在，重設密碼連結已發送至你的電子郵件。",
+      "errorGeneric": "發送重設連結失敗，請再試一次。",
+      "backToSignIn": "返回登入"
+    },
+    "resetPassword": {
+      "title": "設定新密碼",
+      "subtitle": "在下方輸入你的新密碼。",
+      "submit": "設定密碼",
+      "success": "密碼已更新，正在登入...",
+      "invalidToken": "該重設連結無效或已過期。",
+      "errorGeneric": "重設密碼失敗，請再試一次。"
+    }
   },
   "dashboard": {
     "stats": {

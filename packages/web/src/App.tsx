@@ -13,6 +13,8 @@ import { GroupManagementPage } from '@/pages/GroupManagementPage';
 import { PermissionsPage } from '@/pages/PermissionsPage';
 import { EmergencyEventDetailPage } from '@/pages/EmergencyEventDetailPage';
 import { LoginPage } from '@/pages/LoginPage';
+import { ForgotPasswordPage } from '@/pages/ForgotPasswordPage';
+import { ResetPasswordPage } from '@/pages/ResetPasswordPage';
 import { AcceptInvitePage } from '@/pages/AcceptInvitePage';
 import { NoOrganizationPage } from '@/pages/NoOrganizationPage';
 import { OrgSettingsPage } from '@/pages/OrgSettingsPage';
@@ -270,6 +272,8 @@ function App() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/accept-invite" element={<AcceptInvitePage />} />
       <Route
         path="/emergency-events/:id"
