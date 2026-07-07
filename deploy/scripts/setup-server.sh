@@ -56,7 +56,6 @@ ssh -i "$SSH_KEY" -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 "${US
     echo "✅ Docker installed"
   else
     echo "✅ Docker already installed"
-  fi
 
   # Create external Docker network if missing
   if ! docker network ls --format '{{.Name}}' | grep -q "^${NETWORK_NAME}\$"; then
@@ -66,32 +65,28 @@ ssh -i "$SSH_KEY" -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 "${US
     echo "✅ Docker network '${NETWORK_NAME}' already exists"
   fi
 
-  # Setup Traefik for dev/staging
-  if [ "${ENV}" != "prod" ]; then
-    TRAEFIK_DIR="/opt/traefik"
-    mkdir -p \${TRAEFIK_DIR}/letsencrypt
+  # Setup Traefik
+  TRAEFIK_DIR="/opt/traefik"
+  mkdir -p \${TRAEFIK_DIR}/letsencrypt
 
-    if docker ps --format '{{.Names}}' | grep -q '^traefik\$'; then
-      echo "✅ Traefik already running"
-    else
-      echo "🚀 Traefik not running. Setting up..."
+  if docker ps --format '{{.Names}}' | grep -q '^traefik\$'; then
+    echo "✅ Traefik already running"
+  else
+    echo "🚀 Traefik not running. Setting up..."
 
-      # We will copy config from local deploy/traefik/ in the next step
-      echo "   (Waiting for config from local machine...)"
-    fi
+    # We will copy config from local deploy/traefik/ in the next step
+    echo "   (Waiting for config from local machine...)"
   fi
 REMOTE_SCRIPT
 
-# ── Copy Traefik config for dev/staging ────────────────────────
-if [ "$ENV" != "prod" ]; then
-  TRAEFIK_LOCAL="$DEPLOY_DIR/traefik"
-  if [ ! -d "$TRAEFIK_LOCAL" ]; then
-    echo "⚠️  deploy/traefik/ not found. Skipping Traefik setup."
-    echo "   For dev/staging, create deploy/traefik/ with docker-compose.yml and traefik.yml"
-    exit 0
-  fi
+# ── Copy Traefik config ────────────────────────────────────────
+TRAEFIK_LOCAL="$DEPLOY_DIR/traefik"
+if [ ! -d "$TRAEFIK_LOCAL" ]; then
+  echo "⚠️  deploy/traefik/ not found. Skipping Traefik setup."
+  exit 0
+fi
 
-  echo "📤 Copying Traefik config to ${HOST}..."
+echo "📤 Copying Traefik config to ${HOST}..."
 
   # Create a temp dir to render configs
   TMPDIR=$(mktemp -d)
@@ -135,7 +130,6 @@ if [ "$ENV" != "prod" ]; then
     echo "✅ Traefik setup complete"
     docker ps --filter name=traefik --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
 REMOTE_SCRIPT
-fi
 
 echo ""
 echo "✅ Server setup complete for ${ENV}"

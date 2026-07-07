@@ -163,7 +163,7 @@ Polls `HEALTH_URL` up to 12 times (60 seconds total).
 |-------------|---------------|-----|---------|
 | `dev` | Traefik | Let's Encrypt | `dev` (external) |
 | `staging` | Traefik | Let's Encrypt | `staging` (external) |
-| `prod` | nginx (direct) | Cloudflare Origin CA | bridge |
+| `prod` | Traefik | Let's Encrypt | `prod` (external) |
 
 - **Dev/Staging** share a server with Traefik. Each app container joins the external Docker network and gets auto-discovered via Traefik labels.
 - **Prod** runs nginx directly on ports 80/443 with a Cloudflare Origin CA certificate. No Traefik needed.

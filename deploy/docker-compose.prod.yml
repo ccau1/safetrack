@@ -1,5 +1,6 @@
 # =============================================================================
-# SafeTrack Production — nginx direct + Cloudflare Origin CA
+# SafeTrack Production — Traefik + Let's Encrypt
+# Use this when prod shares a server with Traefik as the reverse proxy.
 # =============================================================================
 version: "3.9"
 
@@ -7,10 +8,18 @@ services:
   app:
     image: ${APP_IMAGE}
     env_file: .env
-    ports:
-      - "80:80"
-      - "443:443"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.safetrack-prod.rule=Host(`${DOMAIN_PROD}`)"
+      - "traefik.http.routers.safetrack-prod.entrypoints=websecure"
+      - "traefik.http.routers.safetrack-prod.tls.certresolver=letsencrypt"
+      - "traefik.http.services.safetrack-prod.loadbalancer.server.port=80"
     volumes:
-      - ./nginx.ssl.conf:/etc/nginx/conf.d/default.conf:ro
-      - ./ssl:/etc/nginx/ssl:ro
+      - ./nginx.dev.conf:/etc/nginx/conf.d/default.conf:ro
+    networks:
+      - prod
     restart: unless-stopped
+
+networks:
+  prod:
+    external: true
