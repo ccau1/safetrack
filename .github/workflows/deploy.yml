@@ -32,7 +32,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_BASE: ghcr.io/${{ github.repository }}
+  IMAGE_BASE: ghcr.io/${{ github.repository }}/app
   BRANCH: main
   DOMAIN_STAGING: safetrack.staging.tribalorigin.com
   SERVER_DIR_STAGING: /opt/safetrack-staging
@@ -62,6 +62,7 @@ jobs:
       - name: Build & push staging image
         uses: ./.github/actions/build-and-push-image
         with:
+          image-name: app
           context: .
           push: true
           tags: |

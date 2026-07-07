@@ -30,7 +30,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_BASE: ghcr.io/${{ github.repository }}
+  IMAGE_BASE: ghcr.io/${{ github.repository }}/app
   DOMAIN_PROD: safetrack.tribalorigin.com
   SERVER_DIR_PROD_SHARED: /opt/safetrack-prod
   SERVER_DIR_PROD_STANDALONE: /opt/safetrack-prod-standalone
