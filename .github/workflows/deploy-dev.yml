@@ -1,5 +1,5 @@
 # =============================================================================
-# SafeTrack — Build & Deploy to Dev
+# CONFIG — Edit these values when copying to another repo
 # =============================================================================
 # Branch:     develop
 # Domain:     safetrack.dev.tribalorigin.com
@@ -12,12 +12,11 @@ on:
   push:
     branches: [develop]
     paths:
-      - 'packages/**'
-      - 'pom.xml'
+      - 'packages/web/src/**'
+      - 'packages/web/public/**'
+      - 'packages/web/index.html'
       - 'Dockerfile'
-      - 'nginx.docker.template'
-      - 'docker-entrypoint.sh'
-      - 'supervisord.conf'
+      - 'nginx.conf'
       - 'deploy/**'
       - '.github/workflows/deploy-dev.yml'
   workflow_dispatch:
@@ -25,6 +24,14 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_BASE: ghcr.io/${{ github.repository }}
+  BRANCH: develop
+  DOMAIN_DEV: safetrack.dev.tribalorigin.com
+  SERVER_DIR_DEV: /opt/safetrack-dev
+  HEALTH_URL_DEV: https://safetrack.dev.tribalorigin.com
+  IMAGE_TAG_DEV: dev
+  IMAGE_TAG_DEV_SHA: dev-${{ github.sha }}
+  COMPOSE_FILE_DEV: docker-compose.dev.yml
+  NGINX_FILE_DEV: nginx.dev.conf
 
 jobs:
   build:
@@ -35,26 +42,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Log in to GHCR
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Build & push dev image
-        uses: docker/build-push-action@v5
+        uses: ./.github/actions/build-and-push-image
         with:
           context: .
           push: true
           tags: |
-            ${{ env.IMAGE_BASE }}:dev
-            ${{ env.IMAGE_BASE }}:dev-${{ github.sha }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+            ${{ env.IMAGE_TAG_DEV }}
+            ${{ env.IMAGE_TAG_DEV_SHA }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
   deploy-dev:
     needs: build
@@ -62,60 +58,23 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Write dev .env
-        run: |
-          mkdir -p deploy
-          cat > deploy/.env <<EOF
-          DOMAIN_DEV=safetrack.dev.tribalorigin.com
-          INVITE_BASE_URL=https://safetrack.dev.tribalorigin.com
-          $(printf '%s\n' "${{ secrets.ENV_FILE }}" | perl -CSD -pe 's/\R/\n/g')
-          EOF
-
-      - name: Copy compose & nginx to dev server
-        uses: appleboy/scp-action@v0.1.7
+      - name: Deploy to dev server
+        uses: ./.github/actions/deploy-to-hetzner
         with:
           host: ${{ secrets.DEV_HETZNER_HOST }}
           username: ${{ secrets.DEV_HETZNER_USER }}
-          key: ${{ secrets.DEV_HETZNER_SSH_KEY }}
-          source: "deploy/docker-compose.dev.yml,deploy/.env,deploy/nginx.dev.conf"
-          target: "/opt/safetrack-dev"
-          strip_components: 1
-
-      - name: Deploy on dev server
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.DEV_HETZNER_HOST }}
-          username: ${{ secrets.DEV_HETZNER_USER }}
-          key: ${{ secrets.DEV_HETZNER_SSH_KEY }}
-          script: |
-            set -e
-            cd /opt/safetrack-dev
-
-            # Authenticate to GHCR so the server can pull private images
-            echo "${{ secrets.GH_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-
-            # Set image reference and pull latest dev image
-            export APP_IMAGE="${{ env.IMAGE_BASE }}:dev"
-            docker compose -f docker-compose.dev.yml pull
-            docker compose -f docker-compose.dev.yml up -d
-
-            # Prune old dangling images to save disk
-            docker image prune -af
-            docker system prune -f
-
-      - name: Health check (dev)
-        run: |
-          HEALTH_URL="https://safetrack.dev.tribalorigin.com"
-          echo "Testing dev site: $HEALTH_URL"
-          echo "Waiting for containers to start..."
-          for i in {1..12}; do
-            sleep 5
-            echo "Attempt $i/12: curl -sf $HEALTH_URL"
-            if curl -sf "$HEALTH_URL"; then
-              echo "Dev health check passed: $HEALTH_URL"
-              exit 0
-            fi
-            echo "Attempt $i/12 failed, retrying..."
-          done
-          echo "Dev health check failed after 60 seconds: $HEALTH_URL"
-          exit 1
+          ssh-key: ${{ secrets.DEV_HETZNER_SSH_KEY }}
+          remote-path: ${{ env.SERVER_DIR_DEV }}
+          compose-file: ${{ env.COMPOSE_FILE_DEV }}
+          files-to-copy: |
+            deploy/${{ env.COMPOSE_FILE_DEV }}
+            deploy/.env
+            deploy/${{ env.NGINX_FILE_DEV }}
+          env-file-header: |
+            DOMAIN_DEV=${{ env.DOMAIN_DEV }}
+            APP_IMAGE=${{ env.IMAGE_BASE }}:${{ env.IMAGE_TAG_DEV }}
+          env-file-content: ${{ secrets.ENV_FILE }}
+          protected-env-keys: APP_IMAGE,DOMAIN_,HEALTH_URL
+          runtime-env-vars: APP_IMAGE=${{ env.IMAGE_BASE }}:${{ env.IMAGE_TAG_DEV }}
+          ghcr-token: ${{ secrets.GH_TOKEN }}
+          health-check-url: ${{ env.HEALTH_URL_DEV }}

@@ -1,5 +1,5 @@
 # =============================================================================
-# SafeTrack — Build & Deploy to Staging
+# CONFIG — Edit these values when copying to another repo
 # =============================================================================
 # Branch:     main
 # Domain:     safetrack.staging.tribalorigin.com
@@ -12,19 +12,43 @@ on:
   push:
     branches: [main]
     paths:
-      - 'packages/**'
-      - 'pom.xml'
+      - 'packages/web/src/**'
+      - 'packages/web/public/**'
+      - 'packages/web/index.html'
       - 'Dockerfile'
-      - 'nginx.docker.template'
-      - 'docker-entrypoint.sh'
-      - 'supervisord.conf'
+      - 'nginx.conf'
       - 'deploy/**'
       - '.github/workflows/deploy.yml'
   workflow_dispatch:
+    inputs:
+      deployment_target:
+        description: 'Production deployment target'
+        required: true
+        default: 'shared'
+        type: choice
+        options:
+          - shared
+          - standalone
 
 env:
   REGISTRY: ghcr.io
   IMAGE_BASE: ghcr.io/${{ github.repository }}
+  BRANCH: main
+  DOMAIN_STAGING: safetrack.staging.tribalorigin.com
+  SERVER_DIR_STAGING: /opt/safetrack-staging
+  HEALTH_URL_STAGING: https://safetrack.staging.tribalorigin.com
+  IMAGE_TAG_STAGING: staging
+  IMAGE_TAG_STAGING_SHA: staging-${{ github.sha }}
+  COMPOSE_FILE_STAGING: docker-compose.staging.yml
+  NGINX_FILE_STAGING: nginx.dev.conf
+  DOMAIN_PROD: safetrack.tribalorigin.com
+  SERVER_DIR_PROD_SHARED: /opt/safetrack-prod
+  SERVER_DIR_PROD_STANDALONE: /opt/safetrack-prod-standalone
+  HEALTH_URL_PROD: https://safetrack.tribalorigin.com
+  COMPOSE_FILE_PROD_SHARED: docker-compose.prod.yml
+  COMPOSE_FILE_PROD_STANDALONE: docker-compose.prod-standalone.yml
+  NGINX_FILE_PROD_SHARED: nginx.dev.conf
+  NGINX_FILE_PROD_STANDALONE: nginx.prod-standalone.conf
 
 jobs:
   build:
@@ -35,26 +59,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Log in to GHCR
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Build & push staging image
-        uses: docker/build-push-action@v5
+        uses: ./.github/actions/build-and-push-image
         with:
           context: .
           push: true
           tags: |
-            ${{ env.IMAGE_BASE }}:staging
-            ${{ env.IMAGE_BASE }}:staging-${{ github.sha }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+            ${{ env.IMAGE_TAG_STAGING }}
+            ${{ env.IMAGE_TAG_STAGING_SHA }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
   deploy-staging:
     needs: build
@@ -62,79 +75,33 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Write staging .env
-        run: |
-          mkdir -p deploy
-          cat > deploy/.env <<EOF
-          DOMAIN_STAGING=safetrack.staging.tribalorigin.com
-          INVITE_BASE_URL=https://safetrack.staging.tribalorigin.com
-          $(printf '%s\n' "${{ secrets.ENV_FILE }}" | perl -CSD -pe 's/\R/\n/g' | grep -viE '^[[:space:]]*(APP_IMAGE|DOMAIN_|INVITE_BASE_URL)=')
-          EOF
-
-      - name: Copy compose & nginx to staging server
-        uses: appleboy/scp-action@v0.1.7
+      - name: Deploy to staging server
+        uses: ./.github/actions/deploy-to-hetzner
         with:
           host: ${{ secrets.STAGING_HETZNER_HOST }}
           username: ${{ secrets.STAGING_HETZNER_USER }}
-          key: ${{ secrets.STAGING_HETZNER_SSH_KEY }}
-          source: "deploy/docker-compose.staging.yml,deploy/.env,deploy/nginx.dev.conf"
-          target: "/opt/safetrack-staging"
-          strip_components: 1
-
-      - name: Deploy on staging server
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.STAGING_HETZNER_HOST }}
-          username: ${{ secrets.STAGING_HETZNER_USER }}
-          key: ${{ secrets.STAGING_HETZNER_SSH_KEY }}
-          script: |
-            set -e
-            cd /opt/safetrack-staging
-
-            # Ensure shared postgres from infra repo is on the staging network
-            docker network connect staging postgres 2>/dev/null || true
-
-            # Authenticate to GHCR so the server can pull private images
-            echo "${{ secrets.GH_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-
-            # Set image reference and pull latest staging image
-            export APP_IMAGE="${{ env.IMAGE_BASE }}:staging"
-            docker compose -f docker-compose.staging.yml pull
-            docker compose -f docker-compose.staging.yml up -d --remove-orphans
-
-            # Verify container status
+          ssh-key: ${{ secrets.STAGING_HETZNER_SSH_KEY }}
+          remote-path: ${{ env.SERVER_DIR_STAGING }}
+          compose-file: ${{ env.COMPOSE_FILE_STAGING }}
+          files-to-copy: |
+            deploy/${{ env.COMPOSE_FILE_STAGING }}
+            deploy/.env
+            deploy/${{ env.NGINX_FILE_STAGING }}
+          env-file-header: |
+            DOMAIN_STAGING=${{ env.DOMAIN_STAGING }}
+            APP_IMAGE=${{ env.IMAGE_BASE }}:${{ env.IMAGE_TAG_STAGING }}
+          env-file-content: ${{ secrets.ENV_FILE }}
+          protected-env-keys: APP_IMAGE,DOMAIN_,HEALTH_URL
+          runtime-env-vars: APP_IMAGE=${{ env.IMAGE_BASE }}:${{ env.IMAGE_TAG_STAGING }}
+          ghcr-token: ${{ secrets.GH_TOKEN }}
+          post-deploy-script: |
             echo "Container status:"
-            docker compose -f docker-compose.staging.yml ps
-            docker compose -f docker-compose.staging.yml logs --tail 30
-
-            # Prune old dangling images to save disk
-            docker image prune -af
-            docker system prune -f
-
-      - name: Health check (staging)
-        run: |
-          HEALTH_URL="https://safetrack.staging.tribalorigin.com"
-          echo "Testing staging site: $HEALTH_URL"
-          echo "Waiting for containers to start..."
-          for i in {1..12}; do
-            sleep 5
-            echo "Attempt $i/12: curl -fsSL --max-time 10 $HEALTH_URL"
-            HTTP_CODE=$(curl -fsSL --max-time 10 -w "%{http_code}" \
-              -H "User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36" \
-              -H "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8" \
-              -o /tmp/health_response.html \
-              "$HEALTH_URL" || true)
-            if [ "$HTTP_CODE" = "200" ]; then
-              echo "Staging health check passed: $HEALTH_URL (HTTP $HTTP_CODE)"
-              exit 0
-            fi
-            echo "Attempt $i/12 failed (HTTP ${HTTP_CODE:-no response}), retrying..."
-          done
-          echo "Staging health check failed after 60 seconds: $HEALTH_URL"
-          echo "--- Last response body ---"
-          cat /tmp/health_response.html 2>/dev/null || echo "(no response body captured)"
-          echo "--- End response body ---"
-          exit 1
+            docker compose -f ${{ env.COMPOSE_FILE_STAGING }} ps
+            docker compose -f ${{ env.COMPOSE_FILE_STAGING }} logs --tail 30
+          health-check-url: ${{ env.HEALTH_URL_STAGING }}
+          health-check-headers: |
+            User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36
+            Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8
 
   promote-to-prod:
     name: Promote to Production
@@ -144,94 +111,70 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Write production .env
-        run: |
-          mkdir -p deploy
-          cat > deploy/.env <<EOF
-          DOMAIN_PROD=safetrack.tribalorigin.com
-          INVITE_BASE_URL=https://safetrack.tribalorigin.com
-          $(printf '%s\n' "${{ secrets.ENV_FILE }}" | perl -CSD -pe 's/\R/\n/g' | grep -viE '^[[:space:]]*(APP_IMAGE|DOMAIN_|INVITE_BASE_URL)=')
-          EOF
-
-      - name: Copy compose & nginx to prod server
-        uses: appleboy/scp-action@v0.1.7
+      - name: Deploy promoted image to shared prod
+        if: ${{ github.event.inputs.deployment_target != 'standalone' }}
+        uses: ./.github/actions/deploy-to-hetzner
         with:
-          host: ${{ secrets.HETZNER_HOST }}
-          username: ${{ secrets.HETZNER_USER }}
-          key: ${{ secrets.HETZNER_SSH_KEY }}
-          source: "deploy/docker-compose.prod.yml,deploy/.env,deploy/nginx.ssl.conf"
-          target: "/opt/safetrack"
-          strip_components: 1
+          host: ${{ secrets.PROD_HETZNER_HOST }}
+          username: ${{ secrets.PROD_HETZNER_USER }}
+          ssh-key: ${{ secrets.PROD_HETZNER_SSH_KEY }}
+          remote-path: ${{ env.SERVER_DIR_PROD_SHARED }}
+          compose-file: ${{ env.COMPOSE_FILE_PROD_SHARED }}
+          files-to-copy: |
+            deploy/${{ env.COMPOSE_FILE_PROD_SHARED }}
+            deploy/.env
+            deploy/${{ env.NGINX_FILE_PROD_SHARED }}
+          env-file-header: |
+            DOMAIN_PROD=${{ env.DOMAIN_PROD }}
+            APP_IMAGE=${{ env.IMAGE_BASE }}:${{ env.IMAGE_TAG_STAGING_SHA }}
+          env-file-content: ${{ secrets.ENV_FILE }}
+          protected-env-keys: APP_IMAGE,DOMAIN_,HEALTH_URL
+          runtime-env-vars: APP_IMAGE=${{ env.IMAGE_BASE }}:${{ env.IMAGE_TAG_STAGING_SHA }}
+          ghcr-token: ${{ secrets.GH_TOKEN }}
+          post-deploy-script: |
+            echo "Container status:"
+            docker compose -f ${{ env.COMPOSE_FILE_PROD_SHARED }} ps
+            docker compose -f ${{ env.COMPOSE_FILE_PROD_SHARED }} logs --tail 30
+          health-check-url: ${{ env.HEALTH_URL_PROD }}
+          health-check-headers: |
+            User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36
+            Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8
 
-      - name: Check for SSL cert secrets
-        id: certs
-        run: |
-          if [ -n "${{ secrets.CF_ORIGIN_CERT }}" ]; then
-            echo "has_certs=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "has_certs=false" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Ensure SSL certs on prod server
-        if: steps.certs.outputs.has_certs == 'true'
-        uses: appleboy/ssh-action@v1.0.3
+      - name: Deploy promoted image to standalone prod
+        if: ${{ github.event.inputs.deployment_target == 'standalone' }}
+        uses: ./.github/actions/deploy-to-hetzner
         with:
-          host: ${{ secrets.HETZNER_HOST }}
-          username: ${{ secrets.HETZNER_USER }}
-          key: ${{ secrets.HETZNER_SSH_KEY }}
-          envs: CF_ORIGIN_CERT,CF_ORIGIN_KEY
-          script: |
-            set -e
-            mkdir -p /opt/safetrack/ssl
-            printf '%s\n' "$CF_ORIGIN_CERT" > /opt/safetrack/ssl/cloudflare-origin.pem
-            printf '%s\n' "$CF_ORIGIN_KEY" > /opt/safetrack/ssl/cloudflare-origin.key
-            chmod 600 /opt/safetrack/ssl/cloudflare-origin.key
-            chmod 644 /opt/safetrack/ssl/cloudflare-origin.pem
-
-      - name: Deploy promoted image to prod
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.HETZNER_HOST }}
-          username: ${{ secrets.HETZNER_USER }}
-          key: ${{ secrets.HETZNER_SSH_KEY }}
-          script: |
-            set -e
-            cd /opt/safetrack
-
-            # Authenticate to GHCR so the server can pull private images
-            echo "${{ secrets.GH_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-
-            # Promote the exact staging image built in this run
-            export APP_IMAGE="${{ env.IMAGE_BASE }}:staging-${{ github.sha }}"
-            docker compose -f docker-compose.prod.yml pull
-            docker compose -f docker-compose.prod.yml up -d
-
-            # Prune old dangling images to save disk
-            docker image prune -af
-            docker system prune -f
-
-      - name: Health check (prod)
-        run: |
-          HEALTH_URL="https://safetrack.tribalorigin.com"
-          echo "Testing promoted site: $HEALTH_URL"
-          echo "Waiting for containers to start..."
-          for i in {1..12}; do
-            sleep 5
-            echo "Attempt $i/12: curl -fsSLk --max-time 10 $HEALTH_URL"
-            HTTP_CODE=$(curl -fsSLk --max-time 10 -w "%{http_code}" \
-              -H "User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36" \
-              -H "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8" \
-              -o /tmp/health_response.html \
-              "$HEALTH_URL" || true)
-            if [ "$HTTP_CODE" = "200" ]; then
-              echo "Prod health check passed: $HEALTH_URL (HTTP $HTTP_CODE)"
-              exit 0
+          host: ${{ secrets.PROD_STANDALONE_HETZNER_HOST }}
+          username: ${{ secrets.PROD_STANDALONE_HETZNER_USER }}
+          ssh-key: ${{ secrets.PROD_STANDALONE_HETZNER_SSH_KEY }}
+          remote-path: ${{ env.SERVER_DIR_PROD_STANDALONE }}
+          compose-file: ${{ env.COMPOSE_FILE_PROD_STANDALONE }}
+          files-to-copy: |
+            deploy/${{ env.COMPOSE_FILE_PROD_STANDALONE }}
+            deploy/.env
+            deploy/${{ env.NGINX_FILE_PROD_STANDALONE }}
+          env-file-header: |
+            DOMAIN_PROD=${{ env.DOMAIN_PROD }}
+            APP_IMAGE=${{ env.IMAGE_BASE }}:${{ env.IMAGE_TAG_STAGING_SHA }}
+          env-file-content: ${{ secrets.ENV_FILE }}
+          protected-env-keys: APP_IMAGE,DOMAIN_,HEALTH_URL
+          runtime-env-vars: APP_IMAGE=${{ env.IMAGE_BASE }}:${{ env.IMAGE_TAG_STAGING_SHA }}
+          ghcr-token: ${{ secrets.GH_TOKEN }}
+          pre-deploy-script: |
+            if [ -n "$CF_ORIGIN_CERT" ]; then
+              mkdir -p ${{ env.SERVER_DIR_PROD_STANDALONE }}/ssl
+              printf '%s\n' "$CF_ORIGIN_CERT" > ${{ env.SERVER_DIR_PROD_STANDALONE }}/ssl/cloudflare-origin.pem
+              printf '%s\n' "$CF_ORIGIN_KEY" > ${{ env.SERVER_DIR_PROD_STANDALONE }}/ssl/cloudflare-origin.key
+              chmod 600 ${{ env.SERVER_DIR_PROD_STANDALONE }}/ssl/cloudflare-origin.key
+              chmod 644 ${{ env.SERVER_DIR_PROD_STANDALONE }}/ssl/cloudflare-origin.pem
             fi
-            echo "Attempt $i/12 failed (HTTP ${HTTP_CODE:-no response}), retrying..."
-          done
-          echo "Prod health check failed after 60 seconds: $HEALTH_URL"
-          echo "--- Last response body ---"
-          cat /tmp/health_response.html 2>/dev/null || echo "(no response body captured)"
-          echo "--- End response body ---"
-          exit 1
-
+          ssh-env-vars: |
+            {"CF_ORIGIN_CERT":${{ toJson(secrets.CF_ORIGIN_CERT) }},"CF_ORIGIN_KEY":${{ toJson(secrets.CF_ORIGIN_KEY) }}}
+          post-deploy-script: |
+            echo "Container status:"
+            docker compose -f ${{ env.COMPOSE_FILE_PROD_STANDALONE }} ps
+            docker compose -f ${{ env.COMPOSE_FILE_PROD_STANDALONE }} logs --tail 30
+          health-check-url: ${{ env.HEALTH_URL_PROD }}
+          health-check-headers: |
+            User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36
+            Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8
