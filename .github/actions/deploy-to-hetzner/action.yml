@@ -84,16 +84,17 @@ runs:
   using: composite
   steps:
     - name: Write remote .env file
-      if: inputs.env-file-content != ''
       shell: bash
       run: |
         mkdir -p deploy
-        FILTER_KEYS="${{ inputs.protected-env-keys }}"
-        FILTER_PATTERN='^[[:space:]]*('$(echo "$FILTER_KEYS" | tr ',' '|')')='
         cat > deploy/.env <<EOF
         ${{ inputs.env-file-header }}
-        $(printf '%s\n' "${{ inputs.env-file-content }}" | grep -viE "$FILTER_PATTERN")
         EOF
+        if [ -n "${{ inputs.env-file-content }}" ]; then
+          FILTER_KEYS="${{ inputs.protected-env-keys }}"
+          FILTER_PATTERN='^[[:space:]]*('$(echo "$FILTER_KEYS" | tr ',' '|')')='
+          printf '%s\n' "${{ inputs.env-file-content }}" | grep -viE "$FILTER_PATTERN" >> deploy/.env
+        fi
 
     - name: Prepare SCP source list
       id: sources

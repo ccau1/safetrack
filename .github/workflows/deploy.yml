@@ -91,7 +91,7 @@ jobs:
           env-file-header: |
             DOMAIN_STAGING=${{ env.DOMAIN_STAGING }}
             APP_IMAGE=${{ env.IMAGE_BASE }}:${{ env.IMAGE_TAG_STAGING }}
-          env-file-content: ${{ secrets.ENV_FILE }}
+          env-file-content: ${{ secrets.STAGING_ENV_FILE }}
           protected-env-keys: APP_IMAGE,DOMAIN_,HEALTH_URL
           runtime-env-vars: APP_IMAGE=${{ env.IMAGE_BASE }}:${{ env.IMAGE_TAG_STAGING }}
           ghcr-token: ${{ secrets.GH_TOKEN }}
@@ -128,7 +128,7 @@ jobs:
           env-file-header: |
             DOMAIN_PROD=${{ env.DOMAIN_PROD }}
             APP_IMAGE=${{ env.IMAGE_BASE }}:${{ env.IMAGE_TAG_STAGING_SHA }}
-          env-file-content: ${{ secrets.ENV_FILE }}
+          env-file-content: ${{ secrets.PROD_ENV_FILE }}
           protected-env-keys: APP_IMAGE,DOMAIN_,HEALTH_URL
           runtime-env-vars: APP_IMAGE=${{ env.IMAGE_BASE }}:${{ env.IMAGE_TAG_STAGING_SHA }}
           ghcr-token: ${{ secrets.GH_TOKEN }}
@@ -157,7 +157,7 @@ jobs:
           env-file-header: |
             DOMAIN_PROD=${{ env.DOMAIN_PROD }}
             APP_IMAGE=${{ env.IMAGE_BASE }}:${{ env.IMAGE_TAG_STAGING_SHA }}
-          env-file-content: ${{ secrets.ENV_FILE }}
+          env-file-content: ${{ secrets.PROD_ENV_FILE }}
           protected-env-keys: APP_IMAGE,DOMAIN_,HEALTH_URL
           runtime-env-vars: APP_IMAGE=${{ env.IMAGE_BASE }}:${{ env.IMAGE_TAG_STAGING_SHA }}
           ghcr-token: ${{ secrets.GH_TOKEN }}

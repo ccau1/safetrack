@@ -64,7 +64,7 @@ jobs:
           env-file-header: |
             DOMAIN_PROD=${{ env.DOMAIN_PROD }}
             APP_IMAGE=${{ env.IMAGE_BASE }}:${{ github.event.inputs.image_tag }}
-          env-file-content: ${{ secrets.ENV_FILE }}
+          env-file-content: ${{ secrets.PROD_ENV_FILE }}
           protected-env-keys: APP_IMAGE,DOMAIN_,HEALTH_URL
           runtime-env-vars: APP_IMAGE=${{ env.IMAGE_BASE }}:${{ github.event.inputs.image_tag }}
           ghcr-token: ${{ secrets.GH_TOKEN }}
@@ -93,7 +93,7 @@ jobs:
           env-file-header: |
             DOMAIN_PROD=${{ env.DOMAIN_PROD }}
             APP_IMAGE=${{ env.IMAGE_BASE }}:${{ github.event.inputs.image_tag }}
-          env-file-content: ${{ secrets.ENV_FILE }}
+          env-file-content: ${{ secrets.PROD_ENV_FILE }}
           protected-env-keys: APP_IMAGE,DOMAIN_,HEALTH_URL
           runtime-env-vars: APP_IMAGE=${{ env.IMAGE_BASE }}:${{ github.event.inputs.image_tag }}
           ghcr-token: ${{ secrets.GH_TOKEN }}

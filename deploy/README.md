@@ -254,7 +254,9 @@ Then set Cloudflare SSL/TLS mode to **"Full (strict)"**.
 | `HETZNER_HOST` | ✅ | Server IP |
 | `HETZNER_USER` | ✅ | `root` |
 | `HETZNER_SSH_KEY` | ✅ | Private SSH key |
-| `ENV_FILE` | ✅ | Empty for static sites |
+| `DEV_ENV_FILE` | ✅ | Environment variables for dev deployments |
+| `STAGING_ENV_FILE` | ✅ | Environment variables for staging deployments |
+| `PROD_ENV_FILE` | ✅ | Environment variables for production deployments |
 | `GH_TOKEN` | ✅ | GitHub Classic PAT (`read:packages`) |
 | `CF_ORIGIN_CERT` | ⬜ | Cloudflare Origin CA cert |
 | `CF_ORIGIN_KEY` | ⬜ | Cloudflare Origin CA key |
